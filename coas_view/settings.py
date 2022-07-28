@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'coas_view.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'coasv',
+        'USER': 'hawk',
+        'PASSWORD': 'hawk',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
