@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 
 from coasc.models import Transaction
 
@@ -13,6 +13,7 @@ def general_journal(request):
         transaction = Transaction.objects.create(description='description1')
         form.instance.transaction = transaction
         form.save()
+        return redirect(reverse('data_entry:general_journal'))
 
     context = {
             'form': form,

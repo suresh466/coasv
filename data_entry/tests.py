@@ -23,3 +23,12 @@ class GeneranJournalViewTest(TestCase):
         self.assertEqual(saved_splits[0].account, single_ac1)
         self.assertEqual(saved_splits[0].type_split, 'dr')
         self.assertEqual(saved_splits[0].amount, 100)
+
+    def test_redirects_after_POST(self):
+        single_ac1 = ImpersonalAccount.objects.create(
+                name='single_ac1', type_ac='AS', code='1')
+        data = {'account': single_ac1.pk, 'type_split': 'dr', 'amount': 100}
+        url = reverse('data_entry:general_journal')
+        response = self.client.post(url, data=data)
+
+        self.assertRedirects(response, url)
