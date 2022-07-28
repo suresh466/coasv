@@ -3,6 +3,9 @@
         <title>Coas</title>
     </head>
     <body>
-        <p>Hello</p>
+        <form>
+            {{ form }}
+            {% csrf_token %}
+        </form>
     </body>
 </html>
