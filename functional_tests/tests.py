@@ -15,18 +15,10 @@ MAX_WAIT = 5
 class GeneralJournalTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        ImpersonalAccount.objects.create(
-                name='single_ac1',
-                code='1',
-                type_ac='AS'
-                )
-        ImpersonalAccount.objects.create(
-                name='single_ac2',
-                code='2',
-                type_ac='LI'
-                )
-        self.single_ac1_pk = '1'
-        self.single_ac2_pk = '2'
+        self.single_ac1 = ImpersonalAccount.objects.create(
+                name='single_ac1', code='1', type_ac='AS')
+        self.single_ac2 = ImpersonalAccount.objects.create(
+                name='single_ac2', code='2', type_ac='LI')
 
     def tearDown(self):
         self.browser.quit()
@@ -34,7 +26,7 @@ class GeneralJournalTest(StaticLiveServerTestCase):
     def select_from_drop_down_id(self, select_id, option_value):
         select_element = self.browser.find_element(By.ID, select_id)
         select_object = Select(select_element)
-        select_object.select_by_value(option_value)
+        select_object.select_by_value(str(option_value))
         return
 
     def send_keys_to_inputbox_by_id(self, inputbox_id, input_keys):
@@ -57,7 +49,7 @@ class GeneralJournalTest(StaticLiveServerTestCase):
                 time.sleep(0.5)
     '''
 
-    def test_can_input_split(self):
+    def test_can_input_split_and_display_it(self):
         # Edith has heard about a new co-operative double entry accounting
         # app. She goes to check the data entry page "general_journal".
         self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
@@ -66,11 +58,14 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         self.assertIn('Coas', self.browser.title)
 
         # She is immediately invited to input general_journal entries.
-        # She inputs two splits making the transaction balanced; i.e Dr == Cr
-        self.select_from_drop_down_id('id_account', self.single_ac1_pk)
+        # She inputs a split.
+
+        self.select_from_drop_down_id('id_account', self.single_ac1.pk)
         self.select_from_drop_down_id('id_type_split', 'dr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
 
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn('1 dr 100', page_text)
         # After a redirect the split is visible.
         # self.wait_for_rows_in_splits_table('1 dr 100.00')
 

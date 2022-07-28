@@ -13,7 +13,7 @@ class GeneranJournalViewTest(TestCase):
     def test_can_save_a_POST_request(self):
         single_ac1 = ImpersonalAccount.objects.create(
                 name='single_ac1', type_ac='AS', code='1')
-        data = {'account': single_ac1.pk, 'type_split': 'dr', 'amount': 100}
+        data = {'account': single_ac1.pk, 'type_split': 'dr', 'amount': '100'}
         url = reverse('data_entry:general_journal')
         self.client.post(url, data=data)
 
@@ -27,7 +27,7 @@ class GeneranJournalViewTest(TestCase):
     def test_redirects_after_POST(self):
         single_ac1 = ImpersonalAccount.objects.create(
                 name='single_ac1', type_ac='AS', code='1')
-        data = {'account': single_ac1.pk, 'type_split': 'dr', 'amount': 100}
+        data = {'account': single_ac1.pk, 'type_split': 'dr', 'amount': '100'}
         url = reverse('data_entry:general_journal')
         response = self.client.post(url, data=data)
 
