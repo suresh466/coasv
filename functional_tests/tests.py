@@ -68,7 +68,7 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         # She is immediately invited to input general_journal entries.
         # She inputs two splits making the transaction balanced; i.e Dr == Cr
         self.select_from_drop_down_id('id_account', self.single_ac1_pk)
-        self.select_from_drop_down_id('id_split_type', 'dr')
+        self.select_from_drop_down_id('id_type_split', 'dr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
 
         # After a redirect the split is visible.
