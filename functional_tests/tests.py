@@ -1,10 +1,11 @@
-# import time
+import time
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
+from selenium.webdriver.common.keys import Keys
 # from selenium.common.exceptions import WebDriverException
 
 from coasc.models import ImpersonalAccount
@@ -63,6 +64,8 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         self.select_from_drop_down_id('id_account', self.single_ac1.pk)
         self.select_from_drop_down_id('id_type_split', 'dr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
+        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        time.sleep(2)
 
         page_text = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('1 dr 100', page_text)

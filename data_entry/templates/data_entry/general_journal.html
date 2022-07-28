@@ -3,10 +3,12 @@
         <title>Coas</title>
     </head>
     <body>
-        hello
-        <form>
+        <form method='POST', action='{% url "data_entry:general_journal" %}'>
             {{ form }}
             {% csrf_token %}
         </form>
+        {% for split in splits %}
+        <p>{{ split.account }} {{ split.type_split }} {{ split.amount }}</p>
+        {% endfor %}
     </body>
 </html>
