@@ -8,7 +8,7 @@
             {% csrf_token %}
         </form>
         {% for split in splits %}
-        <p>{{ split.account }} {{ split.type_split }} {{ split.amount }}</p>
+        <p>{{ split.account_code}} {{ split.type_split }} {{ split.amount }}</p>
         {% endfor %}
     </body>
 </html>

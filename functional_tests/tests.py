@@ -50,7 +50,7 @@ class GeneralJournalTest(StaticLiveServerTestCase):
                 time.sleep(0.5)
     '''
 
-    def test_can_input_split_and_display_it(self):
+    def test_can_input_split_display_and_save_it(self):
         # Edith has heard about a new co-operative double entry accounting
         # app. She goes to check the data entry page "general_journal".
         self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
@@ -60,16 +60,27 @@ class GeneralJournalTest(StaticLiveServerTestCase):
 
         # She is immediately invited to input general_journal entries.
         # She inputs a split.
-
         self.select_from_drop_down_id('id_account', self.single_ac1.pk)
         self.select_from_drop_down_id('id_type_split', 'dr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
         self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
-        time.sleep(2)
+        time.sleep(1)
 
+        # After a redirect the split is visible.
         page_text = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('1 dr 100', page_text)
-        # After a redirect the split is visible.
         # self.wait_for_rows_in_splits_table('1 dr 100.00')
+
+        # She proceeds to input another split to balance out the transaction.
+        self.select_from_drop_down_id('id_account', self.single_ac2.pk)
+        self.select_from_drop_down_id('id_type_split', 'cr')
+        self.send_keys_to_inputbox_by_id('id_amount', 100)
+        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        time.sleep(1)
+
+        # She is pleased to see both the splits still visible.
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn('1 dr 100', page_text)
+        self.assertIn('2 cr 100', page_text)
 
         self.fail('Finish the test')
