@@ -83,4 +83,16 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         self.assertIn('1 dr 100', page_text)
         self.assertIn('2 cr 100', page_text)
 
+        # She notices that there is a input field below to describe the
+        # transaction; she types in "demo desc" and hits enter.
+        self.send_keys_to_inputbox_by_id('id_description', 'demo desc')
+        self.send_keys_to_inputbox_by_id('id_description', Keys.ENTER)
+        time.sleep(1)
+
+        # The transaction is saved and there is no sign of previously
+        # visible splits.
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertNotIn('1 dr 100', page_text)
+        self.assertNotIn('2 cr 100', page_text)
+
         self.fail('Finish the test')

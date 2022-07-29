@@ -4,7 +4,14 @@
     </head>
     <body>
         <form method='POST', action='{% url "data_entry:general_journal" %}'>
-            {{ form }}
+            <table>
+            {{ form.as_table }}
+            {% csrf_token %}
+            </table>
+        </form>
+        <form method='POST' action='{% url "data_entry:save_transaction" %}'>
+            <input id='id_description'name='description' type='textarea'>
+            <button id='id_submit'name='submit' type='submit'>Submit</button>
             {% csrf_token %}
         </form>
         {% for split in splits %}
