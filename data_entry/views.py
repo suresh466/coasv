@@ -10,10 +10,11 @@ def general_journal(request):
     if form.is_valid():
         if 'splits' not in request.session:
             request.session['splits'] = []
-        ac_code = form.cleaned_data['account'].code
-        ac = request.POST['account']
-        t_s = request.POST['type_split']
-        am = request.POST['amount']
+        account = form.cleaned_data['account']
+        ac = account.pk
+        ac_code = account.code
+        t_s = form.cleaned_data['type_split']
+        am = str(form.cleaned_data['amount'])
 
         split = {
                 'account': ac, 'account_code': ac_code,
