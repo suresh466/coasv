@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
 # from selenium.common.exceptions import WebDriverException
 
 from coasc.models import ImpersonalAccount
@@ -91,6 +92,38 @@ class GeneralJournalTest(StaticLiveServerTestCase):
 
         # The transaction is saved and there is no sign of previously
         # visible splits.
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertNotIn('1 dr 100', page_text)
+        self.assertNotIn('2 cr 100', page_text)
+
+    def test_can_cancel_all_session_splits(self):
+        self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
+        # The next day edith inputs 2 splits and instantly visible on the page.
+        self.select_from_drop_down_id('id_account', self.single_ac1.pk)
+        self.select_from_drop_down_id('id_type_split', 'dr')
+        self.send_keys_to_inputbox_by_id('id_amount', 100)
+        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        time.sleep(1)
+
+        # She proceeds to input another split to balance out the transaction.
+        self.select_from_drop_down_id('id_account', self.single_ac2.pk)
+        self.select_from_drop_down_id('id_type_split', 'cr')
+        self.send_keys_to_inputbox_by_id('id_amount', 100)
+        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        time.sleep(1)
+
+        # She is pleased to see both the splits still visible.
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn('1 dr 100', page_text)
+        self.assertIn('2 cr 100', page_text)
+
+        # but she feels like canceling them, so she clicks on
+        # "cancel transaction" button and the splits disappear.
+        cancel_transaction = self.browser.find_element(
+                By.ID, 'id_cancel_transaction')
+        ActionChains(self.browser).click(cancel_transaction).perform()
+        time.sleep(1)
+
         page_text = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertNotIn('1 dr 100', page_text)
         self.assertNotIn('2 cr 100', page_text)

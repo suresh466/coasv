@@ -52,3 +52,10 @@ def save_transaction(request):
     del request.session['splits']
 
     return redirect(reverse('data_entry:general_journal'))
+
+
+def cancel_transaction(request):
+    if 'splits' not in request.session:
+        raise TypeError('None is not a session split')
+    del request.session['splits']
+    return redirect(reverse('data_entry:general_journal'))
