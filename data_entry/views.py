@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.shortcuts import render, redirect, reverse
+from django.db import transaction as db_transaction
 
 from coasc.models import ImpersonalAccount, Split, Transaction
 from data_entry.forms import SplitForm
@@ -61,17 +62,18 @@ def save_transaction(request):
         raise TypeError('None is not a session split')
 
     desc = request.POST['description']
-    tx = Transaction.objects.create(description=desc)
-    for split in splits:
-        ac_pk = split['account']
-        ac = ImpersonalAccount.objects.get(pk=ac_pk)
-        t_s = split['type_split']
-        am = Decimal(split['amount'])
+    with db_transaction.atomic():
+        tx = Transaction.objects.create(description=desc)
+        for split in splits:
+            ac_pk = split['account']
+            ac = ImpersonalAccount.objects.get(pk=ac_pk)
+            t_s = split['type_split']
+            am = Decimal(split['amount'])
 
-        Split.objects.create(
-                account=ac, type_split=t_s, amount=am, transaction=tx)
+            Split.objects.create(
+                    account=ac, type_split=t_s, amount=am, transaction=tx)
+        ImpersonalAccount.validate_accounting_equation()
     del request.session['splits']
-
     return redirect(reverse('data_entry:general_journal'))
 
 
