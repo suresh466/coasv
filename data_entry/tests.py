@@ -32,15 +32,7 @@ class SaveTransactionViewTest(TestCase):
         cls.single_ac2 = ImpersonalAccount.objects.create(
                 name='single_ac2', type_ac='AS', code='2')
 
-    def test_raises_exception_if_splits_is_None(self):
-        url = reverse('data_entry:save_transaction')
-        data = {'description': 'demo desc'}
-
-        message = 'None is not a session split'
-        with self.assertRaisesMessage(TypeError, message):
-            self.client.post(url, data=data)
-
-    def test_can_save_and_redirect_after_POST_request(self):
+    def populate_splits(self):
         session = self.client.session
         session['splits'] = [
                 {'account': self.single_ac1.pk, 'type_split': 'dr',
@@ -50,18 +42,40 @@ class SaveTransactionViewTest(TestCase):
         ]
         session.save()
 
+    def test_raises_exception_if_splits_is_None(self):
         url = reverse('data_entry:save_transaction')
         data = {'description': 'demo desc'}
-        response = self.client.post(url, data=data)
+        message = 'None is not a session split'
+
+        with self.assertRaisesMessage(TypeError, message):
+            self.client.post(url, data=data)
+
+    def test_saves_transaction_after_POST(self):
+        self.populate_splits()
+        url = reverse('data_entry:save_transaction')
+        self.client.post(url, {'description': 'demo desc'})
         single_ac1_balances = self.single_ac1.current_balance()
         single_ac2_balances = self.single_ac2.current_balance()
-        session = self.client.session
 
-        self.assertTrue('splits' not in session)
         self.assertEqual(single_ac1_balances['dr_sum'], 100)
         self.assertEqual(single_ac1_balances['cr_sum'], 0)
         self.assertEqual(single_ac2_balances['dr_sum'], 0)
         self.assertEqual(single_ac2_balances['cr_sum'], 100)
+
+    def test_deletes_splits_from_session_after_save(self):
+        self.populate_splits()
+        url = reverse('data_entry:save_transaction')
+        self.client.post(url, {'description': 'demo desc'})
+        session = self.client.session
+
+        self.assertTrue('splits' not in session)
+
+    def test_redirects_after_POST(self):
+        self.populate_splits()
+        url = reverse('data_entry:save_transaction')
+        data = {'description': 'demo desc'}
+        response = self.client.post(url, data=data)
+
         self.assertRedirects(response, reverse('data_entry:general_journal'))
 
 
@@ -73,12 +87,7 @@ class CancelTransactionViewTest(TestCase):
         cls.single_ac2 = ImpersonalAccount.objects.create(
                 name='single_ac2', type_ac='AS', code='2')
 
-    def test_raises_exception_if_splits_is_None(self):
-        message = 'None is not a session split'
-        with self.assertRaisesMessage(TypeError, message):
-            self.client.post(reverse('data_entry:cancel_transaction'))
-
-    def test_can_cancel_and_redirect_after_POST_request(self):
+    def populate_splits(self):
         session = self.client.session
         session['splits'] = [
                 {'account': self.single_ac1.pk, 'type_split': 'dr',
@@ -88,8 +97,19 @@ class CancelTransactionViewTest(TestCase):
         ]
         session.save()
 
-        response = self.client.post(reverse('data_entry:cancel_transaction'))
+    def test_raises_exception_if_splits_is_None(self):
+        message = 'None is not a session split'
+        with self.assertRaisesMessage(TypeError, message):
+            self.client.post(reverse('data_entry:cancel_transaction'))
+
+    def test_deletes_splits_from_session_after_POST(self):
+        self.populate_splits()
+        self.client.post(reverse('data_entry:cancel_transaction'))
         session = self.client.session
 
         self.assertTrue('splits' not in session)
+
+    def test_redirects_after_delete(self):
+        self.populate_splits()
+        response = self.client.post(reverse('data_entry:cancel_transaction'))
         self.assertRedirects(response, reverse('data_entry:general_journal'))
