@@ -3,6 +3,8 @@ from django.urls import reverse
 
 from coasc.models import ImpersonalAccount
 
+from data_entry.views import session_balances
+
 
 class GeneranJournalViewTest(TestCase):
     @classmethod
@@ -113,3 +115,40 @@ class CancelTransactionViewTest(TestCase):
         self.populate_splits()
         response = self.client.post(reverse('data_entry:cancel_transaction'))
         self.assertRedirects(response, reverse('data_entry:general_journal'))
+
+
+class SessionBalancesTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.single_ac1 = ImpersonalAccount.objects.create(
+                name='single_ac1', type_ac='AS', code='1')
+        cls.single_ac2 = ImpersonalAccount.objects.create(
+                name='single_ac2', type_ac='AS', code='2')
+
+    def populate_splits(self):
+        session = self.client.session
+        session['splits'] = [
+                {'account': self.single_ac1.pk, 'type_split': 'dr',
+                    'amount': '100'},
+                {'account': self.single_ac2.pk, 'type_split': 'cr',
+                    'amount': '50'}
+        ]
+        session.save()
+
+    def test_session_balances_returns_all_0_if_splits_is_None(self):
+        splits = None
+        session_balances_data = session_balances(splits)
+
+        self.assertEqual(session_balances_data['dr_sum'], 0)
+        self.assertEqual(session_balances_data['cr_sum'], 0)
+        self.assertEqual(session_balances_data['difference'], 0)
+
+    def test_session_balances_returns_correct_values(self):
+        self.populate_splits()
+        session = self.client.session
+        splits = session['splits']
+        session_balances_data = session_balances(splits)
+
+        self.assertEqual(session_balances_data['dr_sum'], 100)
+        self.assertEqual(session_balances_data['cr_sum'], 50)
+        self.assertEqual(session_balances_data['difference'], 50)

@@ -23,7 +23,7 @@
         </form>
 
         <!-- Wrapping table start-->
-        <table>
+        <table id='id_table_splits'>
             <thead>
                 <tr>
         <!-- Dr table -->
@@ -82,9 +82,15 @@
                     </th>
             </thead>
             <tfoot>
+                <tr>
+                    <td>Debit sum: {{ session_balances.dr_sum }}</td>
+                    <td>Credit sum: {{ session_balances.cr_sum }}</td>
+                </tr>
+                <tr>
+                    <td>Difference: {{ session_balances.difference }}</td>
+                </tr>
             </tfoot>
         </table>
     <!-- end Wrapping table -->
-
     </body>
 </html>

@@ -1,8 +1,27 @@
 from decimal import Decimal
+
 from django.shortcuts import render, redirect, reverse
 
 from coasc.models import ImpersonalAccount, Split, Transaction
 from data_entry.forms import SplitForm
+
+
+def session_balances(splits):
+    dr_sum = Decimal(0)
+    cr_sum = Decimal(0)
+    difference = Decimal(0)
+    if splits is None:
+        return {'dr_sum': dr_sum, 'cr_sum': cr_sum, 'difference': difference}
+
+    for split in splits:
+        split_amount = Decimal(split['amount'])
+        if split['type_split'] == 'dr':
+            dr_sum += split_amount
+            continue
+        cr_sum += split_amount
+
+    difference = dr_sum - cr_sum
+    return {'dr_sum': dr_sum, 'cr_sum': cr_sum, 'difference': difference}
 
 
 def general_journal(request):
@@ -27,9 +46,11 @@ def general_journal(request):
         return redirect(reverse('data_entry:general_journal'))
 
     splits = request.session.get('splits', None)
+    session_balances_data = session_balances(splits)
     context = {
             'form': form,
             'splits': splits,
+            'session_balances': session_balances_data,
     }
     return render(request, template, context)
 

@@ -103,8 +103,6 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         self.send_keys_to_inputbox_by_id('id_amount', 100)
         self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
         time.sleep(1)
-
-        # She proceeds to input another split to balance out the transaction.
         self.select_from_drop_down_id('id_account', self.single_ac2.pk)
         self.select_from_drop_down_id('id_type_split', 'cr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
@@ -113,7 +111,6 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         # She is pleased to see both the splits still visible.
         self.wait_for_rows_in_table('id_dr_splits', '1 dr 100')
         self.wait_for_rows_in_table('id_cr_splits', '2 cr 100')
-
         # but she feels like canceling them, so she clicks on
         # "cancel transaction" button and the splits disappear.
         cancel_transaction = self.browser.find_element(
@@ -124,3 +121,21 @@ class GeneralJournalTest(StaticLiveServerTestCase):
                 'id_dr_splits', '1 dr 100', assert_in=False)
         self.wait_for_rows_in_table(
                 'id_cr_splits', '2 cr 100', assert_in=False)
+
+    def test_splits_table_footer_displays_sum_and_difference(self):
+        self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
+        # Edith inputs 2 splits.
+        self.select_from_drop_down_id('id_account', self.single_ac1.pk)
+        self.select_from_drop_down_id('id_type_split', 'dr')
+        self.send_keys_to_inputbox_by_id('id_amount', 100)
+        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        time.sleep(1)
+        self.select_from_drop_down_id('id_account', self.single_ac2.pk)
+        self.select_from_drop_down_id('id_type_split', 'cr')
+        self.send_keys_to_inputbox_by_id('id_amount', 50)
+        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        # And their sum and difference is visible in table footer.
+
+        self.wait_for_rows_in_table(
+                'id_table_splits', 'Debit sum: 100 Credit sum: 50')
+        self.wait_for_rows_in_table('id_table_splits', 'Difference: 50')
