@@ -21,8 +21,70 @@
             </button>
             {% csrf_token %}
         </form>
-        {% for split in splits %}
-        <p>{{ split.account_code}} {{ split.type_split }} {{ split.amount }}</p>
-        {% endfor %}
+
+        <!-- Wrapping table start-->
+        <table>
+            <thead>
+                <tr>
+        <!-- Dr table -->
+                    <th>
+                        <table id='id_dr_splits'>
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Split Type</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for split in splits %}
+                                <tr>
+                                    {% if split.type_split == 'dr' %}
+                                    <td>{{ split.account_code}}</td>
+                                    <td>{{ split.type_split }}</td>
+                                    <td>{{ split.amount }}</td>
+                                    {% else %}
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </th>
+        <!-- Cr table -->
+                    <th>
+                        <table id='id_cr_splits'>
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Split Type</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for split in splits %}
+                                <tr>
+                                    {% if split.type_split == 'cr' %}
+                                    <td>{{ split.account_code }}</td>
+                                    <td>{{ split.type_split }}</td>
+                                    <td>{{ split.amount }}</td>
+                                    {% else %}
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </th>
+            </thead>
+            <tfoot>
+            </tfoot>
+        </table>
+    <!-- end Wrapping table -->
+
     </body>
 </html>

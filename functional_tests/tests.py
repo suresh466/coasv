@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
-# from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException
 
 from coasc.models import ImpersonalAccount
 
@@ -36,20 +36,24 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         input_box.send_keys(input_keys)
         return
 
-    '''
-    def wait_for_rows_in_splits_table(self, row_text):
+    def wait_for_rows_in_table(self, id_table, row_text, assert_in=True):
         start_time = time.time()
         while True:
             try:
-                table = self.browser.find_element(By.ID, 'id_splits_table')
-                row = table.find_elements(By.TAG_NAME, 'tr')
-                self.assertEqual(row.text, row_text)
+                if assert_in:
+                    table = self.browser.find_element(By.ID, id_table)
+                    rows = table.find_elements(By.TAG_NAME, 'tr')
+                    self.assertIn(row_text, [row.text for row in rows])
+                    return
+                table = self.browser.find_element(By.ID, id_table)
+                rows = table.find_elements(By.TAG_NAME, 'tr')
+                self.assertNotIn(row_text, [row.text for row in rows])
                 return
+
             except(AssertionError, WebDriverException) as e:
                 if(time.time() - start_time > MAX_WAIT):
                     raise e
                 time.sleep(0.5)
-    '''
 
     def test_can_input_split_display_and_save_it(self):
         # Edith has heard about a new co-operative double entry accounting
@@ -65,36 +69,31 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         self.select_from_drop_down_id('id_type_split', 'dr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
         self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
-        time.sleep(1)
 
         # After a redirect the split is visible.
-        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
-        self.assertIn('1 dr 100', page_text)
-        # self.wait_for_rows_in_splits_table('1 dr 100.00')
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 100')
 
         # She proceeds to input another split to balance out the transaction.
         self.select_from_drop_down_id('id_account', self.single_ac2.pk)
         self.select_from_drop_down_id('id_type_split', 'cr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
         self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
-        time.sleep(1)
 
         # She is pleased to see both the splits still visible.
-        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
-        self.assertIn('1 dr 100', page_text)
-        self.assertIn('2 cr 100', page_text)
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 100')
+        self.wait_for_rows_in_table('id_cr_splits', '2 cr 100')
 
         # She notices that there is a input field below to describe the
         # transaction; she types in "demo desc" and hits enter.
         self.send_keys_to_inputbox_by_id('id_description', 'demo desc')
         self.send_keys_to_inputbox_by_id('id_description', Keys.ENTER)
-        time.sleep(1)
 
         # The transaction is saved and there is no sign of previously
         # visible splits.
-        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
-        self.assertNotIn('1 dr 100', page_text)
-        self.assertNotIn('2 cr 100', page_text)
+        self.wait_for_rows_in_table(
+                'id_dr_splits', '1 dr 100', assert_in=False)
+        self.wait_for_rows_in_table(
+                'id_cr_splits', '2 cr 100', assert_in=False)
 
     def test_can_cancel_all_session_splits(self):
         self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
@@ -110,22 +109,18 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         self.select_from_drop_down_id('id_type_split', 'cr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
         self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
-        time.sleep(1)
 
         # She is pleased to see both the splits still visible.
-        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
-        self.assertIn('1 dr 100', page_text)
-        self.assertIn('2 cr 100', page_text)
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 100')
+        self.wait_for_rows_in_table('id_cr_splits', '2 cr 100')
 
         # but she feels like canceling them, so she clicks on
         # "cancel transaction" button and the splits disappear.
         cancel_transaction = self.browser.find_element(
                 By.ID, 'id_cancel_transaction')
         ActionChains(self.browser).click(cancel_transaction).perform()
-        time.sleep(1)
 
-        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
-        self.assertNotIn('1 dr 100', page_text)
-        self.assertNotIn('2 cr 100', page_text)
-
-        self.fail('Finish the test')
+        self.wait_for_rows_in_table(
+                'id_dr_splits', '1 dr 100', assert_in=False)
+        self.wait_for_rows_in_table(
+                'id_cr_splits', '2 cr 100', assert_in=False)
