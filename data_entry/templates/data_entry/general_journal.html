@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <title>Coas</title>
+    </head>
+    <body>
+        <form method='POST' action='{% url "data_entry:general_journal" %}'>
+            <table>
+            {{ form.as_table }}
+            {% csrf_token %}
+            </table>
+        </form>
+        <form method='POST' action='{% url "data_entry:save_transaction" %}'>
+            <input id='id_description'name='description' type='textarea'>
+            <button id='id_submit'name='submit' type='submit'>Submit</button>
+            {% csrf_token %}
+        </form>
+        <form method='POST' action='{% url "data_entry:cancel_transaction" %}'>
+            <button id='id_cancel_transaction' name='cancel_transaction'
+                    type='submit'>
+                Cancel Transaction
+            </button>
+            {% csrf_token %}
+        </form>
+
+        <!-- Wrapping table start-->
+        <table id='id_table_splits'>
+            <thead>
+                <tr>
+        <!-- Dr table -->
+                    <th>
+                        <table id='id_dr_splits'>
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Split Type</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for split in splits %}
+                                <tr>
+                                    {% if split.type_split == 'dr' %}
+                                    <td>{{ split.account_code}}</td>
+                                    <td>{{ split.type_split }}</td>
+                                    <td>{{ split.amount }}</td>
+                                    {% else %}
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </th>
+        <!-- Cr table -->
+                    <th>
+                        <table id='id_cr_splits'>
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Split Type</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for split in splits %}
+                                <tr>
+                                    {% if split.type_split == 'cr' %}
+                                    <td>{{ split.account_code }}</td>
+                                    <td>{{ split.type_split }}</td>
+                                    <td>{{ split.amount }}</td>
+                                    {% else %}
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </th>
+            </thead>
+            <tfoot>
+                <tr>
+                    <td>Debit sum: {{ session_balances.dr_sum }}</td>
+                    <td>Credit sum: {{ session_balances.cr_sum }}</td>
+                </tr>
+                <tr>
+                    <td>Difference: {{ session_balances.difference }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    <!-- end Wrapping table -->
+    </body>
+</html>
