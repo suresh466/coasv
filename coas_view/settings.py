@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'coasc',
     'data_entry',
+    'ledgers',
 ]
 
 MIDDLEWARE = [
