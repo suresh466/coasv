@@ -6,8 +6,8 @@ from coasc.models import ImpersonalAccount
 
 class GeneranJournalViewTest(TestCase):
     @classmethod
-    def setUpTestData(self):
-        self.single_ac1 = ImpersonalAccount.objects.create(
+    def setUpTestData(cls):
+        cls.single_ac1 = ImpersonalAccount.objects.create(
                 name='single_ac1', type_ac='AS', code='1')
 
     def test_uses_general_journal_template(self):
@@ -29,10 +29,10 @@ class GeneranJournalViewTest(TestCase):
 
 class SaveTransactionViewTest(TestCase):
     @classmethod
-    def setUpTestData(self):
-        self.single_ac1 = ImpersonalAccount.objects.create(
+    def setUpTestData(cls):
+        cls.single_ac1 = ImpersonalAccount.objects.create(
                 name='single_ac1', type_ac='AS', code='1')
-        self.single_ac2 = ImpersonalAccount.objects.create(
+        cls.single_ac2 = ImpersonalAccount.objects.create(
                 name='single_ac2', type_ac='AS', code='2')
 
     def test_raises_exception_if_splits_is_None(self):
@@ -43,7 +43,7 @@ class SaveTransactionViewTest(TestCase):
                 TypeError, 'None is not a session split'):
             self.client.post(url, data=data)
 
-    def test_can_save_POST_request(self):
+    def test_can_save_and_redirect_after_POST_request(self):
         session = self.client.session
         session['splits'] = [
                 {'account': self.single_ac1.pk, 'type_split': 'dr',
@@ -55,11 +55,12 @@ class SaveTransactionViewTest(TestCase):
 
         url = reverse('data_entry:save_transaction')
         data = {'description': 'demo desc'}
-        self.client.post(url, data=data)
+        response = self.client.post(url, data=data)
 
         single_ac1_balances = self.single_ac1.current_balance()
         single_ac2_balances = self.single_ac2.current_balance()
 
+        self.assertRedirects(response, reverse('data_entry:general_journal'))
         self.assertEqual(single_ac1_balances['dr_sum'], 100)
         self.assertEqual(single_ac1_balances['cr_sum'], 0)
         self.assertEqual(single_ac2_balances['dr_sum'], 0)
