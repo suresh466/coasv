@@ -31,10 +31,13 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         rows = table.find_elements(By.TAG_NAME, 'tr')
         self.assertIn('single_ac1 (1)', [row.text for row in rows])
         self.assertIn('Total: 0 0 0', [row.text for row in rows])
+        # There is content in the header and footer but nothing in the body.
+        self.assertNotIn('demo desc 0 0 0', [row.text for row in rows])
         table = self.browser.find_element(By.ID, 'id_single_ac2_ledger')
         rows = table.find_elements(By.TAG_NAME, 'tr')
         self.assertIn('single_ac2 (2)', [row.text for row in rows])
         self.assertIn('Total: 0 0 0', [row.text for row in rows])
+        self.assertNotIn('demo desc 0 0 0', [row.text for row in rows])
 
     def test_displays_general_ledger_when_transactions(self):
         # She inputted a few splits, saved the transactions and
@@ -55,9 +58,10 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         rows = table.find_elements(By.TAG_NAME, 'tr')
         self.assertIn('single_ac1 (1)', [row.text for row in rows])
         self.assertIn('Total: 100.00 0 100.00', [row.text for row in rows])
-        self.assertIn('demo desc 100.00 0 dr-cr', [row.text for row in rows])
+        # She notices there is content in the body as she expected.
+        self.assertIn('demo desc 100.00 0 100.00', [row.text for row in rows])
         table = self.browser.find_element(By.ID, 'id_single_ac2_ledger')
         rows = table.find_elements(By.TAG_NAME, 'tr')
         self.assertIn('single_ac2 (2)', [row.text for row in rows])
         self.assertIn('Total: 0 100.00 -100.00', [row.text for row in rows])
-        self.assertIn('demo desc 0 100.00 dr-cr', [row.text for row in rows])
+        self.assertIn('demo desc 0 100.00 -100.00', [row.text for row in rows])

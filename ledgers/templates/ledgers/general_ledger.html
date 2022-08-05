@@ -3,14 +3,14 @@
         <title>General Ledger</title>
     </head>
     <body>
-        {% for account_data in accounts_data %}
-        <table id='id_{{ account_data.account_name }}_ledger'>
+        {% for table in tables %}
+        <table id='id_{{ table.name}}_ledger'>
             <thead>
                 <tr>
                     <th>
                         <h2>
-                            {{ account_data.account_name }}
-                             ({{ account_data.account_code}})
+                            {{ table.name }}
+                             ({{ table.code}})
                         </h2>
                     </th>
                 </tr>
@@ -22,26 +22,21 @@
                 </tr>
             </thead>
             <tbody>
-                {% for split in account_data.splits %}
+                {% for row in table.rows %}
                 <tr>
-                    <td>demo desc</td>
-                    {% if split.type_split == 'dr'%}
-                    <td>{{ split.amount }}</td>
-                    <td>0</td>
-                    {% else %}
-                    <td>0</td>
-                    <td>{{ split.amount }}</td>
-                    {% endif %}
-                    <td>dr-cr</td>
+                    <td>{{ row.description }}</td>
+                    <td>{{ row.debit }}</td>
+                    <td>{{ row.credit }}</td>
+                    <td>{{ row.difference }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
                     <td>Total:</td>
-                    <td>{{account_data.balances.dr_sum}}</td>
-                    <td>{{account_data.balances.cr_sum}}</td>
-                    <td>{{account_data.balances.difference}}</td>
+                    <td>{{ table.balances.dr_sum }}</td>
+                    <td>{{ table.balances.cr_sum }}</td>
+                    <td>{{ table.balances.difference }}</td>
                 </tr>
             </tfoot>
         </table>

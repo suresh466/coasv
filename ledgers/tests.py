@@ -23,9 +23,9 @@ class GeneralLedgerViewTest(TestCase):
         response = self.client.get(reverse('ledgers:general_ledger'))
         self.assertTemplateUsed(response, 'ledgers/general_ledger.html')
 
-    def test_passes_accounts_to_template_as_expected(self):
+    def test_passes_tables_to_template_as_expected(self):
         response = self.client.get(reverse('ledgers:general_ledger'))
-        self.assertIn('accounts_data', response.context)
-        accounts_data = response.context['accounts_data']
-        self.assertEqual(accounts_data[0]['account_code'], '1')
-        self.assertEqual(accounts_data[1]['account_code'], '2')
+        self.assertIn('tables', response.context)
+        tables = response.context['tables']
+        self.assertEqual(tables[0]['code'], '1')
+        self.assertEqual(tables[1]['code'], '2')
