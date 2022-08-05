@@ -3,6 +3,49 @@
         <title>General Ledger</title>
     </head>
     <body>
-        <p>Hello</p>
+        {% for account_data in accounts_data %}
+        <table id='id_{{ account_data.account_name }}_ledger'>
+            <thead>
+                <tr>
+                    <th>
+                        <h2>
+                            {{ account_data.account_name }}
+                             ({{ account_data.account_code}})
+                        </h2>
+                    </th>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Difference</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for split in account_data.splits %}
+                <tr>
+                    <td>demo desc</td>
+                    {% if split.type_split == 'dr'%}
+                    <td>{{ split.amount }}</td>
+                    <td>0</td>
+                    {% else %}
+                    <td>0</td>
+                    <td>{{ split.amount }}</td>
+                    {% endif %}
+                    <td>dr-cr</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Total:</td>
+                    <td>{{account_data.balances.dr_sum}}</td>
+                    <td>{{account_data.balances.cr_sum}}</td>
+                    <td>{{account_data.balances.difference}}</td>
+                </tr>
+            </tfoot>
+        </table>
+        <p>-----------------------------------------------------------------</p>
+        {% endfor %}
     </body>
 </html>
