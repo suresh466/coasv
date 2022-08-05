@@ -50,3 +50,8 @@ def general_ledger(request):
             'tables': tables,
     }
     return render(request, template, context)
+
+
+def ledger(request):
+    template = 'ledgers/ledger.html'
+    return render(request, template)

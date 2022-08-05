@@ -29,3 +29,9 @@ class GeneralLedgerViewTest(TestCase):
         tables = response.context['tables']
         self.assertEqual(tables[0]['code'], '1')
         self.assertEqual(tables[1]['code'], '2')
+
+
+class LedgerViewTest(TestCase):
+    def test_uses_ledger_template(self):
+        response = self.client.get(reverse('ledgers:ledger'))
+        self.assertTemplateUsed(response, 'ledgers/ledger.html')
