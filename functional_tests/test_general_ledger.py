@@ -65,3 +65,13 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         self.assertIn('single_ac2 (2)', [row.text for row in rows])
         self.assertIn('Total: 0 100.00 -100.00', [row.text for row in rows])
         self.assertIn('demo desc 0 100.00 -100.00', [row.text for row in rows])
+
+    def test_displays_message_if_no_accounts(self):
+        # She just started over by deleting all her accounts.
+        ImpersonalAccount.objects.all().delete()
+        # Curious edith visited general_ledger page to see what would happen.
+        self.browser.get(f'{self.live_server_url}/ledgers/general_ledger/')
+        body = self.browser.find_element(By.TAG_NAME, 'body')
+        self.assertIn(
+                'Please create some accounts first; No accounts available',
+                body.text)
