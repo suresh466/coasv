@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 
 from coasc.models import ImpersonalAccount
 
@@ -28,23 +28,22 @@ def generate_rows(splits):
     return rows
 
 
-def generate_tables(accounts):
-    tables = []
-    for account in accounts:
-        table = {
-                'name': account.name, 'code': account.code,
-                'rows': generate_rows(account.split_set.all()),
-                'balances': account.current_balance(),
-        }
-        tables.append(table)
-    return tables
+def generate_table(account):
+    table = {
+            'name': account.name, 'code': account.code,
+            'rows': generate_rows(account.split_set.all()),
+            'balances': account.current_balance(),
+    }
+    return table
 
 
 def general_ledger(request):
     template = 'ledgers/general_ledger.html'
 
-    accounts = ImpersonalAccount.objects.all()
-    tables = generate_tables(accounts)
+    tables = []
+    for account in ImpersonalAccount.objects.all():
+        table = generate_table(account)
+        tables.append(table)
 
     context = {
             'tables': tables,
@@ -52,6 +51,17 @@ def general_ledger(request):
     return render(request, template, context)
 
 
-def ledger(request):
+def ledger(request, code=None):
     template = 'ledgers/ledger.html'
-    return render(request, template)
+    if code is None:
+        return redirect(reverse('ledgers:general_ledger'))
+    try:
+        account = ImpersonalAccount.objects.get(code=code)
+    except ImpersonalAccount.DoesNotExist:
+        return redirect(reverse('ledgers:general_ledger'))
+
+    table = generate_table(account)
+    context = {
+            'table': table,
+    }
+    return render(request, template, context)
