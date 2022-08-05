@@ -10,6 +10,7 @@ from coasc.models import ImpersonalAccount
 def generate_rows(splits):
     if not splits:
         return []
+
     rows = []
     difference = Decimal(0)
     for split in splits:
