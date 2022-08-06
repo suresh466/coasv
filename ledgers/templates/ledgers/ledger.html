@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>General Ledger</title>
+    </head>
+    <body>
+        <table id='id_{{ table.name}}_ledger'>
+            <thead>
+                <tr>
+                    <th>
+                        <h2>
+                            {{ table.name }}
+                             ({{ table.code}})
+                        </h2>
+                    </th>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Difference</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in table.rows %}
+                <tr>
+                    <td>{{ row.description }}</td>
+                    <td>{{ row.debit }}</td>
+                    <td>{{ row.credit }}</td>
+                    <td>{{ row.difference }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Total:</td>
+                    <td>{{ table.balances.dr_sum }}</td>
+                    <td>{{ table.balances.cr_sum }}</td>
+                    <td>{{ table.balances.difference }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </body>
+</html>

@@ -59,12 +59,10 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         # Edith has heard about a new co-operative double entry accounting
         # app. She goes to check the data entry page "general_journal".
         self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
-
         # She notices that the title says "Coas".
         self.assertIn('Coas', self.browser.title)
 
         # She is immediately invited to input general_journal entries.
-        # She inputs a split.
         self.select_from_drop_down_id('id_account', self.single_ac1.pk)
         self.select_from_drop_down_id('id_type_split', 'dr')
         self.send_keys_to_inputbox_by_id('id_amount', 100)
