@@ -43,6 +43,8 @@ def general_ledger(request):
 
     tables = []
     for account in ImpersonalAccount.objects.all():
+        if account.who_am_i()['parent']:
+            continue
         table = generate_table(account)
         tables.append(table)
 

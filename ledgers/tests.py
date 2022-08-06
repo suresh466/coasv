@@ -13,6 +13,10 @@ class GeneralLedgerViewTest(TestCase):
                 name='single_ac1', code='1', type_ac='AS')
         cls.single_ac2 = ImpersonalAccount.objects.create(
                 name='single_ac2', code='2', type_ac='LI')
+        cls.parent_ac1 = ImpersonalAccount.objects.create(
+                name='parent_ac1', code='3', type_ac='EX')
+        cls.child_ac1 = ImpersonalAccount.objects.create(
+                name='child_ac1', code='3.1', parent_ac=cls.parent_ac1)
         tx = Transaction.objects.create(description='demo desc')
 
         Split.objects.create(
@@ -31,8 +35,10 @@ class GeneralLedgerViewTest(TestCase):
         tables = response.context['tables']
 
         self.assertIn('tables', response.context)
+        self.assertEqual(len(tables), 3)
         self.assertEqual(tables[0]['code'], '1')
         self.assertEqual(tables[1]['code'], '2')
+        self.assertEqual(tables[2]['code'], '3.1')
 
 
 class LedgerViewTest(TestCase):
