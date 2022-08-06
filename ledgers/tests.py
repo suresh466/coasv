@@ -14,6 +14,7 @@ class GeneralLedgerViewTest(TestCase):
         cls.single_ac2 = ImpersonalAccount.objects.create(
                 name='single_ac2', code='2', type_ac='LI')
         tx = Transaction.objects.create(description='demo desc')
+
         Split.objects.create(
                 account=cls.single_ac1, type_split='dr',
                 amount=100, transaction=tx)
@@ -27,8 +28,9 @@ class GeneralLedgerViewTest(TestCase):
 
     def test_passes_tables_to_template_as_expected(self):
         response = self.client.get(reverse('ledgers:general_ledger'))
-        self.assertIn('tables', response.context)
         tables = response.context['tables']
+
+        self.assertIn('tables', response.context)
         self.assertEqual(tables[0]['code'], '1')
         self.assertEqual(tables[1]['code'], '2')
 
@@ -41,6 +43,7 @@ class LedgerViewTest(TestCase):
         cls.single_ac2 = ImpersonalAccount.objects.create(
                 name='single_ac2', code='2', type_ac='LI')
         tx = Transaction.objects.create(description='demo desc')
+
         Split.objects.create(
                 account=cls.single_ac1, type_split='dr',
                 amount=100, transaction=tx)
@@ -62,8 +65,9 @@ class LedgerViewTest(TestCase):
 
     def test_passes_table_to_template_as_expected(self):
         response = self.client.get(reverse('ledgers:ledger', args=[1]))
-        self.assertIn('table', response.context)
         table = response.context['table']
+
+        self.assertIn('table', response.context)
         self.assertEqual(table['code'], '1')
 
 
@@ -73,6 +77,7 @@ class GenerateRowsTest(TestCase):
         cls.single_ac1 = ImpersonalAccount.objects.create(
                 name='single_ac1', code='1', type_ac='AS')
         tx = Transaction.objects.create(description='demo desc')
+
         Split.objects.create(
                 account=cls.single_ac1, type_split='dr',
                 amount=100, transaction=tx)
@@ -105,6 +110,7 @@ class GenerateTableTest(TestCase):
         cls.single_ac1 = ImpersonalAccount.objects.create(
                 name='single_ac1', code='1', type_ac='AS')
         tx = Transaction.objects.create(description='demo desc')
+
         Split.objects.create(
                 account=cls.single_ac1, type_split='dr',
                 amount=100, transaction=tx)

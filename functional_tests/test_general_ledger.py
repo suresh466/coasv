@@ -5,8 +5,6 @@ from selenium.webdriver.common.by import By
 
 from coasc.models import ImpersonalAccount, Split, Transaction
 
-MAX_WAIT = 5
-
 
 class GeneralLedgerTest(StaticLiveServerTestCase):
     def setUp(self):
@@ -31,6 +29,7 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         rows = table.find_elements(By.TAG_NAME, 'tr')
         self.assertIn('single_ac1 (1)', [row.text for row in rows])
         self.assertIn('Total: 0 0 0', [row.text for row in rows])
+
         # There is content in the header and footer but nothing in the body.
         self.assertNotIn('demo desc 0 0 0', [row.text for row in rows])
         table = self.browser.find_element(By.ID, 'id_single_ac2_ledger')
@@ -49,7 +48,6 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         Split.objects.create(
                 account=self.single_ac2, type_split='cr',
                 amount=100, transaction=tx)
-
         self.browser.get(f'{self.live_server_url}/ledgers/general_ledger/')
 
         # She notices that tables have interesting header and footer data
@@ -58,6 +56,7 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         rows = table.find_elements(By.TAG_NAME, 'tr')
         self.assertIn('single_ac1 (1)', [row.text for row in rows])
         self.assertIn('Total: 100.00 0 100.00', [row.text for row in rows])
+
         # She notices there is content in the body as she expected.
         self.assertIn('demo desc 100.00 0 100.00', [row.text for row in rows])
         table = self.browser.find_element(By.ID, 'id_single_ac2_ledger')
