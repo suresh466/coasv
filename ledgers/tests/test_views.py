@@ -3,8 +3,6 @@ from django.urls import reverse
 
 from coasc.models import ImpersonalAccount, Split, Transaction
 
-from ledgers.utils import generate_rows, generate_table
-
 
 class GeneralLedgerViewTest(TestCase):
     @classmethod
@@ -77,56 +75,35 @@ class LedgerViewTest(TestCase):
         self.assertEqual(table['code'], '1')
 
 
-class GenerateRowsTest(TestCase):
+class PurchaseViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        tx = Transaction.objects.create(description='demo desc')
+        cls.parent = ImpersonalAccount.objects.create(
+                name='parent', code=150, type_ac='EX')
 
-        Split.objects.create(
-                account=cls.single_ac1, type_split='dr',
-                amount=100, transaction=tx)
-        Split.objects.create(
-                account=cls.single_ac1, type_split='cr',
-                amount=200, transaction=tx)
+    def test_uses_purchase_ledger_template(self):
+        response = self.client.get(reverse('ledgers:purchase_ledger'))
+        self.assertTemplateUsed(response, 'ledgers/purchase_ledger.html')
 
-    def test_returns_emtpy_list_if_no_splits(self):
-        splits = []
-        rows = generate_rows(splits)
-        self.assertFalse(rows)
+    def test_returns_message_if_no_parent(self):
+        self.parent.delete()
 
-    def test_returns_rows_as_expected(self):
-        splits = self.single_ac1.split_set.all()
-        rows = generate_rows(splits)
-
-        row1 = {'debit': 100.00, 'credit': 0, 'difference': 100.00,
-                'description': 'demo desc'}
-        row2 = {'debit': 0, 'credit': 200.00, 'difference': -100.00,
-                'description': 'demo desc'}
-        expected_rows = [row1, row2]
-
-        self.assertEqual(len(rows), 2)
-        self.assertEqual(rows, expected_rows)
+        response = self.client.get(reverse('ledgers:purchase_ledger'))
+        self.assertRedirects(response, reverse('ledgers:general_ledger'))
 
 
-class GenerateTableTest(TestCase):
+class SalesViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        tx = Transaction.objects.create(description='demo desc')
+        cls.parent = ImpersonalAccount.objects.create(
+                name='parent', code=160, type_ac='EX')
 
-        Split.objects.create(
-                account=cls.single_ac1, type_split='dr',
-                amount=100, transaction=tx)
-        Split.objects.create(
-                account=cls.single_ac1, type_split='cr',
-                amount=200, transaction=tx)
+    def test_uses_purchase_ledger_template(self):
+        response = self.client.get(reverse('ledgers:sales_ledger'))
+        self.assertTemplateUsed(response, 'ledgers/sales_ledger.html')
 
-    def test_returns_table_as_expected(self):
-        account = self.single_ac1
-        table = generate_table(account)
+    def test_returns_message_if_no_parent(self):
+        self.parent.delete()
 
-        self.assertEqual(len(table), 4)
-        self.assertEqual(table['code'], '1')
+        response = self.client.get(reverse('ledgers:sales_ledger'))
+        self.assertRedirects(response, reverse('ledgers:general_ledger'))

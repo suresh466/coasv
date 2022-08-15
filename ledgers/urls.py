@@ -6,4 +6,6 @@ app_name = 'ledgers'
 urlpatterns = [
     path('general_ledger/', views.general_ledger, name='general_ledger'),
     path('ledger/<code>/', views.ledger, name='ledger'),
+    path('purchase_ledger/', views.purchase_ledger, name='purchase_ledger'),
+    path('sales_ledger/', views.sales_ledger, name='sales_ledger'),
 ]
