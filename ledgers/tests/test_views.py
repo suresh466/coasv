@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from coasc.models import ImpersonalAccount, Split, Transaction
 
-from ledgers.views import generate_rows, generate_table
+from ledgers.utils import generate_rows, generate_table
 
 
 class GeneralLedgerViewTest(TestCase):

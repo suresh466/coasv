@@ -1,8 +1,8 @@
-from decimal import Decimal
-
 from django.shortcuts import render, redirect, reverse
 
 from coasc.models import ImpersonalAccount
+
+from ledgers.utils import generate_table
 
 
 def general_ledger(request):
