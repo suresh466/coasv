@@ -139,3 +139,32 @@ def assets_ledger(request):
             'table': table,
     }
     return render(request, template, context)
+
+
+def liabilities_ledger(request):
+    template = 'ledgers/liabilities_ledger.html'
+    acs = ImpersonalAccount.objects.filter(type_ac='LI')
+    if not acs:
+        # Later do something that makes sense
+        return redirect(reverse('ledgers:general_ledger'))
+
+    headers = generate_simple_headers(acs)
+    footers = generate_simple_footers(acs)
+    txs = get_simple_txs(acs)
+    rows = generate_simple_rows(txs, acs)
+    bal_loaded_rows = load_rows_bal(rows)
+    grand_total = generate_grand_total(bal_loaded_rows)
+
+    loaded_rows = list(zip(txs, rows, grand_total))
+    total = ImpersonalAccount.total_current_balance(type_ac='LI')
+
+    table = {
+            'headers': headers,
+            'footers': footers,
+            'loaded_rows': loaded_rows,
+            'total': total,
+    }
+    context = {
+            'table': table,
+    }
+    return render(request, template, context)
