@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from coasc.models import ImpersonalAccount, Split, Transaction
 
 
-class GeneralLedgerTest(StaticLiveServerTestCase):
+class LedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
         self.single_ac1 = ImpersonalAccount.objects.create(

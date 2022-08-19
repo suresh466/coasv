@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>Purchase Ledger</title>
+        <style>
+            table, th, td {
+                border: 3px solid pink;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <tr>
+                    <td>Desc</td>
+                    {% for header in table.headers %}
+                    <td>{{ header }}</td>
+                    {% endfor %}
+                    <td>Total Exp</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx, row, col_data in table.loaded_rows %}
+                <tr>
+                    <td>{{ tx }}</td>
+                    {% for data in row %}
+                    <td>{{ data.dr_sum }}</td>
+                    {% endfor %}
+                    <td>{{ col_data }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Total</td>
+                    {% for footer in table.footers %}
+                    <td>{{footer.dr_sum}}</td>
+                    {% endfor %}
+                    <td>{{ table.parent_total.dr_sum }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </body>
+</html
