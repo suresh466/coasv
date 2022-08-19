@@ -102,8 +102,28 @@ class SalesViewTest(TestCase):
         response = self.client.get(reverse('ledgers:sales_ledger'))
         self.assertTemplateUsed(response, 'ledgers/sales_ledger.html')
 
-    def test_returns_message_if_no_parent(self):
+    def test_redirects_if_no_parent(self):
         self.parent.delete()
 
         response = self.client.get(reverse('ledgers:sales_ledger'))
+        self.assertRedirects(response, reverse('ledgers:general_ledger'))
+
+
+class AssetsViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.single = ImpersonalAccount.objects.create(
+                name='single', code=80, type_ac='AS')
+        cls.parent = ImpersonalAccount.objects.create(
+                name='parent', code=160, type_ac='AS')
+
+    def test_uses_assets_ledger_template(self):
+        response = self.client.get(reverse('ledgers:assets_ledger'))
+        self.assertTemplateUsed(response, 'ledgers/assets_ledger.html')
+
+    def test_redirects_if_no_ac_in_acs(self):
+        self.single.delete()
+        self.parent.delete()
+
+        response = self.client.get(reverse('ledgers:assets_ledger'))
         self.assertRedirects(response, reverse('ledgers:general_ledger'))

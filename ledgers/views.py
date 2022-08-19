@@ -5,7 +5,11 @@ from coasc.models import ImpersonalAccount
 from ledgers.utils import (
         generate_table, generate_parent_headers,
         generate_parent_footers, get_parent_txs,
-        generate_parent_rows, generate_grand_column)
+        generate_parent_rows)
+from ledgers.utils import (
+        generate_simple_headers, generate_simple_footers,
+        get_simple_txs, generate_simple_rows,
+        load_rows_bal, generate_grand_total)
 
 
 def general_ledger(request):
@@ -52,14 +56,14 @@ def purchase_ledger(request):
     footers = generate_parent_footers(parent)
     txs = get_parent_txs(parent)
     rows = generate_parent_rows(txs, parent)
-    grand_col = generate_grand_column(rows)
     parent_total = parent.current_balance()
 
     total_col = []
-    col_data = 0
-    for data in grand_col:
-        col_data += data['total_dr_sum']
-        total_col.append(col_data)
+    total = 0
+    for row in rows:
+        for data in row:
+            total += data['dr_sum']
+        total_col.append(total)
 
     loaded_rows = zip(txs,  rows, total_col)
     table = {
@@ -86,14 +90,14 @@ def sales_ledger(request):
     footers = generate_parent_footers(parent)
     txs = get_parent_txs(parent)
     rows = generate_parent_rows(txs, parent)
-    grand_col = generate_grand_column(rows)
     parent_total = parent.current_balance()
 
     total_col = []
-    col_data = 0
-    for data in grand_col:
-        col_data += data['total_cr_sum']
-        total_col.append(col_data)
+    total = 0
+    for row in rows:
+        for data in row:
+            total += data['cr_sum']
+        total_col.append(total)
 
     loaded_rows = zip(txs,  rows, total_col)
     table = {
@@ -102,6 +106,35 @@ def sales_ledger(request):
             'loaded_rows': loaded_rows,
             'parent_total': parent_total}
 
+    context = {
+            'table': table,
+    }
+    return render(request, template, context)
+
+
+def assets_ledger(request):
+    template = 'ledgers/assets_ledger.html'
+    acs = ImpersonalAccount.objects.filter(type_ac='AS')
+    if not acs:
+        # Later do something that makes sense
+        return redirect(reverse('ledgers:general_ledger'))
+
+    headers = generate_simple_headers(acs)
+    footers = generate_simple_footers(acs)
+    txs = get_simple_txs(acs)
+    rows = generate_simple_rows(txs, acs)
+    bal_loaded_rows = load_rows_bal(rows)
+    grand_total = generate_grand_total(bal_loaded_rows)
+
+    loaded_rows = list(zip(txs, rows, grand_total))
+    total = ImpersonalAccount.total_current_balance(type_ac='AS')
+
+    table = {
+            'headers': headers,
+            'footers': footers,
+            'loaded_rows': loaded_rows,
+            'total': total,
+    }
     context = {
             'table': table,
     }
