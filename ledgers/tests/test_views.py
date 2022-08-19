@@ -127,3 +127,23 @@ class AssetsViewTest(TestCase):
 
         response = self.client.get(reverse('ledgers:assets_ledger'))
         self.assertRedirects(response, reverse('ledgers:general_ledger'))
+
+
+class LiabilieitsViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.single = ImpersonalAccount.objects.create(
+                name='single', code=10, type_ac='LI')
+        cls.parent = ImpersonalAccount.objects.create(
+                name='parent', code=20, type_ac='LI')
+
+    def test_uses_liabilities_ledger_template(self):
+        response = self.client.get(reverse('ledgers:liabilities_ledger'))
+        self.assertTemplateUsed(response, 'ledgers/liabilities_ledger.html')
+
+    def test_redirects_if_no_ac_in_acs(self):
+        self.single.delete()
+        self.parent.delete()
+
+        response = self.client.get(reverse('ledgers:liabilities_ledger'))
+        self.assertRedirects(response, reverse('ledgers:general_ledger'))
