@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'coasc',
     'data_entry',
     'ledgers',
+    'fstatements',
 ]
 
 MIDDLEWARE = [

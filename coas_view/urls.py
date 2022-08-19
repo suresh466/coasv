@@ -17,9 +17,11 @@ from django.contrib import admin
 from django.urls import path, include
 from data_entry import urls as data_entry_urls
 from ledgers import urls as ledgers_urls
+from fstatements import urls as fstatements_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('data_entry/', include(data_entry_urls)),
     path('ledgers/', include(ledgers_urls)),
+    path('fs/', include(fstatements_urls)),
 ]
