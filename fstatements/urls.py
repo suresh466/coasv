@@ -4,5 +4,5 @@ from fstatements import views
 
 app_name = 'fs'
 urlpatterns = [
-    path('smoke/', views.smoke, name='smoke'),
+    path('balance_sheet/', views.balance_sheet, name='balance_sheet'),
 ]
