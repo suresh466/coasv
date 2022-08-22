@@ -3,6 +3,38 @@ from django.shortcuts import render, redirect, reverse
 from coasc.models import ImpersonalAccount
 
 
+def trial_balance(request):
+    template = 'fs/trial_balance.html'
+
+    acs = ImpersonalAccount.objects.exclude(type_ac='')
+    if not acs:
+        # later do something that makes sense
+        return redirect(reverse('ledgers:general_ledger'))
+
+    cr_acs = []
+    dr_acs = []
+    for ac in acs:
+        if ac.type_ac in ['AS', 'EX']:
+            dr_acs.append(ac)
+        elif ac.type_ac in ['LI', 'IN']:
+            cr_acs.append(ac)
+
+    cr_acs = [{'ac': ac, 'bal': ac.current_balance()} for ac in cr_acs]
+    dr_acs = [{'ac': ac, 'bal': ac.current_balance()} for ac in dr_acs]
+    total_sum = {
+            'cr_acs': sum(ac['bal']['difference'] for ac in cr_acs),
+            'dr_acs': sum(ac['bal']['difference'] for ac in dr_acs),
+    }
+
+    context = {
+            'cr_acs': cr_acs,
+            'dr_acs': dr_acs,
+            'total_sum': total_sum
+    }
+
+    return render(request, template, context)
+
+
 def balance_sheet(request):
     template = 'fs/balance_sheet.html'
 
@@ -10,7 +42,6 @@ def balance_sheet(request):
     li_acs = ImpersonalAccount.objects.filter(type_ac='LI')
 
     if not as_acs and not li_acs:
-        # later do something that makes sense
         return redirect(reverse('ledgers:general_ledger'))
 
     as_acs = [{
