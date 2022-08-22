@@ -66,3 +66,33 @@ def balance_sheet(request):
             'total_bal': total_bal,
     }
     return render(request, template, context)
+
+
+def income_statement(request):
+    template = 'fs/income_statement.html'
+
+    try:
+        in_ac = ImpersonalAccount.objects.get(code=160)
+        ex_ac = ImpersonalAccount.objects.get(code=150)
+    except ImpersonalAccount.DoesNotExist:
+        return redirect(reverse('ledgers:general_ledger'))
+
+    in_ac = {
+        'ac': in_ac, 'bal': in_ac.current_balance(),
+        'children': [{
+            'ac': ca, 'bal': ca.current_balance()}
+            for ca in in_ac.impersonalaccount_set.all()]
+    }
+    ex_ac = {
+        'ac': ex_ac, 'bal': ex_ac.current_balance(),
+        'children': [{
+            'ac': ca, 'bal': ca.current_balance()}
+            for ca in ex_ac.impersonalaccount_set.all()]
+    }
+
+    context = {
+            'in_ac': in_ac,
+            'ex_ac': ex_ac,
+    }
+
+    return render(request, template, context)
