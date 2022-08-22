@@ -3,6 +3,80 @@
         <title>Balance Sheet</title>
     </head>
     <body>
-        <p>hello</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Assets
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ac in as_acs %}
+                                <tr>
+                                    {% for ca in ac.children %}
+                                    <tr>
+                                        <td>
+                                            &emsp;C: {{ca.ac.code}}:
+                                            &emsp;{{ ca.bal.difference }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td>
+                                            P: {{ ac.ac.code }}:
+                                            &emsp;&emsp;{{ ac.bal.difference }}
+                                        </td>
+                                    </tr>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </th>
+                    <th>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Liabilities
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ac in li_acs %}
+                                <tr>
+                                    {% for ca in ac.children %}
+                                    <tr>
+                                        <td>
+                                            &emsp;C: {{ca.ac.code}}:
+                                            &emsp;{{ ca.bal.difference }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td>
+                                            P: {{ ac.ac.code }}:
+                                            &emsp;&emsp;{{ ac.bal.difference }}
+                                        </td>
+                                    </tr>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <td>Total</td>
+                    <td>{{ total_bal.as_bal.difference }}</td>
+                    <td>{{ total_bal.li_bal.difference }}</td>
+                </tr>
+            </tfoot>
+        </table>
     </body>
 </html>
