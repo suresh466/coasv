@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title>Income Statement</title>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <tr>
+                    <td>AC name</td>
+                    <td>Debit</td>
+                    <td>Credit</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ca in in_ac.children %}
+                <tr>
+                    <td>CA: {{ ca.ac.code }}</td>
+                    <td>-----</td>
+                    <td>{{ ca.bal.difference }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>PA: {{ in_ac.ac.code }}</td>
+                    <td>-----</td>
+                    <td>{{ in_ac.bal.difference}}</td>
+                </tr>
+                {% for ca in ex_ac.children %}
+                <tr>
+                    <td>CA: {{ ca.ac.code }}</td>
+                    <td>{{ ca.bal.difference }}</td>
+                    <td>-----</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>PA: {{ ex_ac.ac.code }}</td>
+                    <td>{{ ex_ac.bal.difference}}</td>
+                    <td>-----</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <td>Total</td>
+                <td>{{ ex_ac.bal.difference }}</td>
+                <td>{{ in_ac.bal.difference }}</td>
+            </tfoot>
+        </table>
+    </body>
+</html>

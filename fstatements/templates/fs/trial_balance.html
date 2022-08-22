@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <title>Trial Balance</title>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ac Name</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ac in cr_acs %}
+                <tr>
+                    <td>
+                        PA: {{ ac.ac.code }}:
+                    </td>
+                    <td>
+                        &nbsp;-----
+                    </td>
+                    <td>
+                        &nbsp;{{ ac.bal.cr_sum }}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% for ac in dr_acs %}
+                <tr>
+                    <td>
+                        PA: {{ ac.ac.code }}:
+                    </td>
+                    <td>
+                        &nbsp;{{ ac.bal.cr_sum }}
+                    </td>
+                    <td>
+                        &nbsp;-----
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Total:</td>
+                    <td>{{ total_sum.dr_acs }}</td>
+                    <td>{{ total_sum.cr_acs }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </body>
+</html>
