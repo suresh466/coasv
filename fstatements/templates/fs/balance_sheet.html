@@ -7,8 +7,7 @@
             <thead>
                 <tr>
                     <th>Ac Name</th>
-                    <th>Debit</th>
-                    <th>Credit</th>
+                    <th>Amount</th>
                 </tr>
             </thead>
             <tbody>
@@ -21,13 +20,10 @@
                 {% for ca in ac.children %}
                 <tr>
                     <td>
-                        CA: {{ ca.code }}
+                        &emsp;CA: {{ ca.ac.code }}
                     </td>
                     <td>
-                        &nbsp;-----
-                    </td>
-                    <td>
-                        &nbsp;{{ ca.bal.difference }}
+                        &emsp;{{ ca.bal.difference }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -36,10 +32,7 @@
                         PA: {{ ac.ac.code }}:
                     </td>
                     <td>
-                        &nbsp;-----
-                    </td>
-                    <td>
-                        &nbsp;{{ ac.bal.cr_sum }}
+                        {{ ac.bal.difference }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -58,13 +51,10 @@
                 {% for ca in ac.children %}
                 <tr>
                     <td>
-                        CA: {{ ca.code }}
+                        &emsp;CA: {{ ca.ac.code }}
                     </td>
                     <td>
-                        &nbsp;-----
-                    </td>
-                    <td>
-                        &nbsp;{{ ca.bal.difference }}
+                        &emsp;{{ ca.bal.difference }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -73,10 +63,7 @@
                         PA: {{ ac.ac.code }}:
                     </td>
                     <td>
-                        &nbsp;-----
-                    </td>
-                    <td>
-                        &nbsp;{{ ac.bal.cr_sum }}
+                        {{ ac.bal.cr_sum }}
                     </td>
                 </tr>
                 {% endfor %}
