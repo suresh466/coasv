@@ -1,39 +1,41 @@
 from coasc.models import Transaction, Split
 
 
-def generate_rows(splits):
-    if not splits:
+def generate_rows(sps):
+    if not sps:
         return []
 
     rows = []
-    difference = 0
-    for split in splits:
-        if split.type_split == 'dr':
-            difference += split.amount
+    diff = 0
+
+    for sp in sps:
+        if sp.t_sp == 'dr':
+            diff += sp.am
             row = {
-                    'debit': split.amount, 'credit': 0,
-                    'difference': difference,
-                    'description': split.transaction.description}
+                    'debit': sp.am, 'credit': 0, 'diff': diff,
+                    'desc': sp.tx.desc}
         else:
-            difference -= split.amount
-            row = {'debit': 0, 'credit': split.amount,
-                   'difference': difference,
-                   'description': split.transaction.description}
+            diff -= sp.am
+            row = {'debit': 0, 'credit': sp.am, 'diff': diff,
+                   'desc': sp.tx.desc}
+
         rows.append(row)
+
     return rows
 
 
-def generate_table(account):
+def generate_table(ac):
     table = {
-            'name': account.name, 'code': account.code,
-            'rows': generate_rows(account.split_set.all()),
-            'balances': account.current_balance(),
+            'name': ac.name, 'code': ac.code,
+            'rows': generate_rows(ac.split_set.all()), 'bals': ac.bal(),
     }
+
     return table
 
 
 def generate_simple_headers(acs):
     headers = []
+
     for ac in acs:
         header = f'{ac.name}-{ac.code}'
         headers.append(header)
@@ -43,6 +45,7 @@ def generate_simple_headers(acs):
 
 def generate_parent_headers(parent):
     headers = []
+
     for child in parent.impersonalaccount_set.all():
         header = f'{child.name}-{child.code}'
         headers.append(header)
@@ -52,8 +55,9 @@ def generate_parent_headers(parent):
 
 def generate_simple_footers(acs):
     footers = []
+
     for ac in acs:
-        footer = ac.current_balance()
+        footer = ac.bal()
         footers.append(footer)
 
     return footers
@@ -61,8 +65,9 @@ def generate_simple_footers(acs):
 
 def generate_parent_footers(parent):
     footers = []
+
     for child in parent.impersonalaccount_set.all():
-        footer = child.current_balance()
+        footer = child.bal()
         footers.append(footer)
 
     return footers
@@ -70,21 +75,24 @@ def generate_parent_footers(parent):
 
 def get_simple_txs(acs):
     txs = set()
+
     for ac in acs:
         ac_is = ac.who_am_i()
+
         if ac_is['parent']:
             ac_txs = get_parent_txs(ac)
             txs.update(ac_txs)
-            continue
-        ac_txs = set(Transaction.objects.filter(split__account=ac))
-        txs.update(ac_txs)
+        else:
+            ac_txs = set(Transaction.objects.filter(split__ac=ac))
+            txs.update(ac_txs)
 
     txs = sorted(txs, key=lambda tx: tx.pk)
+
     return txs
 
 
 def get_parent_txs(parent):
-    txs = set(Transaction.objects.filter(split__account__parent_ac=parent))
+    txs = set(Transaction.objects.filter(split__ac__p_ac=parent))
     txs = sorted(txs, key=lambda tx: tx.pk)
 
     return txs
@@ -92,24 +100,29 @@ def get_parent_txs(parent):
 
 def generate_simple_rows(txs, acs):
     rows = []
+
     for tx in txs:
         row = []
+
         for ac in acs:
             row_data = {'dr_sum': 0, 'cr_sum': 0, 'diff': 0}
 
             ac_is = ac.who_am_i()
             if ac_is['parent']:
-                sps = Split.objects.filter(account__parent_ac=ac)
+                sps = Split.objects.filter(ac__p_ac=ac)
             else:
-                sps = Split.objects.filter(account=ac)
+                sps = Split.objects.filter(ac=ac)
+
             for sp in sps:
-                if sp.transaction == tx:
-                    if sp.type_split == 'dr':
-                        row_data['dr_sum'] += sp.amount
-                        row_data['diff'] += sp.amount
+                if sp.tx == tx:
+
+                    if sp.t_sp == 'dr':
+                        row_data['dr_sum'] += sp.am
+                        row_data['diff'] += sp.am
                     else:
-                        row_data['cr_sum'] += sp.amount
-                        row_data['diff'] -= sp.amount
+                        row_data['cr_sum'] += sp.am
+                        row_data['diff'] -= sp.am
+
             row.append(row_data)
         rows.append(row)
 
@@ -118,18 +131,23 @@ def generate_simple_rows(txs, acs):
 
 def generate_parent_rows(txs, parent):
     rows = []
+
     for tx in txs:
         row = []
+
         for child in parent.impersonalaccount_set.all():
             row_data = {'dr_sum': 0, 'cr_sum': 0, 'diff': 0}
+
             for sp in child.split_set.all():
-                if sp.transaction == tx:
-                    if sp.type_split == 'dr':
-                        row_data['dr_sum'] += sp.amount
-                        row_data['diff'] += sp.amount
+                if sp.tx == tx:
+
+                    if sp.t_sp == 'dr':
+                        row_data['dr_sum'] += sp.am
+                        row_data['diff'] += sp.am
                     else:
-                        row_data['cr_sum'] += sp.amount
-                        row_data['diff'] -= sp.amount
+                        row_data['cr_sum'] += sp.am
+                        row_data['diff'] -= sp.am
+
             row.append(row_data)
         rows.append(row)
 
@@ -141,16 +159,19 @@ def load_rows_bal(rows):
 
     for col in cols:
         bal = 0
+
         for data in col:
             bal += data['diff']
             data['bal'] = bal
 
     rows = zip(*cols)
+
     return rows
 
 
 def generate_grand_total(bal_loaded_rows):
     grand_total = []
+
     for row in bal_loaded_rows:
         bals = [data['bal'] for data in row]
         grand_total.append(sum(bals))

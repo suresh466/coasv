@@ -23,7 +23,7 @@
                 <tr>
                     <td>{{ tx }}</td>
                     {% for data in row %}
-                    <td>{{ data.dr_sum }}</td>
+                    <td>{{ data.diff }}</td>
                     {% endfor %}
                     <td>{{ col_data }}</td>
                 </tr>
@@ -33,9 +33,9 @@
                 <tr>
                     <td>Total</td>
                     {% for footer in table.footers %}
-                    <td>{{footer.dr_sum}}</td>
+                    <td>{{footer.diff}}</td>
                     {% endfor %}
-                    <td>{{ table.parent_total.dr_sum }}</td>
+                    <td>{{ table.parent_total.diff }}</td>
                 </tr>
             </tfoot>
         </table>

@@ -9,7 +9,7 @@ from coasc.models import ImpersonalAccount
 class AssetsLedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        ImpersonalAccount.objects.create(name='single', code='1', type_ac='AS')
+        ImpersonalAccount.objects.create(name='single', code='1', t_ac='AS')
 
     def tearDown(self):
         self.browser.quit()

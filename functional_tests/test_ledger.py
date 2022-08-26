@@ -9,54 +9,54 @@ from coasc.models import ImpersonalAccount, Split, Transaction
 class LedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        self.single_ac2 = ImpersonalAccount.objects.create(
-                name='single_ac2', code='2', type_ac='LI')
+        self.single = ImpersonalAccount.objects.create(
+                name='single', code='1', t_ac='AS')
+        self.single1 = ImpersonalAccount.objects.create(
+                name='single1', code='2', t_ac='LI')
 
     def tearDown(self):
         self.browser.quit()
 
-    def test_displays_ledger_when_no_transaction(self):
-        # Edith is exited to checkout ledger of individual her accounts
+    def test_displays_ledger_when_no_tx(self):
+        # Edith is exited to checkout ledger of individual her acs
         self.browser.get(f'{self.live_server_url}/ledgers/ledger/1/')
         self.assertIn('Ledger', self.browser.title)
 
-        # She hadn't inputted any transactions yet so only her account
+        # She hadn't inputted any txs yet so only her ac
         # are displayed and everything seems to say 0.
-        table = self.browser.find_element(By.ID, 'id_single_ac1_ledger')
+        table = self.browser.find_element(By.ID, 'id_single_ledger')
         rows = table.find_elements(By.TAG_NAME, 'tr')
-        self.assertIn('single_ac1 (1)', [row.text for row in rows])
+        self.assertIn('single (1)', [row.text for row in rows])
         self.assertIn('Total: 0 0 0', [row.text for row in rows])
         # There is content in the header and footer but nothing in the body.
-        self.assertNotIn('demo desc 0 0 0', [row.text for row in rows])
+        self.assertNotIn('desc 0 0 0', [row.text for row in rows])
 
-    def test_displays_ledger_when_transactions(self):
-        # She inputted a few splits, saved the transactions and
+    def test_displays_ledger_when_txs(self):
+        # She inputted a few splits, saved the txs and
         # got back to the ledger page.
-        tx = Transaction.objects.create(description='demo desc')
+        tx = Transaction.objects.create(desc='desc')
         Split.objects.create(
-                account=self.single_ac1, type_split='dr',
-                amount=100, transaction=tx)
+                ac=self.single, t_sp='dr',
+                am=100, tx=tx)
         Split.objects.create(
-                account=self.single_ac2, type_split='cr',
-                amount=100, transaction=tx)
+                ac=self.single1, t_sp='cr',
+                am=100, tx=tx)
 
-        # she opened ledger for her single_ac1 first
+        # she opened ledger for her single first
         self.browser.get(f'{self.live_server_url}/ledgers/ledger/1/')
         # She notices that tables have interesting header and footer data
         # and discovers that there are different columns for debit and credit
-        table = self.browser.find_element(By.ID, 'id_single_ac1_ledger')
+        table = self.browser.find_element(By.ID, 'id_single_ledger')
         rows = table.find_elements(By.TAG_NAME, 'tr')
-        self.assertIn('single_ac1 (1)', [row.text for row in rows])
+        self.assertIn('single (1)', [row.text for row in rows])
         self.assertIn('Total: 100.00 0 100.00', [row.text for row in rows])
         # She notices there is content in the body as she expected.
-        self.assertIn('demo desc 100.00 0 100.00', [row.text for row in rows])
+        self.assertIn('desc 100.00 0 100.00', [row.text for row in rows])
 
-        # Later she also checked out the her second account.
+        # Later she also checked out the her second ac.
         self.browser.get(f'{self.live_server_url}/ledgers/ledger/2/')
-        table = self.browser.find_element(By.ID, 'id_single_ac2_ledger')
+        table = self.browser.find_element(By.ID, 'id_single1_ledger')
         rows = table.find_elements(By.TAG_NAME, 'tr')
-        self.assertIn('single_ac2 (2)', [row.text for row in rows])
+        self.assertIn('single1 (2)', [row.text for row in rows])
         self.assertIn('Total: 0 100.00 -100.00', [row.text for row in rows])
-        self.assertIn('demo desc 0 100.00 -100.00', [row.text for row in rows])
+        self.assertIn('desc 0 100.00 -100.00', [row.text for row in rows])
