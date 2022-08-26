@@ -17,10 +17,10 @@ MAX_WAIT = 5
 class GeneralJournalTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        self.single_ac2 = ImpersonalAccount.objects.create(
-                name='single_ac2', code='2', type_ac='LI')
+        self.single = ImpersonalAccount.objects.create(
+                name='single', code='1', t_ac='AS')
+        self.single1 = ImpersonalAccount.objects.create(
+                name='single1', code='2', t_ac='LI')
 
     def tearDown(self):
         self.browser.quit()
@@ -63,77 +63,76 @@ class GeneralJournalTest(StaticLiveServerTestCase):
         self.assertIn('Coas', self.browser.title)
 
         # She is immediately invited to input general_journal entries.
-        self.select_from_drop_down_id('id_account', self.single_ac1.pk)
-        self.select_from_drop_down_id('id_type_split', 'dr')
-        self.send_keys_to_inputbox_by_id('id_amount', 100)
-        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        self.select_from_drop_down_id('id_ac', self.single.pk)
+        self.select_from_drop_down_id('id_t_sp', 'dr')
+        self.send_keys_to_inputbox_by_id('id_am', 10)
+        self.send_keys_to_inputbox_by_id('id_am', Keys.ENTER)
 
         # After a redirect the split is visible.
-        self.wait_for_rows_in_table('id_dr_splits', '1 dr 100')
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 10')
 
         # She proceeds to input another split to balance out the transaction.
-        self.select_from_drop_down_id('id_account', self.single_ac2.pk)
-        self.select_from_drop_down_id('id_type_split', 'cr')
-        self.send_keys_to_inputbox_by_id('id_amount', 100)
-        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        self.select_from_drop_down_id('id_ac', self.single1.pk)
+        self.select_from_drop_down_id('id_t_sp', 'cr')
+        self.send_keys_to_inputbox_by_id('id_am', 10)
+        self.send_keys_to_inputbox_by_id('id_am', Keys.ENTER)
 
         # She is pleased to see both the splits still visible.
-        self.wait_for_rows_in_table('id_dr_splits', '1 dr 100')
-        self.wait_for_rows_in_table('id_cr_splits', '2 cr 100')
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 10')
+        self.wait_for_rows_in_table('id_cr_splits', '2 cr 10')
 
         # She notices that there is a input field below to describe the
         # transaction; she types in "demo desc" and hits enter.
-        self.send_keys_to_inputbox_by_id('id_description', 'demo desc')
-        self.send_keys_to_inputbox_by_id('id_description', Keys.ENTER)
+        self.send_keys_to_inputbox_by_id('id_desc', 'desc')
+        self.send_keys_to_inputbox_by_id('id_desc', Keys.ENTER)
 
-        # The transaction is saved and there is no sign of previously
-        # visible splits.
-        self.wait_for_rows_in_table(
-                'id_dr_splits', '1 dr 100', assert_in=False)
-        self.wait_for_rows_in_table(
-                'id_cr_splits', '2 cr 100', assert_in=False)
+        # The tx is saved and there is no sign of previously visible splits.
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 10', assert_in=False)
+        self.wait_for_rows_in_table('id_cr_splits', '2 cr 10', assert_in=False)
 
     def test_can_cancel_all_session_splits(self):
         self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
+
         # The next day edith inputs 2 splits and instantly visible on the page.
-        self.select_from_drop_down_id('id_account', self.single_ac1.pk)
-        self.select_from_drop_down_id('id_type_split', 'dr')
-        self.send_keys_to_inputbox_by_id('id_amount', 100)
-        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        self.select_from_drop_down_id('id_ac', self.single.pk)
+        self.select_from_drop_down_id('id_t_sp', 'dr')
+        self.send_keys_to_inputbox_by_id('id_am', 10)
+        self.send_keys_to_inputbox_by_id('id_am', Keys.ENTER)
+
         time.sleep(1)
-        self.select_from_drop_down_id('id_account', self.single_ac2.pk)
-        self.select_from_drop_down_id('id_type_split', 'cr')
-        self.send_keys_to_inputbox_by_id('id_amount', 100)
-        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
+        self.select_from_drop_down_id('id_ac', self.single1.pk)
+        self.select_from_drop_down_id('id_t_sp', 'cr')
+        self.send_keys_to_inputbox_by_id('id_am', 10)
+        self.send_keys_to_inputbox_by_id('id_am', Keys.ENTER)
 
         # She is pleased to see both the splits still visible.
-        self.wait_for_rows_in_table('id_dr_splits', '1 dr 100')
-        self.wait_for_rows_in_table('id_cr_splits', '2 cr 100')
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 10')
+        self.wait_for_rows_in_table('id_cr_splits', '2 cr 10')
+
         # but she feels like canceling them, so she clicks on
         # "cancel transaction" button and the splits disappear.
-        cancel_transaction = self.browser.find_element(
-                By.ID, 'id_cancel_transaction')
+        cancel_transaction = self.browser.find_element(By.ID, 'id_cancel_tx')
         ActionChains(self.browser).click(cancel_transaction).perform()
 
-        self.wait_for_rows_in_table(
-                'id_dr_splits', '1 dr 100', assert_in=False)
-        self.wait_for_rows_in_table(
-                'id_cr_splits', '2 cr 100', assert_in=False)
+        self.wait_for_rows_in_table('id_dr_splits', '1 dr 10', assert_in=False)
+        self.wait_for_rows_in_table('id_cr_splits', '2 cr 10', assert_in=False)
 
     def test_splits_table_footer_displays_sum_and_difference(self):
         self.browser.get(f'{self.live_server_url}/data_entry/general_journal/')
-        # Edith inputs 2 splits.
-        self.select_from_drop_down_id('id_account', self.single_ac1.pk)
-        self.select_from_drop_down_id('id_type_split', 'dr')
-        self.send_keys_to_inputbox_by_id('id_amount', 100)
-        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
-        time.sleep(1)
-        self.select_from_drop_down_id('id_account', self.single_ac2.pk)
-        self.select_from_drop_down_id('id_type_split', 'cr')
-        self.send_keys_to_inputbox_by_id('id_amount', 50)
-        self.send_keys_to_inputbox_by_id('id_amount', Keys.ENTER)
-        # And their sum and difference is visible in table footer.
 
+        # Edith inputs 2 splits.
+        self.select_from_drop_down_id('id_ac', self.single.pk)
+        self.select_from_drop_down_id('id_t_sp', 'dr')
+        self.send_keys_to_inputbox_by_id('id_am', 100)
+        self.send_keys_to_inputbox_by_id('id_am', Keys.ENTER)
+
+        time.sleep(1)
+        self.select_from_drop_down_id('id_ac', self.single1.pk)
+        self.select_from_drop_down_id('id_t_sp', 'cr')
+        self.send_keys_to_inputbox_by_id('id_am', 50)
+        self.send_keys_to_inputbox_by_id('id_am', Keys.ENTER)
+
+        # And their sum and difference is visible in table footer.
         self.wait_for_rows_in_table(
                 'id_table_splits', 'Debit sum: 100 Credit sum: 50')
         self.wait_for_rows_in_table('id_table_splits', 'Difference: 50')

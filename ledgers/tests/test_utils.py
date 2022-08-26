@@ -15,30 +15,26 @@ from ledgers.utils import (
 class GenerateRowsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        tx = Transaction.objects.create(description='demo desc')
+        cls.single = ImpersonalAccount.objects.create(
+                name='single', code='1', t_ac='AS')
 
-        Split.objects.create(
-                account=cls.single_ac1, type_split='dr',
-                amount=100, transaction=tx)
-        Split.objects.create(
-                account=cls.single_ac1, type_split='cr',
-                amount=200, transaction=tx)
+        tx = Transaction.objects.create(desc='desc')
+
+        Split.objects.create(ac=cls.single, t_sp='dr', am=100, tx=tx)
+        Split.objects.create(ac=cls.single, t_sp='cr', am=200, tx=tx)
 
     def test_returns_emtpy_list_if_no_splits(self):
-        splits = []
-        rows = generate_rows(splits)
+        sps = []
+        rows = generate_rows(sps)
+
         self.assertFalse(rows)
 
     def test_returns_rows_as_expected(self):
-        splits = self.single_ac1.split_set.all()
-        rows = generate_rows(splits)
+        sps = self.single.split_set.all()
+        rows = generate_rows(sps)
 
-        row1 = {'debit': 100.00, 'credit': 0, 'difference': 100.00,
-                'description': 'demo desc'}
-        row2 = {'debit': 0, 'credit': 200.00, 'difference': -100.00,
-                'description': 'demo desc'}
+        row1 = {'debit': 100.00, 'credit': 0, 'diff': 100.00, 'desc': 'desc'}
+        row2 = {'debit': 0, 'credit': 200.00, 'diff': -100.00, 'desc': 'desc'}
         expected_rows = [row1, row2]
 
         self.assertEqual(len(rows), 2)
@@ -48,20 +44,17 @@ class GenerateRowsTest(TestCase):
 class GenerateTableTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        tx = Transaction.objects.create(description='demo desc')
+        cls.single = ImpersonalAccount.objects.create(
+                name='single', code='1', t_ac='AS')
 
-        Split.objects.create(
-                account=cls.single_ac1, type_split='dr',
-                amount=100, transaction=tx)
-        Split.objects.create(
-                account=cls.single_ac1, type_split='cr',
-                amount=200, transaction=tx)
+        tx = Transaction.objects.create(desc='desc')
+
+        Split.objects.create(ac=cls.single, t_sp='dr', am=100, tx=tx)
+        Split.objects.create(ac=cls.single, t_sp='cr', am=200, tx=tx)
 
     def test_returns_table_as_expected(self):
-        account = self.single_ac1
-        table = generate_table(account)
+        ac = self.single
+        table = generate_table(ac)
 
         self.assertEqual(len(table), 4)
         self.assertEqual(table['code'], '1')
@@ -71,20 +64,22 @@ class GenerateSimpleHeadersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.single = ImpersonalAccount.objects.create(
-                name='single', code=1, type_ac='AS')
+                name='single', code=1, t_ac='AS')
 
     def test_returns_headers_list_as_expected(self):
-        acs = ImpersonalAccount.objects.filter(type_ac='AS')
-        headers = generate_simple_headers(acs)
+        acs = ImpersonalAccount.objects.filter(t_ac='AS')
 
+        headers = generate_simple_headers(acs)
         expected_headers = [f'{self.single.name}-{self.single.code}']
+
         self.assertEqual(headers, expected_headers)
 
     def test_returns_empty_list_if_no_ac_in_acs(self):
-        acs = ImpersonalAccount.objects.filter(type_ac='LI')
-        headers = generate_simple_headers(acs)
+        acs = ImpersonalAccount.objects.filter(t_ac='LI')
 
+        headers = generate_simple_headers(acs)
         expected_headers = []
+
         self.assertEqual(headers, expected_headers)
 
 
@@ -92,15 +87,16 @@ class GenerateParentHeadersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=1, type_ac='EX')
+                name='parent', code=1, t_ac='EX')
         cls.child = ImpersonalAccount.objects.create(
-                name='child', code=1.1, parent_ac=cls.parent)
+                name='child', code=1.1, p_ac=cls.parent)
 
     def test_returns_headers_list_as_expected(self):
         parent = self.parent
-        headers = generate_parent_headers(parent)
 
+        headers = generate_parent_headers(parent)
         expected_headers = [f'{self.child.name}-{self.child.code}']
+
         self.assertEqual(headers, expected_headers)
 
     def test_returns_empty_list_if_no_child_in_parent(self):
@@ -108,8 +104,8 @@ class GenerateParentHeadersTest(TestCase):
         parent = self.parent
 
         headers = generate_parent_headers(parent)
-
         expected_headers = []
+
         self.assertEqual(headers, expected_headers)
 
 
@@ -117,20 +113,22 @@ class GenerateSimpleFootersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.single = ImpersonalAccount.objects.create(
-                name='single', code=1, type_ac='AS')
+                name='single', code=1, t_ac='AS')
 
     def test_returns_footers_list_as_expected(self):
-        acs = ImpersonalAccount.objects.filter(type_ac='AS')
-        footers = generate_simple_footers(acs)
+        acs = ImpersonalAccount.objects.filter(t_ac='AS')
 
-        expected_footers = [self.single.current_balance()]
+        footers = generate_simple_footers(acs)
+        expected_footers = [self.single.bal()]
+
         self.assertEqual(footers, expected_footers)
 
     def test_returns_empty_list_if_no_child_in_parent(self):
-        acs = ImpersonalAccount.objects.filter(type_ac='LI')
-        footers = generate_simple_footers(acs)
+        acs = ImpersonalAccount.objects.filter(t_ac='LI')
 
+        footers = generate_simple_footers(acs)
         expected_footers = []
+
         self.assertEqual(footers, expected_footers)
 
 
@@ -138,23 +136,22 @@ class GenerateParentFootersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=1, type_ac='EX')
+                name='parent', code=1, t_ac='EX')
         cls.child = ImpersonalAccount.objects.create(
-                name='child', code=1.1, parent_ac=cls.parent)
+                name='child', code=1.1, p_ac=cls.parent)
 
     def test_returns_footers_list_as_expected(self):
-        parent = self.parent
-        footers = generate_parent_footers(parent)
+        footers = generate_parent_footers(self.parent)
+        expected_footers = [self.child.bal()]
 
-        expected_footers = [self.child.current_balance()]
         self.assertEqual(footers, expected_footers)
 
     def test_returns_empty_list_if_no_child_in_parent(self):
         self.child.delete()
-        parent = self.parent
-        footers = generate_parent_footers(parent)
 
+        footers = generate_parent_footers(self.parent)
         expected_footers = []
+
         self.assertEqual(footers, expected_footers)
 
 
@@ -162,33 +159,32 @@ class GetSimpleTxsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.single = ImpersonalAccount.objects.create(
-                name='single', code='1', type_ac='AS')
+                name='single', code='1', t_ac='AS')
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code='2', type_ac='AS')
+                name='parent', code='2', t_ac='AS')
         cls.child = ImpersonalAccount.objects.create(
-                name='child', code='2.1', parent_ac=cls.parent)
-        cls.tx = Transaction.objects.create(description='demo')
-        cls.tx1 = Transaction.objects.create(description='demo1')
+                name='child', code='2.1', p_ac=cls.parent)
 
-        Split.objects.create(
-                account=cls.single, type_split='dr', amount=1,
-                transaction=cls.tx)
-        Split.objects.create(
-                account=cls.child, type_split='cr', amount=3,
-                transaction=cls.tx1)
+        cls.tx = Transaction.objects.create(desc='desc')
+        cls.tx1 = Transaction.objects.create(desc='desc1')
+
+        Split.objects.create(ac=cls.single, t_sp='dr', am=1, tx=cls.tx)
+        Split.objects.create(ac=cls.child, t_sp='cr', am=3, tx=cls.tx1)
 
     def test_returns_txs_list_as_expected(self):
-        acs = ImpersonalAccount.objects.filter(type_ac='AS')
-        txs = get_simple_txs(acs)
+        acs = ImpersonalAccount.objects.filter(t_ac='AS')
 
+        txs = get_simple_txs(acs)
         expected_txs = [self.tx, self.tx1]
+
         self.assertEqual(txs, expected_txs)
 
-    def test_returns_empty_list_if_no_transactions(self):
-        acs = ImpersonalAccount.objects.filter(type_ac='LI')
-        txs = get_simple_txs(acs)
+    def test_returns_empty_list_if_no_txs(self):
+        acs = ImpersonalAccount.objects.filter(t_ac='LI')
 
+        txs = get_simple_txs(acs)
         expected_txs = []
+
         self.assertEqual(txs, expected_txs)
 
 
@@ -196,29 +192,27 @@ class GetParentTxsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=1, type_ac='EX')
+                name='parent', code=1, t_ac='EX')
         cls.child = ImpersonalAccount.objects.create(
-                name='child', code=1.1, parent_ac=cls.parent)
-        cls.tx = Transaction.objects.create(description='demo')
-        cls.split = Split.objects.create(
-                account=cls.child, type_split='dr', amount=1,
-                transaction=cls.tx)
+                name='child', code=1.1, p_ac=cls.parent)
+
+        cls.tx = Transaction.objects.create(desc='desc')
+
+        cls.sp = Split.objects.create(ac=cls.child, t_sp='dr', am=1, tx=cls.tx)
 
     def test_returns_txs_list_as_expected(self):
-        parent = self.parent
-        txs = get_parent_txs(parent)
-
+        txs = get_parent_txs(self.parent)
         expected_txs = [self.tx]
+
         self.assertEqual(txs, expected_txs)
 
-    def test_returns_empty_list_if_no_transactions(self):
-        self.split.delete()
+    def test_returns_empty_list_if_no_txs(self):
+        self.sp.delete()
         self.tx.delete()
-        parent = self.parent
 
-        txs = get_parent_txs(parent)
-
+        txs = get_parent_txs(self.parent)
         expected_txs = []
+
         self.assertEqual(txs, expected_txs)
 
 
@@ -226,40 +220,32 @@ class GenerateSimpleRowsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.single = ImpersonalAccount.objects.create(
-                name='single', code=1, type_ac='AS')
-        cls.tx = Transaction.objects.create(description='demo')
-        cls.tx1 = Transaction.objects.create(description='demo1')
-        Split.objects.create(
-                account=cls.single, type_split='dr', amount=2,
-                transaction=cls.tx)
-        Split.objects.create(
-                account=cls.single, type_split='cr', amount=1,
-                transaction=cls.tx)
-        Split.objects.create(
-                account=cls.single, type_split='cr', amount=1,
-                transaction=cls.tx)
+                name='single', code=1, t_ac='AS')
 
-        Split.objects.create(
-                account=cls.single, type_split='dr', amount=5,
-                transaction=cls.tx1)
-        Split.objects.create(
-                account=cls.single, type_split='cr', amount=2,
-                transaction=cls.tx1)
+        cls.tx = Transaction.objects.create(desc='desc')
+        cls.tx1 = Transaction.objects.create(desc='desc1')
+
+        Split.objects.create(ac=cls.single, t_sp='dr', am=2, tx=cls.tx)
+        Split.objects.create(ac=cls.single, t_sp='cr', am=1, tx=cls.tx)
+        Split.objects.create(ac=cls.single, t_sp='cr', am=1, tx=cls.tx)
+
+        Split.objects.create(ac=cls.single, t_sp='dr', am=5, tx=cls.tx1)
+        Split.objects.create(ac=cls.single, t_sp='cr', am=2, tx=cls.tx1)
 
     def test_returns_rows_as_expected(self):
         txs = [self.tx, self.tx1]
-        acs = ImpersonalAccount.objects.filter(type_ac='AS')
+        acs = ImpersonalAccount.objects.filter(t_ac='AS')
 
         rows = generate_simple_rows(txs, acs)
-
         expected_rows = [
                 [{'dr_sum': 2, 'cr_sum': 2, 'diff': 0}],
                 [{'dr_sum': 5, 'cr_sum': 2, 'diff': 3}]]
+
         self.assertEqual(rows, expected_rows)
 
-    def test_returns_empty_list_if_no_transactions(self):
+    def test_returns_empty_list_if_no_txs(self):
         txs = []
-        acs = ImpersonalAccount.objects.filter(type_ac='AS')
+        acs = ImpersonalAccount.objects.filter(t_ac='AS')
         rows = generate_simple_rows(txs, acs)
 
         expected_rows = []
@@ -267,11 +253,11 @@ class GenerateSimpleRowsTest(TestCase):
 
     def test_returns_empty_list_of_list_if_no_ac_in_acs(self):
         txs = [self.tx]
-        acs = ImpersonalAccount.objects.filter(type_ac='LI')
+        acs = ImpersonalAccount.objects.filter(t_ac='LI')
 
         rows = generate_simple_rows(txs, acs)
-
         expected_rows = [[]]
+
         self.assertEqual(rows, expected_rows)
 
 
@@ -279,47 +265,38 @@ class GenerateParentRows(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=1, type_ac='EX')
+                name='parent', code=1, t_ac='EX')
         cls.child = ImpersonalAccount.objects.create(
-                name='child', code=1.1, parent_ac=cls.parent)
-        cls.tx = Transaction.objects.create(description='demo')
-        cls.tx1 = Transaction.objects.create(description='demo1')
+                name='child', code=1.1, p_ac=cls.parent)
 
-        Split.objects.create(
-                account=cls.child, type_split='dr', amount=2,
-                transaction=cls.tx)
-        Split.objects.create(
-                account=cls.child, type_split='cr', amount=1,
-                transaction=cls.tx)
-        Split.objects.create(
-                account=cls.child, type_split='cr', amount=1,
-                transaction=cls.tx)
+        cls.tx = Transaction.objects.create(desc='desc')
+        cls.tx1 = Transaction.objects.create(desc='desc1')
 
-        Split.objects.create(
-                account=cls.child, type_split='dr', amount=5,
-                transaction=cls.tx1)
-        Split.objects.create(
-                account=cls.child, type_split='cr', amount=2,
-                transaction=cls.tx1)
+        Split.objects.create(ac=cls.child, t_sp='dr', am=2, tx=cls.tx)
+        Split.objects.create(ac=cls.child, t_sp='cr', am=1, tx=cls.tx)
+        Split.objects.create(ac=cls.child, t_sp='cr', am=1, tx=cls.tx)
+
+        Split.objects.create(ac=cls.child, t_sp='dr', am=5, tx=cls.tx1)
+        Split.objects.create(ac=cls.child, t_sp='cr', am=2, tx=cls.tx1)
 
     def test_returns_rows_as_expected(self):
         txs = [self.tx, self.tx1]
         parent = self.parent
 
         rows = generate_parent_rows(txs, parent)
-
         expected_rows = [
                 [{'dr_sum': 2, 'cr_sum': 2, 'diff': 0}],
                 [{'dr_sum': 5, 'cr_sum': 2, 'diff': 3}]]
+
         self.assertEqual(rows, expected_rows)
 
-    def test_returns_empty_list_if_no_transactions(self):
+    def test_returns_empty_list_if_no_txs(self):
         txs = []
         parent = self.parent
 
         rows = generate_parent_rows(txs, parent)
-
         expected_rows = []
+
         self.assertEqual(rows, expected_rows)
 
     def test_returns_empty_list_of_list_if_no_child_in_parent(self):
@@ -331,8 +308,8 @@ class GenerateParentRows(TestCase):
         parent = self.parent
 
         rows = generate_parent_rows(txs, parent)
-
         expected_rows = [[]]
+
         self.assertEqual(rows, expected_rows)
 
 
@@ -362,7 +339,8 @@ class GenerateGrandTotalTest(TestCase):
                 {'dr_sum': 5, 'cr_sum': 2, 'diff': 3, 'bal': 2}
         )
         bal_loaded_rows = [row]
-        grand_total = generate_grand_total(bal_loaded_rows)
 
+        grand_total = generate_grand_total(bal_loaded_rows)
         expected_grand_total = [1]
+
         self.assertEqual(grand_total, expected_grand_total)

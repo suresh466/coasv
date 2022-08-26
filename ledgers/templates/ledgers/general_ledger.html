@@ -24,19 +24,19 @@
             <tbody>
                 {% for row in table.rows %}
                 <tr>
-                    <td>{{ row.description }}</td>
+                    <td>{{ row.desc }}</td>
                     <td>{{ row.debit }}</td>
                     <td>{{ row.credit }}</td>
-                    <td>{{ row.difference }}</td>
+                    <td>{{ row.diff}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
                     <td>Total:</td>
-                    <td>{{ table.balances.dr_sum }}</td>
-                    <td>{{ table.balances.cr_sum }}</td>
-                    <td>{{ table.balances.difference }}</td>
+                    <td>{{ table.bals.dr_sum }}</td>
+                    <td>{{ table.bals.cr_sum }}</td>
+                    <td>{{ table.bals.diff }}</td>
                 </tr>
             </tfoot>
         </table>

@@ -6,7 +6,7 @@ from coasc.models import ImpersonalAccount
 
 class TrialBalanceSheetTest(TestCase):
     def test_uses_trial_balance_template(self):
-        ImpersonalAccount(name='single', code=1, type_ac='AS').save()
+        ImpersonalAccount(name='single', code=1, t_ac='AS').save()
         response = self.client.get(reverse('fs:trial_balance'))
         self.assertTemplateUsed(response, 'fs/trial_balance.html')
 
@@ -17,7 +17,7 @@ class TrialBalanceSheetTest(TestCase):
 
 class BalanceSheetTest(TestCase):
     def test_uses_balance_sheet_template(self):
-        ImpersonalAccount(name='single', code=1, type_ac='AS').save()
+        ImpersonalAccount(name='single', code=1, t_ac='AS').save()
 
         response = self.client.get(reverse('fs:balance_sheet'))
         self.assertTemplateUsed(response, 'fs/balance_sheet.html')
@@ -29,8 +29,8 @@ class BalanceSheetTest(TestCase):
 
 class IncomeStatementTest(TestCase):
     def test_uses_income_statement_template(self):
-        ImpersonalAccount(name='parent', code=160, type_ac='AS').save()
-        ImpersonalAccount(name='parent', code=150, type_ac='AS').save()
+        ImpersonalAccount(name='parent', code=160, t_ac='AS').save()
+        ImpersonalAccount(name='parent', code=150, t_ac='AS').save()
 
         response = self.client.get(reverse('fs:income_statement'))
         self.assertTemplateUsed(response, 'fs/income_statement.html')

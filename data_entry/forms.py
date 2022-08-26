@@ -6,15 +6,13 @@ from coasc.models import Split, ImpersonalAccount
 class SplitForm(ModelForm):
     class Meta:
         model = Split
-        fields = ('account', 'type_split', 'amount')
+        fields = ('ac', 't_sp', 'am')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        exclude_list = []
-        for account in ImpersonalAccount.objects.all():
-            if account.who_am_i()['parent']:
-                exclude_list.append(account.id)
 
-        query_set = ImpersonalAccount.objects.exclude(
-                id__in=exclude_list)
-        self.fields['account'].queryset = query_set
+        acs = ImpersonalAccount.objects.all()
+        exclude_list = [ac.id for ac in acs if ac.who_am_i()['parent']]
+
+        query_set = ImpersonalAccount.objects.exclude(id__in=exclude_list)
+        self.fields['ac'].queryset = query_set

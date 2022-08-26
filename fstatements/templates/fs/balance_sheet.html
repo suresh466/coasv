@@ -23,7 +23,7 @@
                         &emsp;CA: {{ ca.ac.code }}
                     </td>
                     <td>
-                        &emsp;{{ ca.bal.difference }}
+                        &emsp;{{ ca.bal.diff }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -32,13 +32,13 @@
                         PA: {{ ac.ac.code }}:
                     </td>
                     <td>
-                        {{ ac.bal.difference }}
+                        {{ ac.bal.diff }}
                     </td>
                 </tr>
                 {% endfor %}
                 <tr>
                     <td>
-                        <h2>Total Liabilities: {{ li_total_bal.difference }}</h2>
+                        <h2>Total Liabilities: {{ li_total_bal.diff }}</h2>
                     </td>
                 </tr>
                 <tr>
@@ -54,7 +54,7 @@
                         &emsp;CA: {{ ca.ac.code }}
                     </td>
                     <td>
-                        &emsp;{{ ca.bal.difference }}
+                        &emsp;{{ ca.bal.diff }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -63,13 +63,13 @@
                         PA: {{ ac.ac.code }}:
                     </td>
                     <td>
-                        {{ ac.bal.cr_sum }}
+                        {{ ac.bal.diff }}
                     </td>
                 </tr>
                 {% endfor %}
                 <tr>
                     <td>
-                        <h2>Total Assets: {{ as_total_bal.difference }}</h2>
+                        <h2>Total Assets: {{ as_total_bal.diff }}</h2>
                     </td>
                 </tr>
 

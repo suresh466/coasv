@@ -7,22 +7,19 @@ from coasc.models import ImpersonalAccount, Split, Transaction
 class GeneralLedgerViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        cls.single_ac2 = ImpersonalAccount.objects.create(
-                name='single_ac2', code='2', type_ac='LI')
-        cls.parent_ac1 = ImpersonalAccount.objects.create(
-                name='parent_ac1', code='3', type_ac='EX')
-        cls.child_ac1 = ImpersonalAccount.objects.create(
-                name='child_ac1', code='3.1', parent_ac=cls.parent_ac1)
-        tx = Transaction.objects.create(description='demo desc')
+        cls.single = ImpersonalAccount.objects.create(
+                name='single', code='1', t_ac='AS')
+        cls.single1 = ImpersonalAccount.objects.create(
+                name='single1', code='2', t_ac='LI')
+        cls.parent = ImpersonalAccount.objects.create(
+                name='parent', code='3', t_ac='EX')
+        cls.child = ImpersonalAccount.objects.create(
+                name='child', code='3.1', p_ac=cls.parent)
 
-        Split.objects.create(
-                account=cls.single_ac1, type_split='dr',
-                amount=100, transaction=tx)
-        Split.objects.create(
-                account=cls.single_ac2, type_split='cr',
-                amount=100, transaction=tx)
+        tx = Transaction.objects.create(desc='desc')
+
+        Split.objects.create(ac=cls.single, t_sp='dr', am=100, tx=tx)
+        Split.objects.create(ac=cls.single1, t_sp='cr', am=100, tx=tx)
 
     def test_uses_general_ledger_template(self):
         response = self.client.get(reverse('ledgers:general_ledger'))
@@ -42,18 +39,15 @@ class GeneralLedgerViewTest(TestCase):
 class LedgerViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single_ac1 = ImpersonalAccount.objects.create(
-                name='single_ac1', code='1', type_ac='AS')
-        cls.single_ac2 = ImpersonalAccount.objects.create(
-                name='single_ac2', code='2', type_ac='LI')
-        tx = Transaction.objects.create(description='demo desc')
+        cls.single = ImpersonalAccount.objects.create(
+                name='single', code='1', t_ac='AS')
+        cls.single1 = ImpersonalAccount.objects.create(
+                name='single1', code='2', t_ac='LI')
 
-        Split.objects.create(
-                account=cls.single_ac1, type_split='dr',
-                amount=100, transaction=tx)
-        Split.objects.create(
-                account=cls.single_ac2, type_split='cr',
-                amount=100, transaction=tx)
+        tx = Transaction.objects.create(desc='desc')
+
+        Split.objects.create(ac=cls.single, t_sp='dr', am=100, tx=tx)
+        Split.objects.create(ac=cls.single1, t_sp='cr', am=100, tx=tx)
 
     def test_uses_ledger_template(self):
         response = self.client.get(reverse('ledgers:ledger', args=[1]))
@@ -63,7 +57,7 @@ class LedgerViewTest(TestCase):
         response = self.client.get(reverse('ledgers:ledger', args=[None]))
         self.assertRedirects(response, reverse('ledgers:general_ledger'))
 
-    def test_redirects_if_account_does_not_exist(self):
+    def test_redirects_if_ac_does_not_exist(self):
         response = self.client.get(reverse('ledgers:ledger', args=[3]))
         self.assertRedirects(response, reverse('ledgers:general_ledger'))
 
@@ -79,7 +73,7 @@ class PurchaseViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=150, type_ac='EX')
+                name='parent', code=150, t_ac='EX')
 
     def test_uses_purchase_ledger_template(self):
         response = self.client.get(reverse('ledgers:purchase_ledger'))
@@ -96,7 +90,7 @@ class SalesViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=160, type_ac='EX')
+                name='parent', code=160, t_ac='EX')
 
     def test_uses_purchase_ledger_template(self):
         response = self.client.get(reverse('ledgers:sales_ledger'))
@@ -104,8 +98,8 @@ class SalesViewTest(TestCase):
 
     def test_redirects_if_no_parent(self):
         self.parent.delete()
-
         response = self.client.get(reverse('ledgers:sales_ledger'))
+
         self.assertRedirects(response, reverse('ledgers:general_ledger'))
 
 
@@ -113,9 +107,9 @@ class AssetsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.single = ImpersonalAccount.objects.create(
-                name='single', code=80, type_ac='AS')
+                name='single', code=80, t_ac='AS')
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=160, type_ac='AS')
+                name='parent', code=160, t_ac='AS')
 
     def test_uses_assets_ledger_template(self):
         response = self.client.get(reverse('ledgers:assets_ledger'))
@@ -126,6 +120,7 @@ class AssetsViewTest(TestCase):
         self.parent.delete()
 
         response = self.client.get(reverse('ledgers:assets_ledger'))
+
         self.assertRedirects(response, reverse('ledgers:general_ledger'))
 
 
@@ -133,9 +128,9 @@ class LiabilieitsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.single = ImpersonalAccount.objects.create(
-                name='single', code=10, type_ac='LI')
+                name='single', code=10, t_ac='LI')
         cls.parent = ImpersonalAccount.objects.create(
-                name='parent', code=20, type_ac='LI')
+                name='parent', code=20, t_ac='LI')
 
     def test_uses_liabilities_ledger_template(self):
         response = self.client.get(reverse('ledgers:liabilities_ledger'))
@@ -146,4 +141,5 @@ class LiabilieitsViewTest(TestCase):
         self.parent.delete()
 
         response = self.client.get(reverse('ledgers:liabilities_ledger'))
+
         self.assertRedirects(response, reverse('ledgers:general_ledger'))
