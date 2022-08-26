@@ -6,24 +6,26 @@ from coasc.models import ImpersonalAccount
 def trial_balance(request):
     template = 'fs/trial_balance.html'
 
-    acs = ImpersonalAccount.objects.exclude(type_ac='')
+    acs = ImpersonalAccount.objects.exclude(t_ac='')
     if not acs:
         # later do something that makes sense
         return redirect(reverse('ledgers:general_ledger'))
 
     cr_acs = []
     dr_acs = []
+
     for ac in acs:
-        if ac.type_ac in ['AS', 'EX']:
+        if ac.t_ac in ['AS', 'EX']:
             dr_acs.append(ac)
-        elif ac.type_ac in ['LI', 'IN']:
+        elif ac.t_ac in ['LI', 'IN']:
             cr_acs.append(ac)
 
-    cr_acs = [{'ac': ac, 'bal': ac.current_balance()} for ac in cr_acs]
-    dr_acs = [{'ac': ac, 'bal': ac.current_balance()} for ac in dr_acs]
+    cr_acs = [{'ac': ac, 'bal': ac.bal()} for ac in cr_acs]
+    dr_acs = [{'ac': ac, 'bal': ac.bal()} for ac in dr_acs]
+
     total_sum = {
-            'cr_acs': sum(ac['bal']['difference'] for ac in cr_acs),
-            'dr_acs': sum(ac['bal']['difference'] for ac in dr_acs),
+            'cr_acs': sum(ac['bal']['diff'] for ac in cr_acs),
+            'dr_acs': sum(ac['bal']['diff'] for ac in dr_acs),
     }
 
     context = {
@@ -38,27 +40,29 @@ def trial_balance(request):
 def balance_sheet(request):
     template = 'fs/balance_sheet.html'
 
-    li_acs = ImpersonalAccount.objects.filter(type_ac='LI')
-    as_acs = ImpersonalAccount.objects.filter(type_ac='AS')
+    li_acs = ImpersonalAccount.objects.filter(t_ac='LI')
+    as_acs = ImpersonalAccount.objects.filter(t_ac='AS')
 
     if not li_acs and not as_acs:
         return redirect(reverse('ledgers:general_ledger'))
 
     li_acs = [{
-                'ac': ac, 'bal': ac.current_balance(),
+                'ac': ac, 'bal': ac.bal(),
                 'children': [{
-                    'ac': ca, 'bal': ca.current_balance()}
+                    'ac': ca, 'bal': ca.bal()}
                     for ca in ac.impersonalaccount_set.all()]
     } for ac in li_acs]
+
     as_acs = [{
-                'ac': ac, 'bal': ac.current_balance(),
+                'ac': ac, 'bal': ac.bal(),
                 'children': [{
-                    'ac': ca, 'bal': ca.current_balance()}
+                    'ac': ca, 'bal': ca.bal()}
                     for ca in ac.impersonalaccount_set.all()]
     } for ac in as_acs]
 
-    li_total_bal = ImpersonalAccount.total_current_balance(type_ac='LI')
-    as_total_bal = ImpersonalAccount.total_current_balance(type_ac='AS')
+    li_total_bal = ImpersonalAccount.total_bal(t_ac='LI')
+    as_total_bal = ImpersonalAccount.total_bal(t_ac='AS')
+
     context = {
             'li_acs': li_acs,
             'as_acs': as_acs,
@@ -78,15 +82,16 @@ def income_statement(request):
         return redirect(reverse('ledgers:general_ledger'))
 
     in_ac = {
-        'ac': in_ac, 'bal': in_ac.current_balance(),
+        'ac': in_ac, 'bal': in_ac.bal(),
         'children': [{
-            'ac': ca, 'bal': ca.current_balance()}
+            'ac': ca, 'bal': ca.bal()}
             for ca in in_ac.impersonalaccount_set.all()]
     }
+
     ex_ac = {
-        'ac': ex_ac, 'bal': ex_ac.current_balance(),
+        'ac': ex_ac, 'bal': ex_ac.bal(),
         'children': [{
-            'ac': ca, 'bal': ca.current_balance()}
+            'ac': ca, 'bal': ca.bal()}
             for ca in ex_ac.impersonalaccount_set.all()]
     }
 
