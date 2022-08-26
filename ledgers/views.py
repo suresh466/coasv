@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, reverse
 
-from coasc.models import ImpersonalAccount
+from coasc.models import ImpersonalAc
 
 from ledgers.utils import (
         generate_table, generate_parent_headers,
@@ -16,7 +16,7 @@ def general_ledger(request):
     template = 'ledgers/general_ledger.html'
 
     tables = []
-    for account in ImpersonalAccount.objects.all():
+    for account in ImpersonalAc.objects.all():
 
         if account.who_am_i()['parent']:
             continue
@@ -38,8 +38,8 @@ def ledger(request, code=None):
         return redirect(reverse('ledgers:general_ledger'))
 
     try:
-        account = ImpersonalAccount.objects.get(code=code)
-    except ImpersonalAccount.DoesNotExist:
+        account = ImpersonalAc.objects.get(code=code)
+    except ImpersonalAc.DoesNotExist:
         return redirect(reverse('ledgers:general_ledger'))
 
     table = generate_table(account)
@@ -54,8 +54,8 @@ def purchase_ledger(request):
     template = 'ledgers/purchase_ledger.html'
 
     try:
-        parent = ImpersonalAccount.objects.get(code=150)
-    except ImpersonalAccount.DoesNotExist:
+        parent = ImpersonalAc.objects.get(code=150)
+    except ImpersonalAc.DoesNotExist:
         # Later do something that makes sense
         return redirect(reverse('ledgers:general_ledger'))
 
@@ -94,8 +94,8 @@ def sales_ledger(request):
     template = 'ledgers/sales_ledger.html'
 
     try:
-        parent = ImpersonalAccount.objects.get(code=160)
-    except ImpersonalAccount.DoesNotExist:
+        parent = ImpersonalAc.objects.get(code=160)
+    except ImpersonalAc.DoesNotExist:
         # Later do something that makes sense
         return redirect(reverse('ledgers:general_ledger'))
 
@@ -133,7 +133,7 @@ def sales_ledger(request):
 def assets_ledger(request):
     template = 'ledgers/assets_ledger.html'
 
-    acs = ImpersonalAccount.objects.filter(t_ac='AS')
+    acs = ImpersonalAc.objects.filter(t_ac='AS')
     if not acs:
         # Later do something that makes sense
         return redirect(reverse('ledgers:general_ledger'))
@@ -146,7 +146,7 @@ def assets_ledger(request):
     bal_loaded_rows = load_rows_bal(rows)
 
     grand_total = generate_grand_total(bal_loaded_rows)
-    total = ImpersonalAccount.total_bal(t_ac='AS')
+    total = ImpersonalAc.total_bal(t_ac='AS')
 
     loaded_rows = list(zip(txs, rows, grand_total))
 
@@ -167,7 +167,7 @@ def assets_ledger(request):
 def liabilities_ledger(request):
     template = 'ledgers/liabilities_ledger.html'
 
-    acs = ImpersonalAccount.objects.filter(t_ac='LI')
+    acs = ImpersonalAc.objects.filter(t_ac='LI')
     if not acs:
         # Later do something that makes sense
         return redirect(reverse('ledgers:general_ledger'))
@@ -180,7 +180,7 @@ def liabilities_ledger(request):
     bal_loaded_rows = load_rows_bal(rows)
 
     grand_total = generate_grand_total(bal_loaded_rows)
-    total = ImpersonalAccount.total_bal(t_ac='LI')
+    total = ImpersonalAc.total_bal(t_ac='LI')
 
     loaded_rows = list(zip(txs, rows, grand_total))
 

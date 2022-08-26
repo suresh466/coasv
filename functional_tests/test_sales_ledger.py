@@ -3,15 +3,15 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from coasc.models import ImpersonalAccount
+from coasc.models import ImpersonalAc
 
 
 class SalesLedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.parent = ImpersonalAccount.objects.create(
+        self.parent = ImpersonalAc.objects.create(
                 name='parent', code=160, t_ac='EX')
-        ImpersonalAccount.objects.create(
+        ImpersonalAc.objects.create(
                 name='child', code=160.1, p_ac=self.parent)
 
     def tearDown(self):

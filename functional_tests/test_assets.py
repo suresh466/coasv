@@ -3,13 +3,13 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from coasc.models import ImpersonalAccount
+from coasc.models import ImpersonalAc
 
 
 class AssetsLedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        ImpersonalAccount.objects.create(name='single', code='1', t_ac='AS')
+        ImpersonalAc.objects.create(name='single', code='1', t_ac='AS')
 
     def tearDown(self):
         self.browser.quit()

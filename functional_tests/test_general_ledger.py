@@ -3,15 +3,15 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from coasc.models import ImpersonalAccount, Split, Transaction
+from coasc.models import ImpersonalAc, Split, Transaction
 
 
 class GeneralLedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.single = ImpersonalAccount.objects.create(
+        self.single = ImpersonalAc.objects.create(
                 name='single', code='1', t_ac='AS')
-        self.single1 = ImpersonalAccount.objects.create(
+        self.single1 = ImpersonalAc.objects.create(
                 name='single1', code='2', t_ac='LI')
 
     def tearDown(self):
@@ -67,7 +67,7 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
 
     def test_displays_message_if_no_acs(self):
         # She just started over by deleting all her acs.
-        ImpersonalAccount.objects.all().delete()
+        ImpersonalAc.objects.all().delete()
         # Curious edith visited general_ledger page to see what would happen.
         self.browser.get(f'{self.live_server_url}/ledgers/general_ledger/')
         body = self.browser.find_element(By.TAG_NAME, 'body')

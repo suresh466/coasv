@@ -46,7 +46,7 @@ def generate_simple_headers(acs):
 def generate_parent_headers(parent):
     headers = []
 
-    for child in parent.impersonalaccount_set.all():
+    for child in parent.impersonalac_set.all():
         header = f'{child.name}-{child.code}'
         headers.append(header)
 
@@ -66,7 +66,7 @@ def generate_simple_footers(acs):
 def generate_parent_footers(parent):
     footers = []
 
-    for child in parent.impersonalaccount_set.all():
+    for child in parent.impersonalac_set.all():
         footer = child.bal()
         footers.append(footer)
 
@@ -135,7 +135,7 @@ def generate_parent_rows(txs, parent):
     for tx in txs:
         row = []
 
-        for child in parent.impersonalaccount_set.all():
+        for child in parent.impersonalac_set.all():
             row_data = {'dr_sum': 0, 'cr_sum': 0, 'diff': 0}
 
             for sp in child.split_set.all():
