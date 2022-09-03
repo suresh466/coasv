@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 from selenium.common.exceptions import WebDriverException
 
-from coasc.models import ImpersonalAc
+from coasc.models import Ac
 
 MAX_WAIT = 5
 
@@ -17,10 +17,8 @@ MAX_WAIT = 5
 class GeneralJournalTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.single = ImpersonalAc.objects.create(
-                name='single', code='1', t_ac='AS')
-        self.single1 = ImpersonalAc.objects.create(
-                name='single1', code='2', t_ac='LI')
+        self.single = Ac.objects.create(name='single', code='1', cat='AS')
+        self.single1 = Ac.objects.create(name='single1', code='2', cat='LI')
 
     def tearDown(self):
         self.browser.quit()

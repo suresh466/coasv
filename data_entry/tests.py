@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from coasc.models import ImpersonalAc
+from coasc.models import Ac
 
 from data_entry.views import session_balances
 
@@ -9,8 +9,7 @@ from data_entry.views import session_balances
 class GeneranJournalViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', t_ac='AS', code='1')
+        cls.single = Ac.objects.create(name='single', cat='AS', code='1')
 
     def test_uses_general_journal_template(self):
         response = self.client.get(reverse('data_entry:general_journal'))
@@ -27,10 +26,8 @@ class GeneranJournalViewTest(TestCase):
 class SaveTransactionViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', t_ac='AS', code='1')
-        cls.single1 = ImpersonalAc.objects.create(
-                name='single1', t_ac='AS', code='2')
+        cls.single = Ac.objects.create(name='single', cat='AS', code='1')
+        cls.single1 = Ac.objects.create(name='single1', cat='AS', code='2')
 
     def populate_splits(self):
         session = self.client.session
@@ -83,10 +80,8 @@ class SaveTransactionViewTest(TestCase):
 class CancelTransactionViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', t_ac='AS', code='1')
-        cls.single1 = ImpersonalAc.objects.create(
-                name='single1', t_ac='AS', code='2')
+        cls.single = Ac.objects.create(name='single', cat='AS', code='1')
+        cls.single1 = Ac.objects.create(name='single1', cat='AS', code='2')
 
     def populate_splits(self):
         session = self.client.session
@@ -118,10 +113,8 @@ class CancelTransactionViewTest(TestCase):
 class SessionBalancesTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', t_ac='AS', code='1')
-        cls.single1 = ImpersonalAc.objects.create(
-                name='single1', t_ac='AS', code='2')
+        cls.single = Ac.objects.create(name='single', cat='AS', code='1')
+        cls.single1 = Ac.objects.create(name='single1', cat='AS', code='2')
 
     def populate_splits(self):
         session = self.client.session

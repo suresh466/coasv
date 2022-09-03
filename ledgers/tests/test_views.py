@@ -1,19 +1,16 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from coasc.models import ImpersonalAc, Split, Transaction
+from coasc.models import Ac, Split, Transaction
 
 
 class GeneralLedgerViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code='1', t_ac='AS')
-        cls.single1 = ImpersonalAc.objects.create(
-                name='single1', code='2', t_ac='LI')
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code='3', t_ac='EX')
-        cls.child = ImpersonalAc.objects.create(
+        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
+        cls.single1 = Ac.objects.create(name='single1', code='2', cat='LI')
+        cls.parent = Ac.objects.create(name='parent', code='3', cat='EX')
+        cls.child = Ac.objects.create(
                 name='child', code='3.1', p_ac=cls.parent)
 
         tx = Transaction.objects.create(desc='desc')
@@ -39,10 +36,8 @@ class GeneralLedgerViewTest(TestCase):
 class LedgerViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code='1', t_ac='AS')
-        cls.single1 = ImpersonalAc.objects.create(
-                name='single1', code='2', t_ac='LI')
+        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
+        cls.single1 = Ac.objects.create(name='single1', code='2', cat='LI')
 
         tx = Transaction.objects.create(desc='desc')
 
@@ -72,8 +67,7 @@ class LedgerViewTest(TestCase):
 class PurchaseViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=150, t_ac='EX')
+        cls.parent = Ac.objects.create(name='parent', code=150, cat='EX')
 
     def test_uses_purchase_ledger_template(self):
         response = self.client.get(reverse('ledgers:purchase_ledger'))
@@ -89,8 +83,7 @@ class PurchaseViewTest(TestCase):
 class SalesViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=160, t_ac='EX')
+        cls.parent = Ac.objects.create(name='parent', code=160, cat='EX')
 
     def test_uses_purchase_ledger_template(self):
         response = self.client.get(reverse('ledgers:sales_ledger'))
@@ -106,10 +99,8 @@ class SalesViewTest(TestCase):
 class AssetsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code=80, t_ac='AS')
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=160, t_ac='AS')
+        cls.single = Ac.objects.create(name='single', code=80, cat='AS')
+        cls.parent = Ac.objects.create(name='parent', code=160, cat='AS')
 
     def test_uses_assets_ledger_template(self):
         response = self.client.get(reverse('ledgers:assets_ledger'))
@@ -127,10 +118,8 @@ class AssetsViewTest(TestCase):
 class LiabilieitsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code=10, t_ac='LI')
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=20, t_ac='LI')
+        cls.single = Ac.objects.create(name='single', code=10, cat='LI')
+        cls.parent = Ac.objects.create(name='parent', code=20, cat='LI')
 
     def test_uses_liabilities_ledger_template(self):
         response = self.client.get(reverse('ledgers:liabilities_ledger'))

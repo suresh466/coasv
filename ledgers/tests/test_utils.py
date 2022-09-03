@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from coasc.models import ImpersonalAc, Split, Transaction
+from coasc.models import Ac, Split, Transaction
 
 from ledgers.utils import (
         generate_rows, generate_table,
@@ -15,8 +15,7 @@ from ledgers.utils import (
 class GenerateRowsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code='1', t_ac='AS')
+        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
 
         tx = Transaction.objects.create(desc='desc')
 
@@ -44,8 +43,7 @@ class GenerateRowsTest(TestCase):
 class GenerateTableTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code='1', t_ac='AS')
+        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
 
         tx = Transaction.objects.create(desc='desc')
 
@@ -63,11 +61,10 @@ class GenerateTableTest(TestCase):
 class GenerateSimpleHeadersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code=1, t_ac='AS')
+        cls.single = Ac.objects.create(name='single', code=1, cat='AS')
 
     def test_returns_headers_list_as_expected(self):
-        acs = ImpersonalAc.objects.filter(t_ac='AS')
+        acs = Ac.objects.filter(cat='AS')
 
         headers = generate_simple_headers(acs)
         expected_headers = [f'{self.single.name}-{self.single.code}']
@@ -75,7 +72,7 @@ class GenerateSimpleHeadersTest(TestCase):
         self.assertEqual(headers, expected_headers)
 
     def test_returns_empty_list_if_no_ac_in_acs(self):
-        acs = ImpersonalAc.objects.filter(t_ac='LI')
+        acs = Ac.objects.filter(cat='LI')
 
         headers = generate_simple_headers(acs)
         expected_headers = []
@@ -86,10 +83,8 @@ class GenerateSimpleHeadersTest(TestCase):
 class GenerateParentHeadersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=1, t_ac='EX')
-        cls.child = ImpersonalAc.objects.create(
-                name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
+        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
 
     def test_returns_headers_list_as_expected(self):
         parent = self.parent
@@ -112,11 +107,10 @@ class GenerateParentHeadersTest(TestCase):
 class GenerateSimpleFootersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code=1, t_ac='AS')
+        cls.single = Ac.objects.create(name='single', code=1, cat='AS')
 
     def test_returns_footers_list_as_expected(self):
-        acs = ImpersonalAc.objects.filter(t_ac='AS')
+        acs = Ac.objects.filter(cat='AS')
 
         footers = generate_simple_footers(acs)
         expected_footers = [self.single.bal()]
@@ -124,7 +118,7 @@ class GenerateSimpleFootersTest(TestCase):
         self.assertEqual(footers, expected_footers)
 
     def test_returns_empty_list_if_no_child_in_parent(self):
-        acs = ImpersonalAc.objects.filter(t_ac='LI')
+        acs = Ac.objects.filter(cat='LI')
 
         footers = generate_simple_footers(acs)
         expected_footers = []
@@ -135,10 +129,8 @@ class GenerateSimpleFootersTest(TestCase):
 class GenerateParentFootersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=1, t_ac='EX')
-        cls.child = ImpersonalAc.objects.create(
-                name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
+        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
 
     def test_returns_footers_list_as_expected(self):
         footers = generate_parent_footers(self.parent)
@@ -158,11 +150,9 @@ class GenerateParentFootersTest(TestCase):
 class GetSimpleTxsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code='1', t_ac='AS')
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code='2', t_ac='AS')
-        cls.child = ImpersonalAc.objects.create(
+        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
+        cls.parent = Ac.objects.create(name='parent', code='2', cat='AS')
+        cls.child = Ac.objects.create(
                 name='child', code='2.1', p_ac=cls.parent)
 
         cls.tx = Transaction.objects.create(desc='desc')
@@ -172,7 +162,7 @@ class GetSimpleTxsTest(TestCase):
         Split.objects.create(ac=cls.child, t_sp='cr', am=3, tx=cls.tx1)
 
     def test_returns_txs_list_as_expected(self):
-        acs = ImpersonalAc.objects.filter(t_ac='AS')
+        acs = Ac.objects.filter(cat='AS')
 
         txs = get_simple_txs(acs)
         expected_txs = [self.tx, self.tx1]
@@ -180,7 +170,7 @@ class GetSimpleTxsTest(TestCase):
         self.assertEqual(txs, expected_txs)
 
     def test_returns_empty_list_if_no_txs(self):
-        acs = ImpersonalAc.objects.filter(t_ac='LI')
+        acs = Ac.objects.filter(cat='LI')
 
         txs = get_simple_txs(acs)
         expected_txs = []
@@ -191,10 +181,8 @@ class GetSimpleTxsTest(TestCase):
 class GetParentTxsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=1, t_ac='EX')
-        cls.child = ImpersonalAc.objects.create(
-                name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
+        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
 
         cls.tx = Transaction.objects.create(desc='desc')
 
@@ -219,8 +207,7 @@ class GetParentTxsTest(TestCase):
 class GenerateSimpleRowsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = ImpersonalAc.objects.create(
-                name='single', code=1, t_ac='AS')
+        cls.single = Ac.objects.create(name='single', code=1, cat='AS')
 
         cls.tx = Transaction.objects.create(desc='desc')
         cls.tx1 = Transaction.objects.create(desc='desc1')
@@ -234,7 +221,7 @@ class GenerateSimpleRowsTest(TestCase):
 
     def test_returns_rows_as_expected(self):
         txs = [self.tx, self.tx1]
-        acs = ImpersonalAc.objects.filter(t_ac='AS')
+        acs = Ac.objects.filter(cat='AS')
 
         rows = generate_simple_rows(txs, acs)
         expected_rows = [
@@ -245,7 +232,7 @@ class GenerateSimpleRowsTest(TestCase):
 
     def test_returns_empty_list_if_no_txs(self):
         txs = []
-        acs = ImpersonalAc.objects.filter(t_ac='AS')
+        acs = Ac.objects.filter(cat='AS')
 
         rows = generate_simple_rows(txs, acs)
         expected_rows = []
@@ -254,7 +241,7 @@ class GenerateSimpleRowsTest(TestCase):
 
     def test_returns_empty_list_of_list_if_no_ac_in_acs(self):
         txs = [self.tx]
-        acs = ImpersonalAc.objects.filter(t_ac='LI')
+        acs = Ac.objects.filter(cat='LI')
 
         rows = generate_simple_rows(txs, acs)
         expected_rows = [[]]
@@ -265,10 +252,8 @@ class GenerateSimpleRowsTest(TestCase):
 class GenerateParentRows(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = ImpersonalAc.objects.create(
-                name='parent', code=1, t_ac='EX')
-        cls.child = ImpersonalAc.objects.create(
-                name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
+        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
 
         cls.tx = Transaction.objects.create(desc='desc')
         cls.tx1 = Transaction.objects.create(desc='desc1')

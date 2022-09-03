@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.shortcuts import render, redirect, reverse
 from django.db import transaction as db_transaction
 
-from coasc.models import ImpersonalAc, Split, Transaction
+from coasc.models import Ac, Split, Transaction
 from data_entry.forms import SplitForm
 
 
@@ -72,13 +72,13 @@ def save_transaction(request):
 
         for sp in splits:
             ac_pk = sp['ac']
-            ac = ImpersonalAc.objects.get(pk=ac_pk)
+            ac = Ac.objects.get(pk=ac_pk)
 
             t_sp = sp['t_sp']
             am = Decimal(sp['am'])
             Split.objects.create(ac=ac, t_sp=t_sp, am=am, tx=tx)
 
-        ImpersonalAc.validate_accounting_equation()
+        Ac.validate_accounting_equation()
 
     del request.session['splits']
 

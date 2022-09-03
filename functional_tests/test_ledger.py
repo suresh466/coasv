@@ -3,16 +3,14 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from coasc.models import ImpersonalAc, Split, Transaction
+from coasc.models import Ac, Split, Transaction
 
 
 class LedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.single = ImpersonalAc.objects.create(
-                name='single', code='1', t_ac='AS')
-        self.single1 = ImpersonalAc.objects.create(
-                name='single1', code='2', t_ac='LI')
+        self.single = Ac.objects.create(name='single', code='1', cat='AS')
+        self.single1 = Ac.objects.create(name='single1', code='2', cat='LI')
 
     def tearDown(self):
         self.browser.quit()

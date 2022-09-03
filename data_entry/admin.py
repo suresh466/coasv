@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from coasc.models import ImpersonalAc
+from coasc.models import Ac
 
 # Register your models here.
 
-admin.site.register(ImpersonalAc)
+admin.site.register(Ac)
