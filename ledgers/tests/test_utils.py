@@ -15,7 +15,8 @@ from ledgers.utils import (
 class GenerateRowsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
+        cls.single = Ac.objects.create(
+                name='single', code='1', cat='AS', t_ac='I')
 
         tx = Transaction.objects.create(desc='desc')
 
@@ -43,7 +44,8 @@ class GenerateRowsTest(TestCase):
 class GenerateTableTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
+        cls.single = Ac.objects.create(
+                name='single', code='1', cat='AS', t_ac='I')
 
         tx = Transaction.objects.create(desc='desc')
 
@@ -61,7 +63,8 @@ class GenerateTableTest(TestCase):
 class GenerateSimpleHeadersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = Ac.objects.create(name='single', code=1, cat='AS')
+        cls.single = Ac.objects.create(
+                name='single', code=1, cat='AS', t_ac='I')
 
     def test_returns_headers_list_as_expected(self):
         acs = Ac.objects.filter(cat='AS')
@@ -83,8 +86,10 @@ class GenerateSimpleHeadersTest(TestCase):
 class GenerateParentHeadersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
-        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(
+                name='parent', code=1, cat='EX', t_ac='I')
+        cls.child = Ac.objects.create(
+                name='child', code=1.1, t_ac='I', p_ac=cls.parent)
 
     def test_returns_headers_list_as_expected(self):
         parent = self.parent
@@ -107,7 +112,8 @@ class GenerateParentHeadersTest(TestCase):
 class GenerateSimpleFootersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = Ac.objects.create(name='single', code=1, cat='AS')
+        cls.single = Ac.objects.create(
+                name='single', code=1, cat='AS', t_ac='I')
 
     def test_returns_footers_list_as_expected(self):
         acs = Ac.objects.filter(cat='AS')
@@ -129,8 +135,10 @@ class GenerateSimpleFootersTest(TestCase):
 class GenerateParentFootersTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
-        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(
+                name='parent', code=1, cat='EX', t_ac='I')
+        cls.child = Ac.objects.create(
+                name='child', code=1.1, t_ac='I', p_ac=cls.parent)
 
     def test_returns_footers_list_as_expected(self):
         footers = generate_parent_footers(self.parent)
@@ -150,10 +158,12 @@ class GenerateParentFootersTest(TestCase):
 class GetSimpleTxsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = Ac.objects.create(name='single', code='1', cat='AS')
-        cls.parent = Ac.objects.create(name='parent', code='2', cat='AS')
+        cls.single = Ac.objects.create(
+                name='single', code='1', cat='AS', t_ac='I')
+        cls.parent = Ac.objects.create(
+                name='parent', code='2', cat='AS', t_ac='I')
         cls.child = Ac.objects.create(
-                name='child', code='2.1', p_ac=cls.parent)
+                name='child', code='2.1', t_ac='I', p_ac=cls.parent)
 
         cls.tx = Transaction.objects.create(desc='desc')
         cls.tx1 = Transaction.objects.create(desc='desc1')
@@ -181,8 +191,10 @@ class GetSimpleTxsTest(TestCase):
 class GetParentTxsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
-        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(
+                name='parent', code=1, cat='EX', t_ac='I')
+        cls.child = Ac.objects.create(
+                name='child', code=1.1, t_ac='I', p_ac=cls.parent)
 
         cls.tx = Transaction.objects.create(desc='desc')
 
@@ -207,7 +219,8 @@ class GetParentTxsTest(TestCase):
 class GenerateSimpleRowsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.single = Ac.objects.create(name='single', code=1, cat='AS')
+        cls.single = Ac.objects.create(
+                name='single', code=1, cat='AS', t_ac='I')
 
         cls.tx = Transaction.objects.create(desc='desc')
         cls.tx1 = Transaction.objects.create(desc='desc1')
@@ -252,8 +265,10 @@ class GenerateSimpleRowsTest(TestCase):
 class GenerateParentRows(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = Ac.objects.create(name='parent', code=1, cat='EX')
-        cls.child = Ac.objects.create(name='child', code=1.1, p_ac=cls.parent)
+        cls.parent = Ac.objects.create(
+                name='parent', code=1, cat='EX', t_ac='I')
+        cls.child = Ac.objects.create(
+                name='child', code=1.1, t_ac='I', p_ac=cls.parent)
 
         cls.tx = Transaction.objects.create(desc='desc')
         cls.tx1 = Transaction.objects.create(desc='desc1')

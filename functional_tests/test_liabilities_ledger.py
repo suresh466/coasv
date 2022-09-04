@@ -9,7 +9,7 @@ from coasc.models import Ac
 class LiabilitiesLedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        Ac.objects.create(name='single', code='1', cat='LI')
+        Ac.objects.create(name='single', code='1', cat='LI', t_ac='I')
 
     def tearDown(self):
         self.browser.quit()

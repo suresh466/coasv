@@ -9,8 +9,9 @@ from coasc.models import Ac
 class PurchaseLedgerViewTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.parent = Ac.objects.create(name='parent', code=150, cat='EX')
-        Ac.objects.create(name='child', code=150.1, p_ac=self.parent)
+        self.parent = Ac.objects.create(
+                name='parent', code=150, cat='EX', t_ac='I')
+        Ac.objects.create(name='child', code=150.1, t_ac='I', p_ac=self.parent)
 
     def tearDown(self):
         self.browser.quit()

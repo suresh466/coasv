@@ -9,8 +9,10 @@ from coasc.models import Ac, Split, Transaction
 class LedgerTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.single = Ac.objects.create(name='single', code='1', cat='AS')
-        self.single1 = Ac.objects.create(name='single1', code='2', cat='LI')
+        self.single = Ac.objects.create(
+                name='single', code='1', cat='AS', t_ac='I')
+        self.single1 = Ac.objects.create(
+                name='single1', code='2', cat='LI', t_ac='I')
 
     def tearDown(self):
         self.browser.quit()

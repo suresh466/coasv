@@ -6,7 +6,7 @@ from coasc.models import Ac
 
 class TrialBalanceSheetTest(TestCase):
     def test_uses_trial_balance_template(self):
-        Ac(name='single', code=1, cat='AS').save()
+        Ac(name='single', code=1, t_ac='I', cat='AS').save()
         response = self.client.get(reverse('fs:trial_balance'))
         self.assertTemplateUsed(response, 'fs/trial_balance.html')
 
@@ -17,7 +17,7 @@ class TrialBalanceSheetTest(TestCase):
 
 class BalanceSheetTest(TestCase):
     def test_uses_balance_sheet_template(self):
-        Ac(name='single', code=1, cat='AS').save()
+        Ac(name='single', code=1, t_ac='I', cat='AS').save()
 
         response = self.client.get(reverse('fs:balance_sheet'))
         self.assertTemplateUsed(response, 'fs/balance_sheet.html')
@@ -29,8 +29,8 @@ class BalanceSheetTest(TestCase):
 
 class IncomeStatementTest(TestCase):
     def test_uses_income_statement_template(self):
-        Ac(name='parent', code=160, cat='AS').save()
-        Ac(name='parent', code=150, cat='AS').save()
+        Ac(name='parent', code=160, t_ac='I', cat='AS').save()
+        Ac(name='parent', code=150, t_ac='I', cat='AS').save()
 
         response = self.client.get(reverse('fs:income_statement'))
         self.assertTemplateUsed(response, 'fs/income_statement.html')
