@@ -1,8 +1,11 @@
-<html>
-    <head>
-        <title>Income Statement</title>
-    </head>
-    <body>
+{% extends 'fs/base.html' %}
+
+
+{% block title %}
+Income Statement
+{% endblock %}
+
+{% block body %}
         <table>
             <thead>
                 <tr>
@@ -16,32 +19,31 @@
                 <tr>
                     <td>CA: {{ ca.ac.code }}</td>
                     <td>-----</td>
-                    <td>{{ ca.bal.difference }}</td>
+                    <td>{{ ca.bal.diff }}</td>
                 </tr>
                 {% endfor %}
                 <tr>
                     <td>PA: {{ in_ac.ac.code }}</td>
                     <td>-----</td>
-                    <td>{{ in_ac.bal.difference}}</td>
+                    <td>{{ in_ac.bal.diff }}</td>
                 </tr>
                 {% for ca in ex_ac.children %}
                 <tr>
                     <td>CA: {{ ca.ac.code }}</td>
-                    <td>{{ ca.bal.difference }}</td>
+                    <td>{{ ca.bal.diff }}</td>
                     <td>-----</td>
                 </tr>
                 {% endfor %}
                 <tr>
                     <td>PA: {{ ex_ac.ac.code }}</td>
-                    <td>{{ ex_ac.bal.difference}}</td>
+                    <td>{{ ex_ac.bal.diff }}</td>
                     <td>-----</td>
                 </tr>
             </tbody>
             <tfoot>
                 <td>Total</td>
-                <td>{{ ex_ac.bal.difference }}</td>
-                <td>{{ in_ac.bal.difference }}</td>
+                <td>{{ ex_ac.bal.diff }}</td>
+                <td>{{ in_ac.bal.diff }}</td>
             </tfoot>
         </table>
-    </body>
-</html>
+{% endblock %}

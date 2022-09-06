@@ -21,7 +21,6 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         # Next day Edith discovered that she can view general ledger
         # of her acs, so she heads over to general ledger page.
         self.browser.get(f'{self.live_server_url}/ledgers/general_ledger/')
-        self.assertIn('General Ledger', self.browser.title)
 
         # She hadn't inputted any txs yet so only her acs
         # are displayed and everything seems to say 0.

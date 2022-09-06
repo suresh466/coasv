@@ -1,13 +1,11 @@
-<html>
-    <head>
-        <title>Purchase Ledger</title>
-        <style>
-            table, th, td {
-                border: 3px solid pink;
-            }
-        </style>
-    </head>
-    <body>
+{% extends 'ledgers/base.html' %}
+
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
         <table>
             <thead>
                 <tr>
@@ -39,5 +37,5 @@
                 </tr>
             </tfoot>
         </table>
-    </body>
-</html
+
+{% endblock %}

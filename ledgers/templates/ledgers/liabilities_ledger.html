@@ -1,13 +1,12 @@
-<html>
-    <head>
-        <title>Liabilities Ledger</title>
-        <style>
-            table, th, td {
-                border: 3px solid pink;
-            }
-        </style>
-    </head>
-    <body>
+{% extends 'ledgers/base.html' %}
+
+
+{% block title  %}
+Liabilities
+{% endblock %}
+
+{% block body  %}
+
         <table>
             <thead>
                 <tr>
@@ -52,5 +51,5 @@
                 </tr>
             </tfoot>
         </table>
-    </body>
-</html>
+
+{% endblock %}

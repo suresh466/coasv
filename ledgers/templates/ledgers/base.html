@@ -1,0 +1,26 @@
+{% extends 'common_base.html' %}
+
+
+{% block common_title %}
+
+Ledgers -> 
+
+{% block title %}
+{% endblock %}
+
+{% endblock %}
+
+{% block common_body %}
+
+<a href='{% url "ledgers:assets_ledger" %}'>Assets</a><br>
+<a href='{% url "ledgers:general_ledger" %}'>General</a><br>
+<a href='{% url "ledgers:liabilities_ledger" %}'>Liabilities</a><br>
+<a href='{% url "ledgers:purchase_ledger" %}'>Purchase</a><br>
+<a href='{% url "ledgers:sales_ledger" %}'>Sales</a><br>
+
+<hr style='background-color:red;height:3px'>
+
+{% block body %}
+{% endblock %}
+
+{% endblock %}

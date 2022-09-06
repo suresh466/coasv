@@ -5,13 +5,26 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>COAS: {% block title %}{% endblock %}</title>
+        <title>COAS: {% block common_title %}{% endblock %}</title>
         <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
         <link href="/static/base.css" rel="stylesheet">
+        <style>
+            table, th, td {
+                border: 2px solid green;
+            }
+        </style>
     </head>
 
     <body>
-        {% block body %}{% endblock %}
+
+        <a href='{% url "data_entry:general_journal" %}'>Data Entry</a>
+        <a href='{% url "ledgers:general_ledger" %}'>Ledgers</a>
+        <a href='{% url "fs:trial_balance" %}'>Financial Statements</a>
+        <a href='/admin'>Login</a>
+
+        <hr style='background-color:green;height:10px'>
+
+        {% block common_body %}{% endblock %}
     </body>
 
 </html>

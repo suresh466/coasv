@@ -18,7 +18,6 @@ class PurchaseLedgerViewTest(StaticLiveServerTestCase):
 
     def test_displays_ledger_as_expected(self):
         self.browser.get(f'{self.live_server_url}/ledgers/purchase_ledger')
-        self.assertIn('Purchase Ledger', self.browser.title)
 
         table = self.browser.find_element(By.TAG_NAME, 'table')
         header = table.find_element(By.TAG_NAME, 'thead')

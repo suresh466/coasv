@@ -1,9 +1,11 @@
-<html>
-    <head>
-        <title>Coas</title>
-    </head>
+{% extends 'common_base.html' %}
 
-    <body>
+
+{% block common_title %}
+Data Entry
+{% endblock %}
+
+{% block common_body %}
 
         <form method='POST' action='{% url "data_entry:general_journal" %}'>
             <table>
@@ -111,3 +113,5 @@
     </body>
 
 </html>
+
+{% endblock %}

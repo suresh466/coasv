@@ -20,7 +20,6 @@ class LedgerTest(StaticLiveServerTestCase):
     def test_displays_ledger_when_no_tx(self):
         # Edith is exited to checkout ledger of individual her acs
         self.browser.get(f'{self.live_server_url}/ledgers/ledger/1/')
-        self.assertIn('Ledger', self.browser.title)
 
         # She hadn't inputted any txs yet so only her ac
         # are displayed and everything seems to say 0.

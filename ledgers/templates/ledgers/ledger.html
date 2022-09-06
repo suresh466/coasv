@@ -1,4 +1,4 @@
-{% extends 'common_base.html'%}
+{% extends 'ledgers/base.html' %}
 
 
 {% block title %}
@@ -7,7 +7,7 @@ Ledger -> {{ table.name }}
 
 {% block body %}
 
-<table id='id_{{ table.name}}_ledger'>
+<table id='id_{{ table.name }}_ledger'>
     <thead>
         <tr>
             <th>

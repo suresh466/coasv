@@ -1,79 +1,78 @@
-<html>
-    <head>
-        <title>Balance Sheet</title>
-    </head>
-    <body>
-        <table>
-            <thead>
-                <tr>
-                    <th>Ac Name</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <h2>Liabilities</h2>
-                    </td>
-                </tr>
-                {% for ac in li_acs %}
-                {% for ca in ac.children %}
-                <tr>
-                    <td>
-                        &emsp;CA: {{ ca.ac.code }}
-                    </td>
-                    <td>
-                        &emsp;{{ ca.bal.diff }}
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td>
-                        PA: {{ ac.ac.code }}:
-                    </td>
-                    <td>
-                        {{ ac.bal.diff }}
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td>
-                        <h2>Total Liabilities: {{ li_total_bal.diff }}</h2>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <h2>Assets</h2>
-                    </td>
-                </tr>
+{% extends 'fs/base.html' %}
 
-                {% for ac in as_acs %}
-                {% for ca in ac.children %}
-                <tr>
-                    <td>
-                        &emsp;CA: {{ ca.ac.code }}
-                    </td>
-                    <td>
-                        &emsp;{{ ca.bal.diff }}
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td>
-                        PA: {{ ac.ac.code }}:
-                    </td>
-                    <td>
-                        {{ ac.bal.diff }}
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td>
-                        <h2>Total Assets: {{ as_total_bal.diff }}</h2>
-                    </td>
-                </tr>
 
-            </tbody>
-        </table>
-    </body>
-</html>
+{% block title %}
+BalanceSheet
+{% endblock %}
+
+{% block body %}
+<table>
+    <thead>
+        <tr>
+            <th>Ac Name</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <h2>Liabilities</h2>
+            </td>
+        </tr>
+        {% for ac in li_acs %}
+        {% for ca in ac.children %}
+        <tr>
+            <td>
+                &emsp;CA: {{ ca.ac.code }}
+            </td>
+            <td>
+                &emsp;{{ ca.bal.diff }}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td>
+                PA: {{ ac.ac.code }}:
+            </td>
+            <td>
+                {{ ac.bal.diff }}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td>
+                <h2>Total Liabilities: {{ li_total_bal.diff }}</h2>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h2>Assets</h2>
+            </td>
+        </tr>
+
+        {% for ac in as_acs %}
+        {% for ca in ac.children %}
+        <tr>
+            <td>
+                &emsp;CA: {{ ca.ac.code }}
+            </td>
+            <td>
+                &emsp;{{ ca.bal.diff }}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td>
+                PA: {{ ac.ac.code }}:
+            </td>
+            <td>
+                {{ ac.bal.diff }}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td>
+                <h2>Total Assets: {{ as_total_bal.diff }}</h2>
+            </td>
+        </tr>
+{% endblock %}
