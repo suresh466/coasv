@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-16wsc#c%p^e!an-b8+x@+z_g=ashm+=uf@g!-r#7$u*uu2(23h'
+SECRET_KEY = os.environ.get('COASV_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('COASV_DEBUG_VALUE')
 
 ALLOWED_HOSTS = []
 
@@ -80,9 +81,9 @@ WSGI_APPLICATION = 'coas_view.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'coasv',
-        'USER': 'hawk',
-        'PASSWORD': 'hawk',
+        'NAME': os.environ.get('COASV_DB_NAME'),
+        'USER': os.environ.get('COASV_DB_USER'),
+        'PASSWORD': os.environ.get('COASV_DB_PASS'),
         'HOST': 'localhost',
         'PORT': '5432',
     }
