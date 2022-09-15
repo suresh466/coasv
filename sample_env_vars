@@ -1,0 +1,6 @@
+export COASV_SECRET_KEY='insecurerandomsecretkeychangeit!=z_yb25jv_%%)o(+d6'
+export COASV_DEBUG_VALUE='True'
+export COASV_DB_NAME='coasv'
+export COASV_DB_USER='hawk'
+export COASV_DB_PASS='hawk'
+export COASV_ALLOWED_HOSTS=''
