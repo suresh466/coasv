@@ -4,22 +4,26 @@
 {% block common_title %}
 Data Entry
 {% endblock %}
+{% block common_head %}
+{{ tx_form.media }}
+{% endblock %}
 
 {% block common_body %}
 
         <form method='POST' action='{% url "data_entry:general_journal" %}'>
             <table>
-            {{ form.as_table }}
+            {{ sp_form.as_table }}
             {% csrf_token %}
             </table>
         </form>
 
         <form method='POST' action='{% url "data_entry:save_transaction" %}'>
-            <input id='id_desc'name='desc' type='textarea'>
+            <!-- <input id='id_desc'name='desc' type='textarea'> -->
+            {{ tx_form.as_p }}
+            {% csrf_token %}
             <button id='id_submit'name='submit' type='submit'>
                 Submit
             </button>
-            {% csrf_token %}
         </form>
 
         <form method='POST' action='{% url "data_entry:cancel_transaction" %}'>

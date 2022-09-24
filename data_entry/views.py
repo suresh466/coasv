@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, reverse
 from django.db import transaction as db_transaction
 
 from coasc.models import Ac, Split, Transaction
-from data_entry.forms import SplitForm
+from data_entry.forms import SplitForm, TransactionForm
 
 
 def session_balances(splits):
@@ -30,18 +30,19 @@ def session_balances(splits):
 def general_journal(request):
     template = 'data_entry/general_journal.html'
 
-    form = SplitForm(request.POST or None)
+    sp_form = SplitForm(request.POST or None)
+    tx_form = TransactionForm(request.POST or None)
 
-    if form.is_valid():
+    if sp_form.is_valid():
         if 'splits' not in request.session:
             request.session['splits'] = []
 
-        ac = form.cleaned_data['ac']
+        ac = sp_form.cleaned_data['ac']
         ac_pk = ac.pk
         ac_code = ac.code
 
-        t_sp = form.cleaned_data['t_sp']
-        am = str(form.cleaned_data['am'])
+        t_sp = sp_form.cleaned_data['t_sp']
+        am = str(sp_form.cleaned_data['am'])
 
         split = {'ac': ac_pk, 'ac_code': ac_code, 't_sp': t_sp, 'am': am}
         request.session['splits'].append(split)
@@ -53,7 +54,8 @@ def general_journal(request):
     session_bals = session_balances(splits)
 
     context = {
-            'form': form,
+            'sp_form': sp_form,
+            'tx_form': tx_form,
             'splits': splits,
             'session_bals': session_bals,
     }
@@ -66,9 +68,10 @@ def save_transaction(request):
     if splits is None:
         raise TypeError('None is not a session split')
 
+    date = request.POST['date']
     desc = request.POST['desc']
     with db_transaction.atomic():
-        tx = Transaction.objects.create(desc=desc)
+        tx = Transaction.objects.create(date=date, desc=desc)
 
         for sp in splits:
             ac_pk = sp['ac']

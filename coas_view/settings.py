@@ -36,13 +36,13 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
+    'django.contrib.sessions', 'django.contrib.messages',
     'django.contrib.staticfiles',
     'coasc',
     'data_entry',
     'ledgers',
     'fstatements',
+    'nepali_datetime_field',
 ]
 
 MIDDLEWARE = [
