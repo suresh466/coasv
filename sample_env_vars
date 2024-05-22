@@ -1,5 +1,6 @@
 export COASV_SECRET_KEY='insecurerandomsecretkeychangeit!=z_yb25jv_%%)o(+d6'
 export COASV_DEBUG_VALUE='True'
+export COASV_DB_HOST='db' # db is the name of the service in the docker-compose file OR localhost if not using docker most likely
 export COASV_DB_NAME='coasv'
 export COASV_DB_USER='hawk'
 export COASV_DB_PASS='hawk'
