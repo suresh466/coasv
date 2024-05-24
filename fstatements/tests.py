@@ -1,7 +1,6 @@
-from django.test import TestCase
-from django.shortcuts import reverse
-
 from coasc.models import Ac
+from django.shortcuts import reverse
+from django.test import TestCase
 
 
 class TrialBalanceSheetTest(TestCase):
@@ -29,8 +28,8 @@ class BalanceSheetTest(TestCase):
 
 class IncomeStatementTest(TestCase):
     def test_uses_income_statement_template(self):
-        Ac(name="parent", code=160, t_ac="I", cat="AS").save()
-        Ac(name="parent", code=150, t_ac="I", cat="AS").save()
+        Ac(name="parent", code=160, t_ac="I", cat="IN").save()
+        Ac(name="parent", code=150, t_ac="I", cat="EX").save()
 
         response = self.client.get(reverse("fs:income_statement"))
         self.assertTemplateUsed(response, "fs/income_statement.html")

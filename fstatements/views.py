@@ -1,6 +1,11 @@
-from django.shortcuts import render, redirect, reverse
-
 from coasc.models import Ac
+from django.shortcuts import redirect, render, reverse
+
+from fstatements.utils import (
+    calculate_balance_sheet,
+    calculate_income_statement,
+    calculate_trial_balance,
+)
 
 
 def trial_balance(request):
@@ -11,24 +16,13 @@ def trial_balance(request):
         # later do something that makes sense
         return redirect(reverse("ledgers:general_ledger"))
 
-    cr_acs = []
-    dr_acs = []
+    cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance(acs)
 
-    for ac in acs:
-        if ac.cat in ["AS", "EX"]:
-            dr_acs.append(ac)
-        elif ac.cat in ["LI", "IN"]:
-            cr_acs.append(ac)
-
-    cr_acs = [{"ac": ac, "bal": ac.bal()} for ac in cr_acs]
-    dr_acs = [{"ac": ac, "bal": ac.bal()} for ac in dr_acs]
-
-    total_sum = {
-        "cr_acs": sum(ac["bal"]["diff"] for ac in cr_acs),
-        "dr_acs": sum(ac["bal"]["diff"] for ac in dr_acs),
+    context = {
+        "cr_acs": cr_acs_with_bal,
+        "dr_acs": dr_acs_with_bal,
+        "total_sum": total_sum,
     }
-
-    context = {"cr_acs": cr_acs, "dr_acs": dr_acs, "total_sum": total_sum}
 
     return render(request, template, context)
 
@@ -36,36 +30,20 @@ def trial_balance(request):
 def balance_sheet(request):
     template = "fs/balance_sheet.html"
 
-    li_acs = Ac.objects.filter(cat="LI")
     as_acs = Ac.objects.filter(cat="AS")
+    li_acs = Ac.objects.filter(cat="LI")
 
     if not li_acs and not as_acs:
         return redirect(reverse("ledgers:general_ledger"))
 
-    li_acs = [
-        {
-            "ac": ac,
-            "bal": ac.bal(),
-            "children": [{"ac": ca, "bal": ca.bal()} for ca in ac.ac_set.all()],
-        }
-        for ac in li_acs
-    ]
+    as_acs_with_bal, li_acs_with_bal = calculate_balance_sheet(li_acs, as_acs)
 
-    as_acs = [
-        {
-            "ac": ac,
-            "bal": ac.bal(),
-            "children": [{"ac": ca, "bal": ca.bal()} for ca in ac.ac_set.all()],
-        }
-        for ac in as_acs
-    ]
-
-    li_total_bal = Ac.total_bal(cat="LI")
     as_total_bal = Ac.total_bal(cat="AS")
+    li_total_bal = Ac.total_bal(cat="LI")
 
     context = {
-        "li_acs": li_acs,
-        "as_acs": as_acs,
+        "li_acs": li_acs_with_bal,
+        "as_acs": as_acs_with_bal,
         "li_total_bal": li_total_bal,
         "as_total_bal": as_total_bal,
     }
@@ -76,26 +54,18 @@ def income_statement(request):
     template = "fs/income_statement.html"
 
     try:
-        in_ac = Ac.objects.get(code=160)
-        ex_ac = Ac.objects.get(code=150)
+        # in_ac = Ac.objects.get(code=160)
+        # ex_ac = Ac.objects.get(code=150)
+        in_ac = Ac.objects.get(cat="IN")
+        ex_ac = Ac.objects.get(cat="EX")
     except Ac.DoesNotExist:
         return redirect(reverse("ledgers:general_ledger"))
 
-    in_ac = {
-        "ac": in_ac,
-        "bal": in_ac.bal(),
-        "children": [{"ac": ca, "bal": ca.bal()} for ca in in_ac.ac_set.all()],
-    }
-
-    ex_ac = {
-        "ac": ex_ac,
-        "bal": ex_ac.bal(),
-        "children": [{"ac": ca, "bal": ca.bal()} for ca in ex_ac.ac_set.all()],
-    }
+    ex_ac_with_bal, in_ac_with_bal = calculate_income_statement(in_ac, ex_ac)
 
     context = {
-        "in_ac": in_ac,
-        "ex_ac": ex_ac,
+        "ex_ac": ex_ac_with_bal,
+        "in_ac": in_ac_with_bal,
     }
 
     return render(request, template, context)
