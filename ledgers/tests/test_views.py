@@ -48,14 +48,6 @@ class LedgerViewTest(TestCase):
         response = self.client.get(reverse("ledgers:ledger", args=[1]))
         self.assertTemplateUsed(response, "ledgers/ledger.html")
 
-    def test_redirects_if_code_is_None(self):
-        response = self.client.get(reverse("ledgers:ledger", args=[None]))
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
-
-    def test_redirects_if_ac_does_not_exist(self):
-        response = self.client.get(reverse("ledgers:ledger", args=[3]))
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
-
     def test_passes_table_to_template_as_expected(self):
         response = self.client.get(reverse("ledgers:ledger", args=[1]))
         table = response.context["table"]

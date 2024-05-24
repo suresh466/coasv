@@ -1,5 +1,6 @@
 from coasc.models import Ac
-from django.shortcuts import redirect, render, reverse
+from django.http import Http404
+from django.shortcuts import render
 
 from ledgers.utils import (
     generate_grand_total,
@@ -34,16 +35,13 @@ def general_ledger(request):
     return render(request, template, context)
 
 
-def ledger(request, code=None):
+def ledger(request, code):
     template = "ledgers/ledger.html"
-
-    if code is None:
-        return redirect(reverse("ledgers:general_ledger"))
 
     try:
         account = Ac.objects.get(code=code)
     except Ac.DoesNotExist:
-        return redirect(reverse("ledgers:general_ledger"))
+        raise Http404("Account does not exist")
 
     table = generate_table(account)
 
