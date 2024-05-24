@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class FstatementsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'fstatements'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "fstatements"
