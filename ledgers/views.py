@@ -1,21 +1,18 @@
-from django.shortcuts import render, redirect, reverse
-
 from coasc.models import Ac
+from django.shortcuts import redirect, render, reverse
 
 from ledgers.utils import (
-    generate_table,
-    generate_parent_headers,
-    generate_parent_footers,
-    get_parent_txs,
-    generate_parent_rows,
-)
-from ledgers.utils import (
-    generate_simple_headers,
-    generate_simple_footers,
-    get_simple_txs,
-    generate_simple_rows,
-    load_rows_bal,
     generate_grand_total,
+    generate_parent_footers,
+    generate_parent_headers,
+    generate_parent_rows,
+    generate_simple_footers,
+    generate_simple_headers,
+    generate_simple_rows,
+    generate_table,
+    get_parent_txs,
+    get_simple_txs,
+    load_rows_bal,
 )
 
 
@@ -59,11 +56,8 @@ def ledger(request, code=None):
 def purchase_ledger(request):
     template = "ledgers/purchase_ledger.html"
 
-    try:
-        parent = Ac.objects.get(code=150)
-    except Ac.DoesNotExist:
-        # Later do something that makes sense
-        return redirect(reverse("ledgers:general_ledger"))
+    # parent = Ac.objects.get(code=150)
+    parent = Ac.objects.get(cat="EX")
 
     headers = generate_parent_headers(parent)
     footers = generate_parent_footers(parent)
@@ -99,11 +93,8 @@ def purchase_ledger(request):
 def sales_ledger(request):
     template = "ledgers/sales_ledger.html"
 
-    try:
-        parent = Ac.objects.get(code=160)
-    except Ac.DoesNotExist:
-        # Later do something that makes sense
-        return redirect(reverse("ledgers:general_ledger"))
+    # parent = Ac.objects.get(code="150")
+    parent = Ac.objects.get(cat="IN")
 
     headers = generate_parent_headers(parent)
     footers = generate_parent_footers(parent)
@@ -140,9 +131,6 @@ def assets_ledger(request):
     template = "ledgers/assets_ledger.html"
 
     acs = Ac.objects.filter(cat="AS")
-    if not acs:
-        # Later do something that makes sense
-        return redirect(reverse("ledgers:general_ledger"))
 
     headers = generate_simple_headers(acs)
     footers = generate_simple_footers(acs)
@@ -174,10 +162,6 @@ def liabilities_ledger(request):
     template = "ledgers/liabilities_ledger.html"
 
     acs = Ac.objects.filter(cat="LI")
-    if not acs:
-        # Later do something that makes sense
-        return redirect(reverse("ledgers:general_ledger"))
-
     headers = generate_simple_headers(acs)
     footers = generate_simple_footers(acs)
 

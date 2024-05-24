@@ -1,7 +1,6 @@
+from coasc.models import Ac, Split, Transaction
 from django.test import TestCase
 from django.urls import reverse
-
-from coasc.models import Ac, Split, Transaction
 
 
 class GeneralLedgerViewTest(TestCase):
@@ -74,27 +73,15 @@ class PurchaseViewTest(TestCase):
         response = self.client.get(reverse("ledgers:purchase_ledger"))
         self.assertTemplateUsed(response, "ledgers/purchase_ledger.html")
 
-    def test_returns_message_if_no_parent(self):
-        self.parent.delete()
-
-        response = self.client.get(reverse("ledgers:purchase_ledger"))
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
-
 
 class SalesViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.parent = Ac.objects.create(name="parent", code=160, cat="EX", t_ac="I")
+        cls.parent = Ac.objects.create(name="parent", code=160, cat="IN", t_ac="I")
 
     def test_uses_purchase_ledger_template(self):
         response = self.client.get(reverse("ledgers:sales_ledger"))
         self.assertTemplateUsed(response, "ledgers/sales_ledger.html")
-
-    def test_redirects_if_no_parent(self):
-        self.parent.delete()
-        response = self.client.get(reverse("ledgers:sales_ledger"))
-
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
 
 
 class AssetsViewTest(TestCase):
@@ -107,14 +94,6 @@ class AssetsViewTest(TestCase):
         response = self.client.get(reverse("ledgers:assets_ledger"))
         self.assertTemplateUsed(response, "ledgers/assets_ledger.html")
 
-    def test_redirects_if_no_ac_in_acs(self):
-        self.single.delete()
-        self.parent.delete()
-
-        response = self.client.get(reverse("ledgers:assets_ledger"))
-
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
-
 
 class LiabilieitsViewTest(TestCase):
     @classmethod
@@ -125,11 +104,3 @@ class LiabilieitsViewTest(TestCase):
     def test_uses_liabilities_ledger_template(self):
         response = self.client.get(reverse("ledgers:liabilities_ledger"))
         self.assertTemplateUsed(response, "ledgers/liabilities_ledger.html")
-
-    def test_redirects_if_no_ac_in_acs(self):
-        self.single.delete()
-        self.parent.delete()
-
-        response = self.client.get(reverse("ledgers:liabilities_ledger"))
-
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))

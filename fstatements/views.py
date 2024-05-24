@@ -12,10 +12,6 @@ def trial_balance(request):
     template = "fs/trial_balance.html"
 
     acs = Ac.objects.exclude(cat="")
-    if not acs:
-        # later do something that makes sense
-        return redirect(reverse("ledgers:general_ledger"))
-
     cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance(acs)
 
     context = {
@@ -32,9 +28,6 @@ def balance_sheet(request):
 
     as_acs = Ac.objects.filter(cat="AS")
     li_acs = Ac.objects.filter(cat="LI")
-
-    if not li_acs and not as_acs:
-        return redirect(reverse("ledgers:general_ledger"))
 
     as_acs_with_bal, li_acs_with_bal = calculate_balance_sheet(li_acs, as_acs)
 
@@ -53,13 +46,10 @@ def balance_sheet(request):
 def income_statement(request):
     template = "fs/income_statement.html"
 
-    try:
-        # in_ac = Ac.objects.get(code=160)
-        # ex_ac = Ac.objects.get(code=150)
-        in_ac = Ac.objects.get(cat="IN")
-        ex_ac = Ac.objects.get(cat="EX")
-    except Ac.DoesNotExist:
-        return redirect(reverse("ledgers:general_ledger"))
+    # in_ac = Ac.objects.get(code=160)
+    # ex_ac = Ac.objects.get(code=150)
+    in_ac = Ac.objects.get(cat="IN")
+    ex_ac = Ac.objects.get(cat="EX")
 
     ex_ac_with_bal, in_ac_with_bal = calculate_income_statement(in_ac, ex_ac)
 

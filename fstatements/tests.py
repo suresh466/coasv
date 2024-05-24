@@ -9,10 +9,6 @@ class TrialBalanceSheetTest(TestCase):
         response = self.client.get(reverse("fs:trial_balance"))
         self.assertTemplateUsed(response, "fs/trial_balance.html")
 
-    def test_redirects_if_no_acs(self):
-        response = self.client.get(reverse("fs:balance_sheet"))
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
-
 
 class BalanceSheetTest(TestCase):
     def test_uses_balance_sheet_template(self):
@@ -20,10 +16,6 @@ class BalanceSheetTest(TestCase):
 
         response = self.client.get(reverse("fs:balance_sheet"))
         self.assertTemplateUsed(response, "fs/balance_sheet.html")
-
-    def test_redirects_if_no_acs(self):
-        response = self.client.get(reverse("fs:balance_sheet"))
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
 
 
 class IncomeStatementTest(TestCase):
@@ -33,7 +25,3 @@ class IncomeStatementTest(TestCase):
 
         response = self.client.get(reverse("fs:income_statement"))
         self.assertTemplateUsed(response, "fs/income_statement.html")
-
-    def test_redirects_if_no_in_ex_ac(self):
-        response = self.client.get(reverse("fs:income_statement"))
-        self.assertRedirects(response, reverse("ledgers:general_ledger"))
