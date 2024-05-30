@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-
     {% load static %}
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>COAS: {% block common_title %}{% endblock %}</title>
+        <title>COAS:
+            {% block common_title %}{% endblock %}
+        </title>
         <link href="{% static 'css/output.css' %}" rel="stylesheet">
     </head>
-
-    <body>
-
-        <a href='{% url "data_entry:general_journal" %}'>Data Entry</a>
-        <a href='{% url "ledgers:general_ledger" %}'>Ledgers</a>
-        <a href='{% url "fs:trial_balance" %}'>Financial Statements</a>
-        <a href='/admin'>Login</a>
-
-        <hr style='background-color:green;height:10px'>
-
-        {% block common_body %}{% endblock %}
+    <body class="flex h-screen bg-gray-200">
+        <!-- side navbar -->
+        <nav class="flex gap-8 flex-col w-72 p-4 bg-gray-900 text-white">
+            <a href='{% url "data_entry:general_journal" %}'
+               class="hover:bg-gray-700 rounded-md transition duration-200 p-2">Data Entry</a>
+            <a href='{% url "ledgers:general_ledger" %}'
+               class="hover:bg-gray-700 rounded-md transition duration-200 p-2">Ledgers</a>
+            <a href='{% url "fs:trial_balance" %}'
+               class="hover:bg-gray-700 rounded-md transition duration-200 p-2">Financial Statements</a>
+            <a href='/admin'
+               class="hover:bg-gray-700 rounded-md transition duration-200 p-2">Login</a>
+        </nav>
+        <!-- content -->
+        <main class="flex-1 overflow-auto p-4 m-4">
+            {% block common_body %}{% endblock %}
+        </main>
     </body>
-
 </html>
