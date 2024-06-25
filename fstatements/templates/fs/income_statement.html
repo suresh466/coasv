@@ -1,49 +1,48 @@
 {% extends 'fs/base.html' %}
-
-
-{% block title %}
-Income Statement
-{% endblock %}
-
+{% block title %}Income Statement{% endblock %}
 {% block body %}
-        <table>
-            <thead>
-                <tr>
-                    <td>AC name</td>
-                    <td>Debit</td>
-                    <td>Credit</td>
-                </tr>
-            </thead>
-            <tbody>
-                {% for ca in in_ac.children %}
-                <tr>
-                    <td>CA: {{ ca.ac.code }}</td>
-                    <td>-----</td>
-                    <td>{{ ca.bal.diff }}</td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td>PA: {{ in_ac.ac.code }}</td>
-                    <td>-----</td>
-                    <td>{{ in_ac.bal.diff }}</td>
-                </tr>
-                {% for ca in ex_ac.children %}
-                <tr>
-                    <td>CA: {{ ca.ac.code }}</td>
-                    <td>{{ ca.bal.diff }}</td>
-                    <td>-----</td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td>PA: {{ ex_ac.ac.code }}</td>
-                    <td>{{ ex_ac.bal.diff }}</td>
-                    <td>-----</td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <td>Total</td>
-                <td>{{ ex_ac.bal.diff }}</td>
-                <td>{{ in_ac.bal.diff }}</td>
-            </tfoot>
-        </table>
+    <div class="container mx-auto">
+        <div class="bg-white shadow-lg rounded-md p-6">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border px-4 py-2 text-left">AC name</th>
+                        <th class="border px-4 py-2 text-right">Debit</th>
+                        <th class="border px-4 py-2 text-right">Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ca in in_ac.children %}
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %}">
+                            <td class="border px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
+                            <td class="border px-4 py-2"></td>
+                            <td class="border px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="bg-gray-400" %}">
+                        <td class="px-4 py-4">PA: {{ in_ac.ac.name }} ({{ in_ac.ac.code }})</td>
+                        <td class="px-4 py-4"></td>
+                        <td class="px-4 py-4 text-right">{{ in_ac.bal.diff }}</td>
+                    </tr>
+                    {% for ca in ex_ac.children %}
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %}">
+                            <td class="border px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
+                            <td class="border px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                            <td class="border px-4 py-2"></td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="bg-gray-400">
+                        <td class="px-4 py-4">PA: {{ ex_ac.ac.name }} ({{ in_ac.ac.code }})</td>
+                        <td class="px-4 py-4 text-right">{{ ex_ac.bal.diff }}</td>
+                        <td class="px-4 py-4"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <td class="px-4 py-2">Total</td>
+                    <td class="px-4 py-2 text-right">{{ ex_ac.bal.diff }}</td>
+                    <td class="px-4 py-2 text-right">{{ in_ac.bal.diff }}</td>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 {% endblock %}

@@ -2,25 +2,25 @@
 {% block title %}Trial Balance{% endblock %}
 {% block body %}
     <div class="container mx-auto">
-        <div class="bg-white shadow-lg rounded-lg p-6">
-            <table class="w-full ">
+        <div class="bg-white shadow-lg rounded-md p-6">
+            <table class="w-full border-collapse">
                 <thead>
-                    <tr class="bg-gray-100">
+                    <tr class="bg-gray-200">
                         <th class="border px-4 py-2 text-left">Ac Name</th>
-                        <th class="border px-4 py-2 text-left">Debit</th>
+                        <th class="border px-4 py-2 text-right">Debit</th>
                         <th class="border px-4 py-2 text-right">Credit</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for ac in cr_acs %}
-                        <tr class="{% cycle "bg-white" "bg-gray-50" %}">
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %}">
                             <td class="border px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
                             <td class="border px-4 py-2"></td>
                             <td class="border px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
                         </tr>
                     {% endfor %}
                     {% for ac in dr_acs %}
-                        <tr class="{% cycle "bg-white" "bg-gray-50" %}">
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %}">
                             <td class="border px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
                             <td class="border px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
                             <td class="border px-4 py-2"></td>
