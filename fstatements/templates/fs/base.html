@@ -1,24 +1,20 @@
 {% extends 'common_base.html' %}
-
-
 {% block common_title %}
-
-Statements -> 
-
-{% block title %}
+    Statements ->
+    {% block title %}{% endblock %}
 {% endblock %}
-
-{% endblock %}
-
 {% block common_body %}
-
-<a href='{% url "fs:trial_balance" %}'>Trial Balance</a><br>
-<a href='{% url "fs:balance_sheet" %}'>BalanceSheet</a><br>
-<a href='{% url "fs:income_statement" %}'>Income Statement</a><br>
-
-<hr style='background-color:red;height:3px'>
-
-{% block body %}
-{% endblock %}
-
+    <div id="secondary-nav"
+         class="flex bg-gray-900 text-white p-4 mb-8 font-bold w-full">
+        <a class="hover:bg-gray-700 rounded-md p-4 transition duration-200"
+           href='{% url "fs:trial_balance" %}'>Trial Balance</a>
+        <br>
+        <a class="hover:bg-gray-700 rounded-md p-4 transition duration-200"
+           href='{% url "fs:balance_sheet" %}'>BalanceSheet</a>
+        <br>
+        <a class="hover:bg-gray-700 rounded-md p-4 transition duration-200"
+           href='{% url "fs:income_statement" %}'>Income Statement</a>
+        <br>
+    </div>
+    {% block body %}{% endblock %}
 {% endblock %}

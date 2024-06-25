@@ -1,55 +1,40 @@
-{% extends 'fs/base.html'%}
-
-
-{% block title %}
-Trial Balance
-{% endblock %}
-
+{% extends 'fs/base.html' %}
+{% block title %}Trial Balance{% endblock %}
 {% block body %}
-
-<table>
-    <thead>
-        <tr>
-            <th>Ac Name</th>
-            <th>Debit</th>
-            <th>Credit</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for ac in cr_acs %}
-        <tr>
-            <td>
-                PA: {{ ac.ac.code }}:
-            </td>
-            <td>
-                &nbsp;-----
-            </td>
-            <td>
-                &nbsp;{{ ac.bal.cr_sum }}
-            </td>
-        </tr>
-        {% endfor %}
-        {% for ac in dr_acs %}
-        <tr>
-            <td>
-                PA: {{ ac.ac.code }}:
-            </td>
-            <td>
-                &nbsp;{{ ac.bal.cr_sum }}
-            </td>
-            <td>
-                &nbsp;-----
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    <tfoot>
-        <tr>
-            <td>Total:</td>
-            <td>{{ total_sum.dr_acs }}</td>
-            <td>{{ total_sum.cr_acs }}</td>
-        </tr>
-    </tfoot>
-</table>
-
+    <div class="container mx-auto">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <table class="w-full ">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border px-4 py-2 text-left">Ac Name</th>
+                        <th class="border px-4 py-2 text-left">Debit</th>
+                        <th class="border px-4 py-2 text-right">Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ac in cr_acs %}
+                        <tr class="{% cycle "bg-white" "bg-gray-50" %}">
+                            <td class="border px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
+                            <td class="border px-4 py-2"></td>
+                            <td class="border px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% for ac in dr_acs %}
+                        <tr class="{% cycle "bg-white" "bg-gray-50" %}">
+                            <td class="border px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
+                            <td class="border px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
+                            <td class="border px-4 py-2"></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="px-4 py-2">Total:</td>
+                        <td class="px-4 py-2 text-right">{{ total_sum.dr_acs }}</td>
+                        <td class="px-4 py-2 text-right">{{ total_sum.cr_acs }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 {% endblock %}
