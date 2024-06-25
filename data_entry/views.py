@@ -1,8 +1,9 @@
 from decimal import Decimal
-from django.shortcuts import render, redirect, reverse
-from django.db import transaction as db_transaction
 
 from coasc.models import Ac, Split, Transaction
+from django.db import transaction as db_transaction
+from django.shortcuts import redirect, render, reverse
+
 from data_entry.forms import SplitForm
 
 
@@ -39,11 +40,18 @@ def general_journal(request):
         ac = form.cleaned_data["ac"]
         ac_pk = ac.pk
         ac_code = ac.code
+        ac_name = ac.name
 
         t_sp = form.cleaned_data["t_sp"]
         am = str(form.cleaned_data["am"])
 
-        split = {"ac": ac_pk, "ac_code": ac_code, "t_sp": t_sp, "am": am}
+        split = {
+            "ac": ac_pk,
+            "ac_code": ac_code,
+            "ac_name": ac_name,
+            "t_sp": t_sp,
+            "am": am,
+        }
         request.session["splits"].append(split)
         request.session.modified = True
 
