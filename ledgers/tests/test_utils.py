@@ -1,20 +1,19 @@
+from coasc.models import Ac, Split, Transaction
 from django.test import TestCase
 
-from coasc.models import Ac, Split, Transaction
-
 from ledgers.utils import (
-    generate_rows,
-    generate_table,
-    generate_simple_headers,
-    generate_parent_headers,
-    generate_simple_footers,
-    generate_parent_footers,
-    get_simple_txs,
-    get_parent_txs,
-    generate_simple_rows,
-    generate_parent_rows,
-    load_rows_bal,
     generate_grand_total,
+    generate_parent_footers,
+    generate_parent_headers,
+    generate_parent_rows,
+    generate_rows,
+    generate_simple_footers,
+    generate_simple_headers,
+    generate_simple_rows,
+    generate_table,
+    get_parent_txs,
+    get_simple_txs,
+    load_rows_bal,
 )
 
 
@@ -96,7 +95,7 @@ class GenerateParentHeadersTest(TestCase):
         parent = self.parent
 
         headers = generate_parent_headers(parent)
-        expected_headers = [f"{self.child.name}-{self.child.code}"]
+        expected_headers = [f"{self.child.name} ({self.child.code})"]
 
         self.assertEqual(headers, expected_headers)
 

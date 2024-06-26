@@ -1,4 +1,4 @@
-from coasc.models import Transaction, Split
+from coasc.models import Split, Transaction
 
 
 def generate_rows(sps):
@@ -46,7 +46,7 @@ def generate_parent_headers(parent):
     headers = []
 
     for child in parent.ac_set.all():
-        header = f"{child.name}-{child.code}"
+        header = f"{child.name} ({child.code})"
         headers.append(header)
 
     return headers
