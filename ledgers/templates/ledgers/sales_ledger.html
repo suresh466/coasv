@@ -1,42 +1,44 @@
 {% extends 'ledgers/base.html' %}
-
-
-{% block title %}
-Sales
-{% endblock %}
-
+{% block title %}Sales{% endblock %}
 {% block body %}
-
-        <table>
-            <thead>
-                <tr>
-                    <td>Desc</td>
-                    {% for header in table.headers %}
-                    <td>{{ header }}</td>
-                    {% endfor %}
-                    <td>Total Inc</td>
-                </tr>
-            </thead>
-            <tbody>
-                {% for tx, row, col_data in table.loaded_rows %}
-                <tr>
-                    <td>{{ tx }}</td>
-                    {% for data in row %}
-                    <td>{{ data.diff }}</td>
-                    {% endfor %}
-                    <td>{{ col_data }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td>Total</td>
-                    {% for footer in table.footers %}
-                    <td>{{footer.diff}}</td>
-                    {% endfor %}
-                    <td>{{ table.parent_total.diff }}</td>
-                </tr>
-            </tfoot>
-        </table>
-
+    <div class="container mx-auto">
+        <div class="rounded-lg shadow-lg bg-white">
+            <h1 class="text-2xl text-center font-bold p-4 mb-6">Sales Ledger</h1>
+            <div class="overflow-x-auto">
+                <table class="min-w-full border-collapse divide-y divide-gray-300">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th scope="col"
+                                class="px-4 py-2 uppercase tracking-wider bg-gray-100 font-medium text-left sticky left-0 z-10">
+                                Desc
+                            </th>
+                            {% for header in table.headers %}
+                                <th scope="col" class="px-4 py-2 font-medium uppercase tracking-wider">{{ header }}</th>
+                            {% endfor %}
+                            <th scope="col"
+                                class="px-4 py-2 font-semibold uppercase tracking-wider bg-gray-100">Total Inc</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-300">
+                        {% for tx, row, col_data in table.loaded_rows %}
+                            <tr class="{% cycle "bg-white" "bg-gray-50" %} hover:bg-gray-300">
+                                <td class="px-4 py-2 whitespace-nowrap bg-gray-100 sticky left-0">{{ tx.desc }}</td>
+                                {% for data in row %}<td class="px-4 py-2 whitespace-nowrap text-right">{{ data.diff }}</td>{% endfor %}
+                                <td class="px-4 py-2 whitespace-nowrap text-right">{{ col_data }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 font-semibold sticky left-0">Total</td>
+                            {% for footer in table.footers %}
+                                <td class="px-4 py-2 whitespace-nowrap bg-yellow-100 text-right">{{ footer.diff }}</td>
+                            {% endfor %}
+                            <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 text-right">{{ table.parent_total.diff }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
