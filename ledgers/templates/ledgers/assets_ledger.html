@@ -1,55 +1,56 @@
 {% extends 'ledgers/base.html' %}
-
-
-{% block title %}
-Assets ledger
-{% endblock %}
-
+{% block title %}Assets ledger{% endblock %}
 {% block body %}
-
-<table>
-    <thead>
-        <tr>
-            <th>Desc</th>
-            {% for header in table.headers %}
-            <th colspan=3>{{ header }}</th>
-            {% endfor %}
-            <th>&nbsp;</th>
-        </tr>
-        <tr>
-            <th>&nbsp;</th>
-            {% for header in table.headers %}
-            <th>Dr</th>
-            <th>Cr</th>
-            <th>Bal</th>
-            {% endfor %}
-            <th>Grand Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for txs, row, grand_total in table.loaded_rows %}
-        <tr>
-            <th>{{txs}}</th>
-            {% for data in row %}
-            <td>{{ data.dr_sum }}</td>
-            <td>{{ data.cr_sum }}</td>
-            <td>{{ data.bal }}</td>
-            {% endfor %}
-            <td>{{ grand_total }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    <tfoot>
-        <tr>
-            <td>Total</td>
-            {% for footer in table.footers %}
-            <td>{{ footer.dr_sum }}</td>
-            <td>{{ footer.cr_sum }}</td>
-            <td>{{ footer.diff }}</td>
-            {% endfor %}
-            <td>{{ table.total.diff }}</td>
-        </tr>
-    </tfoot>
-</table>
-
+    <div class="container mx-auto">
+        <div class="rounded-lg shadow-lg bg-white ">
+            <div class="prose p-4 mb-6">
+                <h1>Assets Ledger</h1>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="prose border-collapse divide-y">
+                    <thead class="divide-y">
+                        <tr class="divide-x">
+                            <th scope="col"
+                                class="uppercase w-1/3 min-w-96 bg-gray-50 px-4 py-2 sticky left-0 z-10">Desc</th>
+                            {% for header in table.headers %}<th colspan=3 class="uppercase bg-gray-100 px-4 py-2">{{ header }}</th>{% endfor %}
+                            <th class="bg-gray-50 px-4 py-2"></th>
+                        </tr>
+                        <tr class="divide-x">
+                            <th class="bg-gray-100 sticky left-0 z-10"></th>
+                            {% for header in table.headers %}
+                                <th scope="col" class="uppercase min-w-28 bg-gray-50 px-4 py-2">Dr</th>
+                                <th scope="col" class="uppercase min-w-28 bg-gray-50 px-4 py-2">Cr</th>
+                                <th scope="col" class="uppercase min-w-28 bg-gray-50 px-4 py-2">Bal</th>
+                            {% endfor %}
+                            <th class="bg-gray-100 px-4 py-2">Grand Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txs, row, grand_total in table.loaded_rows %}
+                            <tr class="divide-x {% cycle "bg-white" "bg-gray-50" %} hover:bg-gray-300">
+                                <td class="bg-gray-50 px-4 py-2 sticky left-0 z-10">{{ txs.desc }}</td>
+                                {% for data in row %}
+                                    <td class="px-4 py-2 text-right">{{ data.dr_sum }}</td>
+                                    <td class="px-4 py-2 text-right">{{ data.cr_sum }}</td>
+                                    <td class="px-4 py-2 text-right">{{ data.bal }}</td>
+                                {% endfor %}
+                                <td>{{ grand_total }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class=divide-x">
+                            <td class="bg-yellow-50 px-4 py-2 sticky left-0 z-10">Total</td>
+                            {% for footer in table.footers %}
+                                <td class="bg-yellow-100 px-4 py-2">{{ footer.dr_sum }}</td>
+                                <td class="bg-yellow-100 px-4 py-2">{{ footer.cr_sum }}</td>
+                                <td class="bg-yellow-100 px-4 py-2">{{ footer.diff }}</td>
+                            {% endfor %}
+                            <td class="bg-yellow-50 px-4 py-2">{{ table.total.diff }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
