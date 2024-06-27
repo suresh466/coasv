@@ -18,8 +18,8 @@
                         </div>
                         <div class="overflow-x-auto">
                             <table id='id_{{ table.name }}_ledger'
-                                   class="min-w-full border-collapse prose">
-                                <thead>
+                                   class="min-w-full border-collapse prose divide-y">
+                                <thead class="divide-y">
                                     <tr class="bg-gray-200">
                                         <th class="px-4 py-2 text-left">Description</th>
                                         <th class="px-4 py-2 text-right">Debit</th>
@@ -27,9 +27,9 @@
                                         <th class="px-4 py-2 text-right">Difference</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="divide-y">
                                     {% for row in table.rows %}
-                                        <tr class="{% cycle "bg-white" "bg-gray-100" as rowcolors %}">
+                                        <tr class="{% cycle "bg-white" "bg-gray-100" as rowcolors %} divide-x hover:bg-gray-300">
                                             <td class="px-4 py-2">{{ row.desc }}</td>
                                             <td class="px-4 py-2 text-right">{{ row.debit }}</td>
                                             <td class="px-4 py-2 text-right">{{ row.credit }}</td>

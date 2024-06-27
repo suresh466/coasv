@@ -16,7 +16,7 @@
                 </thead>
                 <tbody class="divide-y">
                     {% for ca in in_ac.children %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x">
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
                             <td class="px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
                             <td class="px-4 py-2"></td>
                             <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
@@ -28,7 +28,7 @@
                         <td class="px-4 py-4 text-right">{{ in_ac.bal.diff }}</td>
                     </tr>
                     {% for ca in ex_ac.children %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x">
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
                             <td class="px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
                             <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
                             <td class="px-4 py-2"></td>

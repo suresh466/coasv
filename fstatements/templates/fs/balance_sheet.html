@@ -20,13 +20,13 @@
                     {% for ac in li_acs %}
                         {% for ca in ac.children %}
                             <!-- liabilities child accounts -->
-                            <tr class="bg-gray-50 divide-x">
+                            <tr class="bg-gray-50 divide-x hover:bg-gray-300">
                                 <td class="px-4 py-2">&emsp; {{ ca.ac.name }} ({{ ca.ac.code }})</td>
                                 <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
                             </tr>
                         {% endfor %}
                         <!-- liabilities parent accounts -->
-                        <tr class="divide-x">
+                        <tr class="divide-x hover:bg-gray-300">
                             <td class="px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
                             <td class="px-4 py-2 text-right">{{ ac.bal.diff }}</td>
                         </tr>
@@ -41,13 +41,13 @@
                     {% for ac in as_acs %}
                         {% for ca in ac.children %}
                             <!-- assets child accounts -->
-                            <tr class="bg-gray-50 divide-x">
+                            <tr class="bg-gray-50 divide-x hover:bg-gray-300">
                                 <td class="px-4 py-2">&emsp;{{ ca.ac.name }} ({{ ca.ac.code }})</td>
                                 <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
                             </tr>
                         {% endfor %}
                         <!-- liabilities parent accounts -->
-                        <tr class="divide-x">
+                        <tr class="divide-x hover:bg-gray-300">
                             <td class="px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
                             <td class="px-4 py-2 text-right">{{ ac.bal.diff }}</td>
                         </tr>
