@@ -2,45 +2,52 @@
 {% block title %}General Ledger{% endblock %}
 {% block body %}
     <div class="container mx-auto">
-        <h1 class="text-3xl mb-6 font-bold">General Ledger</h1>
-        <div class="space-y-8">
+        <div class="prose p-4 mb-6">
+            <h1>General Ledger</h1>
+        </div>
+        <div class="space-y-8 mb-12">
             {% for table in tables %}
                 <!-- only render table if table.rows not empty -->
                 {% if table.rows %}
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <h2 class="text-xl font-semibold text-center px-4 py-4">
-                            {{ table.name }}
-                            ({{ table.code }})
-                        </h2>
-                        <table id='id_{{ table.name }}_ledger' class="w-full border-collapse">
-                            <thead>
-                                <tr class="bg-gray-200">
-                                    <th class="px-4 py-2 text-left">Description</th>
-                                    <th class="px-4 py-2 text-right">Debit</th>
-                                    <th class="px-4 py-2 text-right">Credit</th>
-                                    <th class="px-4 py-2 text-right">Difference</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in table.rows %}
-                                    <tr class="{% cycle "bg-white" "bg-gray-100" as rowcolors %}">
-                                        <td class="px-4 py-2">{{ row.desc }}</td>
-                                        <td class="px-4 py-2 text-right">{{ row.debit }}</td>
-                                        <td class="px-4 py-2 text-right">{{ row.credit }}</td>
-                                        <td class="px-4 py-2 text-right">{{ row.diff }}</td>
+                    <div class="bg-white rounded-lg shadow-lg">
+                        <div class="p-4 mb-6 prose">
+                            <h2>
+                                {{ table.name }}
+                                ({{ table.code }})
+                            </h2>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table id='id_{{ table.name }}_ledger'
+                                   class="min-w-full border-collapse prose">
+                                <thead>
+                                    <tr class="bg-gray-200">
+                                        <th class="px-4 py-2 text-left">Description</th>
+                                        <th class="px-4 py-2 text-right">Debit</th>
+                                        <th class="px-4 py-2 text-right">Credit</th>
+                                        <th class="px-4 py-2 text-right">Difference</th>
                                     </tr>
-                                {% endfor %}
-                                {% resetcycle rowcolors %}
-                            </tbody>
-                            <tfoot>
-                                <tr class="bg-yellow-100">
-                                    <td class="px-4 py-2">Total:</td>
-                                    <td class="px-4 py-2 text-right">{{ table.bals.dr_sum }}</td>
-                                    <td class="px-4 py-2 text-right">{{ table.bals.cr_sum }}</td>
-                                    <td class="px-4 py-2 text-right">{{ table.bals.diff }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for row in table.rows %}
+                                        <tr class="{% cycle "bg-white" "bg-gray-100" as rowcolors %}">
+                                            <td class="px-4 py-2">{{ row.desc }}</td>
+                                            <td class="px-4 py-2 text-right">{{ row.debit }}</td>
+                                            <td class="px-4 py-2 text-right">{{ row.credit }}</td>
+                                            <td class="px-4 py-2 text-right">{{ row.diff }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    {% resetcycle rowcolors %}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-yellow-100">
+                                        <td class="px-4 py-2">Total:</td>
+                                        <td class="px-4 py-2 text-right">{{ table.bals.dr_sum }}</td>
+                                        <td class="px-4 py-2 text-right">{{ table.bals.cr_sum }}</td>
+                                        <td class="px-4 py-2 text-right">{{ table.bals.diff }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 {% endif %}
             {% endfor %}
