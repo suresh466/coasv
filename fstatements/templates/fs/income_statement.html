@@ -2,21 +2,24 @@
 {% block title %}Income Statement{% endblock %}
 {% block body %}
     <div class="container mx-auto">
-        <div class="bg-white shadow-lg rounded-md p-6">
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="border px-4 py-2 text-left">AC name</th>
-                        <th class="border px-4 py-2 text-right">Debit</th>
-                        <th class="border px-4 py-2 text-right">Credit</th>
+        <div class="bg-white shadow-lg rounded-lg mb-12">
+            <div class="prose p-4 mb-6">
+                <h1>Income Statement</h1>
+            </div>
+            <table class="min-w-full border-collapse prose divide-y">
+                <thead class="divide-y">
+                    <tr class="bg-gray-200 divide-x">
+                        <th class="px-4 py-2 text-left min-w-96">AC name</th>
+                        <th class="px-4 py-2 text-right min-w-28">Debit</th>
+                        <th class="px-4 py-2 text-right min-w-28">Credit</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y">
                     {% for ca in in_ac.children %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %}">
-                            <td class="border px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                            <td class="border px-4 py-2"></td>
-                            <td class="border px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x">
+                            <td class="px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
+                            <td class="px-4 py-2"></td>
+                            <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
                         </tr>
                     {% endfor %}
                     <tr class="bg-gray-400" %}">
@@ -25,10 +28,10 @@
                         <td class="px-4 py-4 text-right">{{ in_ac.bal.diff }}</td>
                     </tr>
                     {% for ca in ex_ac.children %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %}">
-                            <td class="border px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                            <td class="border px-4 py-2 text-right">{{ ca.bal.diff }}</td>
-                            <td class="border px-4 py-2"></td>
+                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x">
+                            <td class="px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
+                            <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                            <td class="px-4 py-2"></td>
                         </tr>
                     {% endfor %}
                     <tr class="bg-gray-400">
@@ -37,10 +40,10 @@
                         <td class="px-4 py-4"></td>
                     </tr>
                 </tbody>
-                <tfoot>
-                    <td class="px-4 py-2">Total</td>
-                    <td class="px-4 py-2 text-right">{{ ex_ac.bal.diff }}</td>
-                    <td class="px-4 py-2 text-right">{{ in_ac.bal.diff }}</td>
+                <tfoot class="bg-yellow-100">
+                    <td class="px-4 py-2 bg-yellow-50 min-w-96">Total</td>
+                    <td class="px-4 py-2 text-right min-w-28">{{ ex_ac.bal.diff }}</td>
+                    <td class="px-4 py-2 text-right min-w-28">{{ in_ac.bal.diff }}</td>
                 </tfoot>
             </table>
         </div>

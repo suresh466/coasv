@@ -2,57 +2,63 @@
 {% block title %}BalanceSheet{% endblock %}
 {% block body %}
     <div class="container mx-auto">
-        <div class="bg-white shadow-lg rounded-md p-6">
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="border border-yellow-900 px-4 py-2 text-left">Ac Name</th>
-                        <th class="border border-yellow-900  px-4 py-2 text-right">Amount</th>
+        <div class="bg-white shadow-lg rounded-lg mb-12">
+            <div class="prose p-4 mb-6">
+                <h1>Balance Sheet</h1>
+            </div>
+            <table class="min-w-full border-collapse divide-y prose">
+                <thead class="divide-y">
+                    <tr class="bg-gray-200 divide-x">
+                        <th class="px-4 py-2 text-left min-w-96">Ac Name</th>
+                        <th class="px-4 py-2 text-right min-w-28">Amount</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr class="bg-gray-400">
-                        <td class="px-4 py-2 text-center font-semibold" colspan="2">Liabilities</td>
+                <tbody class="divide-y">
+                    <tr class="bg-gray-100">
+                        <td class="px-4 py-2 text-center" colspan="2">Liabilities</td>
                     </tr>
                     {% for ac in li_acs %}
                         {% for ca in ac.children %}
                             <!-- liabilities child accounts -->
-                            <tr class="bg-gray-100">
-                                <td class="border px-4 py-2">&emsp; {{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                                <td class="border px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                            <tr class="bg-gray-50 divide-x">
+                                <td class="px-4 py-2">&emsp; {{ ca.ac.name }} ({{ ca.ac.code }})</td>
+                                <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
                             </tr>
                         {% endfor %}
                         <!-- liabilities parent accounts -->
-                        <tr>
-                            <td class="border px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                            <td class="border px-4 py-2 text-right">{{ ac.bal.diff }}</td>
+                        <tr class="divide-x">
+                            <td class="px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
+                            <td class="px-4 py-2 text-right">{{ ac.bal.diff }}</td>
                         </tr>
                     {% endfor %}
                     <tr class="bg-yellow-100">
-                        <td class="px-4 py-2">Total Liabilities</td>
-                        <td class="px-4 py-2 text-right">{{ li_total_bal.diff }}</td>
+                        <td class="px-4 py-2 min-w-96">Total Liabilities</td>
+                        <td class="px-4 py-2 text-right min-w-28">{{ li_total_bal.diff }}</td>
                     </tr>
-                    <tr class="bg-gray-400">
-                        <td class="px-4 py-2 text-center font-semibold" colspan="2">Assets</td>
+                    <tr class="bg-gray-100">
+                        <td class="px-4 py-2 text-center" colspan="2">Assets</td>
                     </tr>
                     {% for ac in as_acs %}
                         {% for ca in ac.children %}
                             <!-- assets child accounts -->
-                            <tr class="bg-gray-100">
-                                <td class="border px-4 py-2">&emsp;{{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                                <td class="border px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                            <tr class="bg-gray-50 divide-x">
+                                <td class="px-4 py-2">&emsp;{{ ca.ac.name }} ({{ ca.ac.code }})</td>
+                                <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
                             </tr>
                         {% endfor %}
                         <!-- liabilities parent accounts -->
-                        <tr>
-                            <td class="border px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                            <td class="border px-4 py-2 text-right">{{ ac.bal.diff }}</td>
+                        <tr class="divide-x">
+                            <td class="px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
+                            <td class="px-4 py-2 text-right">{{ ac.bal.diff }}</td>
                         </tr>
                     {% endfor %}
-                    <tr class="bg-yellow-100">
-                        <td class="px-4 py-2">Total Assets</td>
-                        <td class="px-4 py-2 text-right">{{ as_total_bal.diff }}</td>
-                    </tr>
-                </div>
+                    <tfoot>
+                        <tr class="bg-yellow-100">
+                            <td class="px-4 py-2 min-w-96">Total Assets</td>
+                            <td class="px-4 py-2 text-right min-w-28">{{ as_total_bal.diff }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
-        {% endblock %}
+        </div>
+    {% endblock %}
