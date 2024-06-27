@@ -7,7 +7,7 @@
                 <h1>Assets Ledger</h1>
             </div>
             <div class="overflow-x-auto">
-                <table class="prose border-collapse divide-y">
+                <table class="w-full prose border-collapse divide-y">
                     <thead class="divide-y">
                         <tr class="divide-x">
                             <th scope="col"
@@ -15,14 +15,14 @@
                             {% for header in table.headers %}<th colspan=3 class="uppercase bg-gray-100 px-4 py-2">{{ header }}</th>{% endfor %}
                             <th class="bg-gray-50 px-4 py-2"></th>
                         </tr>
-                        <tr class="divide-x">
-                            <th class="bg-gray-100 sticky left-0 z-10"></th>
+                        <tr class="divide-x bg-gray-50">
+                            <th class="bg-gray-100 px-4 py-2 sticky left-0 z-10"></th>
                             {% for header in table.headers %}
-                                <th scope="col" class="uppercase min-w-28 bg-gray-50 px-4 py-2">Dr</th>
-                                <th scope="col" class="uppercase min-w-28 bg-gray-50 px-4 py-2">Cr</th>
-                                <th scope="col" class="uppercase min-w-28 bg-gray-50 px-4 py-2">Bal</th>
+                                <th scope="col" class="uppercase min-w-28 px-4 py-2">Dr</th>
+                                <th scope="col" class="uppercase min-w-28 px-4 py-2">Cr</th>
+                                <th scope="col" class="uppercase min-w-28 px-4 py-2">Bal</th>
                             {% endfor %}
-                            <th class="bg-gray-100 px-4 py-2">Grand Total</th>
+                            <th class="bg-gray-100 px-4 py-2 min-w-28">Grand Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,19 +34,19 @@
                                     <td class="px-4 py-2 text-right">{{ data.cr_sum }}</td>
                                     <td class="px-4 py-2 text-right">{{ data.bal }}</td>
                                 {% endfor %}
-                                <td>{{ grand_total }}</td>
+                                <td class="px-4 py-2 text-right">{{ grand_total }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
-                        <tr class=divide-x">
+                        <tr class="divide-x bg-yellow-100">
                             <td class="bg-yellow-50 px-4 py-2 sticky left-0 z-10">Total</td>
                             {% for footer in table.footers %}
-                                <td class="bg-yellow-100 px-4 py-2">{{ footer.dr_sum }}</td>
-                                <td class="bg-yellow-100 px-4 py-2">{{ footer.cr_sum }}</td>
-                                <td class="bg-yellow-100 px-4 py-2">{{ footer.diff }}</td>
+                                <td class="px-4 py-2 text-right">{{ footer.dr_sum }}</td>
+                                <td class="px-4 py-2 text-right">{{ footer.cr_sum }}</td>
+                                <td class="px-4 py-2 text-right">{{ footer.diff }}</td>
                             {% endfor %}
-                            <td class="bg-yellow-50 px-4 py-2">{{ table.total.diff }}</td>
+                            <td class="bg-yellow-50 px-4 py-2 text-right">{{ table.total.diff }}</td>
                         </tr>
                     </tfoot>
                 </table>

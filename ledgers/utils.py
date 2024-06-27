@@ -36,7 +36,7 @@ def generate_simple_headers(acs):
     headers = []
 
     for ac in acs:
-        header = f"{ac.name}-{ac.code}"
+        header = f"{ac.name} ({ac.code})"
         headers.append(header)
 
     return headers
