@@ -7,7 +7,7 @@ module.exports = {
 	theme: {
 		extend: {},
 	},
-	plugins: [],
+	plugins: [require("@tailwindcss/typography")],
 };
 
 /* Start a watcher
