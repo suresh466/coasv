@@ -1,5 +1,4 @@
-from coasc.models import Ac
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import render
 
 from fstatements.utils import (
     calculate_balance_sheet,
@@ -11,8 +10,7 @@ from fstatements.utils import (
 def trial_balance(request):
     template = "fs/trial_balance.html"
 
-    acs = Ac.objects.exclude(cat="")
-    cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance(acs)
+    cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance()
 
     context = {
         "cr_acs": cr_acs_with_bal,
@@ -26,13 +24,9 @@ def trial_balance(request):
 def balance_sheet(request):
     template = "fs/balance_sheet.html"
 
-    as_acs = Ac.objects.filter(cat="AS")
-    li_acs = Ac.objects.filter(cat="LI")
-
-    as_acs_with_bal, li_acs_with_bal = calculate_balance_sheet(li_acs, as_acs)
-
-    as_total_bal = Ac.total_bal(cat="AS")
-    li_total_bal = Ac.total_bal(cat="LI")
+    as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal = (
+        calculate_balance_sheet()
+    )
 
     context = {
         "li_acs": li_acs_with_bal,
@@ -46,12 +40,7 @@ def balance_sheet(request):
 def income_statement(request):
     template = "fs/income_statement.html"
 
-    # in_ac = Ac.objects.get(code=160)
-    # ex_ac = Ac.objects.get(code=150)
-    in_ac = Ac.objects.get(cat="IN")
-    ex_ac = Ac.objects.get(cat="EX")
-
-    ex_ac_with_bal, in_ac_with_bal = calculate_income_statement(in_ac, ex_ac)
+    ex_ac_with_bal, in_ac_with_bal = calculate_income_statement()
 
     context = {
         "ex_ac": ex_ac_with_bal,

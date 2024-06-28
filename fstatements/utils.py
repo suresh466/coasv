@@ -1,11 +1,9 @@
-def calculate_trial_balance(acs):
-    dr_acs = []
-    cr_acs = []
-    for ac in acs:
-        if ac.cat in {"AS", "EX"}:
-            dr_acs.append(ac)
-        elif ac.cat in {"LI", "IN"}:
-            cr_acs.append(ac)
+from coasc.models import Ac
+
+
+def calculate_trial_balance():
+    dr_acs = Ac.objects.filter(cat__in=["AS", "EX"])
+    cr_acs = Ac.objects.filter(cat__in=["LI", "IN"])
 
     cr_acs_with_bal = [{"ac": ac, "bal": ac.bal()} for ac in cr_acs]
     dr_acs_with_bal = [{"ac": ac, "bal": ac.bal()} for ac in dr_acs]
@@ -18,7 +16,10 @@ def calculate_trial_balance(acs):
     return cr_acs_with_bal, dr_acs_with_bal, total_sum
 
 
-def calculate_balance_sheet(li_acs, as_acs):
+def calculate_balance_sheet():
+    as_acs = Ac.objects.filter(cat="AS")
+    li_acs = Ac.objects.filter(cat="LI")
+
     li_acs_with_bal = [
         {
             "ac": ac,
@@ -27,7 +28,6 @@ def calculate_balance_sheet(li_acs, as_acs):
         }
         for ac in li_acs
     ]
-
     as_acs_with_bal = [
         {
             "ac": ac,
@@ -37,10 +37,16 @@ def calculate_balance_sheet(li_acs, as_acs):
         for ac in as_acs
     ]
 
-    return as_acs_with_bal, li_acs_with_bal
+    as_total_bal = Ac.total_bal(cat="AS")
+    li_total_bal = Ac.total_bal(cat="LI")
+
+    return as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal
 
 
-def calculate_income_statement(in_ac, ex_ac):
+def calculate_income_statement():
+    in_ac = Ac.objects.get(cat="IN")
+    ex_ac = Ac.objects.get(cat="EX")
+
     in_ac_with_bal = {
         "ac": in_ac,
         "bal": in_ac.bal(),
