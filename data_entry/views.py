@@ -1,6 +1,8 @@
 from decimal import Decimal
 
+from coasc.exceptions import AccountingEquationViolationError
 from coasc.models import Ac, Split, Transaction
+from django.contrib import messages as message
 from django.db import transaction as db_transaction
 from django.shortcuts import redirect, render, reverse
 
@@ -75,20 +77,25 @@ def save_transaction(request):
         raise TypeError("None is not a session split")
 
     desc = request.POST["desc"]
-    with db_transaction.atomic():
-        tx = Transaction.objects.create(desc=desc)
+    try:
+        with db_transaction.atomic():
+            tx = Transaction.objects.create(desc=desc)
 
-        for sp in splits:
-            ac_pk = sp["ac"]
-            ac = Ac.objects.get(pk=ac_pk)
+            for sp in splits:
+                ac_pk = sp["ac"]
+                ac = Ac.objects.get(pk=ac_pk)
 
-            t_sp = sp["t_sp"]
-            am = Decimal(sp["am"])
-            Split.objects.create(ac=ac, t_sp=t_sp, am=am, tx=tx)
+                t_sp = sp["t_sp"]
+                am = Decimal(sp["am"])
+                Split.objects.create(ac=ac, t_sp=t_sp, am=am, tx=tx)
 
-        Ac.validate_accounting_equation()
+            Ac.validate_accounting_equation()
+    except AccountingEquationViolationError:
+        message.error(request, "Please make sure Debit and Credit are balanced")
+        return redirect(reverse("data_entry:general_journal"))
 
     del request.session["splits"]
+    message.success(request, f"Transaction successfully saved: {tx.desc}")
 
     return redirect(reverse("data_entry:general_journal"))
 
