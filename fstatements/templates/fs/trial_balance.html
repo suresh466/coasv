@@ -25,7 +25,7 @@
                     {% for ac in dr_acs %}
                         <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
                             <td class="px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                            <td class="px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
+                            <td class="px-4 py-2 text-right">{{ ac.bal.dr_sum }}</td>
                             <td class="px-4 py-2"></td>
                         </tr>
                     {% endfor %}
