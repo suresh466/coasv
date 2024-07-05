@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 
 from coasc.exceptions import AccountingEquationViolationError
-from coasc.models import Ac, Split, Transaction
+from coasc.models import Ac, Split
 from django.contrib import messages as message
 from django.db import transaction as db_transaction
 from django.shortcuts import redirect, render, reverse
@@ -96,11 +96,9 @@ def general_journal(request):
                 splits = request.session.get("splits") or None
                 if not splits:
                     raise NoSplitsError
-                tx_date = transaction_form.cleaned_data["tx_date"]
-                desc = transaction_form.cleaned_data["desc"]
 
                 with db_transaction.atomic():
-                    tx = Transaction.objects.create(tx_date=tx_date, desc=desc)
+                    tx = transaction_form.save()
 
                     for sp in splits:
                         ac_pk = sp["ac"]
