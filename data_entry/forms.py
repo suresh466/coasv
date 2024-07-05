@@ -1,6 +1,5 @@
+from coasc.models import Ac, Split, Transaction
 from django.forms import ModelForm
-
-from coasc.models import Split, Ac
 
 
 class SplitForm(ModelForm):
@@ -16,3 +15,9 @@ class SplitForm(ModelForm):
 
         query_set = Ac.objects.exclude(id__in=exclude_list)
         self.fields["ac"].queryset = query_set
+
+
+class TransactionForm(ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ("tx_date", "desc")
