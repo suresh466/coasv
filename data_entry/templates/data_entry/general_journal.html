@@ -63,18 +63,26 @@
                       action="{% url 'data_entry:general_journal' %}"
                       class="space-y-4">
                     {% csrf_token %}
-                    <!-- <div> -->
-                    <!--     <label for="id_desc" class="block text-sm font-medium text-gray-700 mb-1">Transaction Description</label> -->
-                    <!--     <textarea id="id_desc" -->
-                    <!--               name="desc" -->
-                    <!--               required -->
-                    <!--               rows="3" -->
-                    <!--               class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" -->
-                    <!--               placeholder="Enter transaction description here"></textarea> -->
-                    <!-- </div> -->
-                    {% for field in transaction_form %}
-                    {{ field.as_field_group }}
-                    {% endfor %}
+                    <div>
+                        <label for="{{transaction_form.desc.id_for_label}}" class="block text-sm font-medium text-gray-700 mb-1">Transaction Description</label>
+                        <textarea id="{{transaction_form.desc.id_for_label}}"
+                                  name="{{transaction_form.desc.html_name}}"
+                                  {{transaction_form.desc.field.required|yesno:"required,"}}
+                                  rows="3"
+                                  class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                  placeholder="Enter transaction description here">{{ transaction_form.desc.value }}</textarea>
+                    </div>
+                    <div>
+                        <label for="{{transaction_form.tx_date.id_for_label}}" class="block text-sm font-medium text-gray-700 mb-1">Transaction Date</label>
+                        <input type="date"
+                               id="{{transaction_form.tx_date.id_for_label}}"
+                               name="{{transaction_form.tx_date.html_name}}"
+                               {{transaction_form.tx_date.field.required|yesno:"required,"}}
+                               class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               value="{{ transaction_form.tx_date.value|date:'Y-m-d'|default:transaction_form.tx_date.value }}">
+                               <!-- value: django forms provide datetime object on the first load and date string after post -->
+                    </div>
+
                     <div class="flex space-x-4">
                         <button type="submit"
                                 name="save_transaction"
