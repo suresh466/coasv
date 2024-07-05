@@ -1,153 +1,173 @@
 {% extends 'data_entry/base.html' %}
 {% block title %}General Journal{% endblock %}
 {% block body %}
-    <div class="container mx-auto">
-        <div class="bg-white shadow-lg rounded-lg p-4">
-            <div class="prose p-4 mb-6 bg-white">
-                <h1>Journal Entry</h1>
-            </div>
-            {% for message in messages %}
-                <div class="mb-4 rounded-lg p-4 text-sm {% if message.tags == 'error' %} bg-red-100 text-red-700 {% elif message.tags == 'success' %} bg-green-100 text-green-700 {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-700 {% elif message.tags == 'info' %} bg-blue-100 text-blue-700 {% else %} bg-gray-100 text-gray-700 {% endif %}"
-                     role="alert">
-                    <p class="font-medium">{{ message }}</p>
-                </div>
-            {% endfor %}
+<div class="container mx-auto">
+    <div class="bg-white shadow-lg rounded-lg p-4">
+        <div class="prose p-4 mb-6 bg-white">
+            <h1>Journal Entry</h1>
+        </div>
+        {% for message in messages %}
+        <div class="mb-4 rounded-lg p-4 text-sm {% if message.tags == 'error' %} bg-red-100 text-red-700 {% elif message.tags == 'success' %} bg-green-100 text-green-700 {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-700 {% elif message.tags == 'info' %} bg-blue-100 text-blue-700 {% else %} bg-gray-100 text-gray-700 {% endif %}"
+            role="alert">
+            <p class="font-medium">{{ message }}</p>
+        </div>
+        {% endfor %}
+        <div>
             <!-- Add Split Form -->
             <form method="POST"
-                  action="{% url 'data_entry:general_journal' %}"
-                  class="mb-6">
+                action="{% url 'data_entry:general_journal' %}"
+                class="mb-6">
                 {% csrf_token %}
-                <!-- <div class="flex flex-wrap -mx-3 mb-4"> -->
-                <!--     {% for field in split_form %} -->
-                <!--         <div class="w-full md:w-1/3 px-3 mb-4"> -->
-                <!--             <label for="{{ field.id_for_label }}" -->
-                <!--                    class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label> -->
-                <!--             {% if field.field.widget.input_type == 'select' %} -->
-                <!--                 <select id="{{ field.id_for_label }}" -->
-                <!--                         name="{{ field.html_name }}" -->
-                <!--                         {% if field.field.required %}required{% endif %} -->
-                <!--                         class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"> -->
-                <!--                     {% for choice in field.field.choices %}<option value="{{ choice.0 }}">{{ choice.1 }}</option>{% endfor %} -->
-                <!--                 </select> -->
-                <!--             {% else %} -->
-                <!--                 <input type="{{ field.field.widget.input_type }}" -->
-                <!--                        id="{{ field.id_for_label }}" -->
-                <!--                        name="{{ field.html_name }}" -->
-                <!--                        class="block bg-gray-200 w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" -->
-                <!--                        {% if field.field.required %}required{% endif %}> -->
-                <!--             {% endif %} -->
-                <!--         </div> -->
-                <!--     {% endfor %} -->
-                <!-- </div> -->
-                <!-- <div> -->
-                <!--     <button type="submit" -->
-                <!--             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"> -->
-                <!--         Add Split -->
-                <!--     </button> -->
-                <!-- </div> -->
+                <div class="flex flex-wrap -mx-3 mb-4">
+                    <div class="w-full md:w-1/3 px-3 mb-4">
+                        {% if split_form.ac.errors %}
+                        {% for error in split_form.ac.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                        {% endif %}
+                        <label for="{{ split_form.ac.id_for_label }}"
+                            class="block text-sm font-medium text-gray-700 mb-1">Account</label>
+                        <select id="{{ split_form.ac.id_for_label }}"
+                            name="{{ split_form.ac.html_name }}"
+                            {% if split_form.ac.field.required %}required{% endif %}
+                            class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            {% for choice in split_form.ac.field.choices %}
+                            <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="w-full md:w-1/3 px-3 mb-4">
+                        {% if split_form.t_sp.errors %}
+                        {% for error in split_form.t_sp.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                        {% endif %}
+                        <label for="{{ split_form.t_sp.id_for_label }}"
+                            class="block text-sm font-medium text-gray-700 mb-1">Split Type</label>
+                        <select id="{{ split_form.t_sp.id_for_label }}"
+                            name="{{ split_form.t_sp.html_name }}"
+                            {% if split_form.t_sp.field.required %}required{% endif %}
+                            class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            {% for choice in split_form.t_sp.field.choices %}
+                            <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="w-full md:w-1/3 px-3 mb-4">
+                        <label for="{{ split_form.am.id_for_label }}"
+                            class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                        <input type="{{ split_form.am.field.widget.input_type }}"
+                        id="{{ split_form.am.id_for_label }}"
+                        name="{{ split_form.am.html_name }}"
+                        class="block bg-gray-200 w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        step="0.01"
+                        {% if split_form.am.field.required %}required{% endif %}>
 
-                {% for field in split_form %}
-                {{field.as_field_group}}
-                {% endfor %}
-                <div>
-                    <button type="submit"
-                            name="add_split"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Add Split
-                    </button>
+                        {% if split_form.am.errors %}
+                        {% for error in split_form.am.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
                 </div>
+                <button type="submit"
+                    name="add_split"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Add Split
+                </button>
+        </div>
             </form>
             <!-- Transaction Description and Actions -->
             <div class="mb-6">
                 <form method="POST"
-                      action="{% url 'data_entry:general_journal' %}"
-                      class="space-y-4">
+                    action="{% url 'data_entry:general_journal' %}"
+                    class="space-y-4">
                     {% csrf_token %}
                     <div>
                         <label for="{{transaction_form.desc.id_for_label}}" class="block text-sm font-medium text-gray-700 mb-1">Transaction Description</label>
                         <textarea id="{{transaction_form.desc.id_for_label}}"
-                                  name="{{transaction_form.desc.html_name}}"
-                                  {{transaction_form.desc.field.required|yesno:"required,"}}
-                                  rows="3"
-                                  class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                                  placeholder="Enter transaction description here">{{ transaction_form.desc.value }}</textarea>
+                            name="{{transaction_form.desc.html_name}}"
+                            {{transaction_form.desc.field.required|yesno:"required,"}}
+                            rows="3"
+                            class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            placeholder="Enter transaction description here">{{ transaction_form.desc.value }}</textarea>
                     </div>
                     <div>
                         <label for="{{transaction_form.tx_date.id_for_label}}" class="block text-sm font-medium text-gray-700 mb-1">Transaction Date</label>
                         <input type="date"
-                               id="{{transaction_form.tx_date.id_for_label}}"
-                               name="{{transaction_form.tx_date.html_name}}"
-                               {{transaction_form.tx_date.field.required|yesno:"required,"}}
-                               class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               value="{{ transaction_form.tx_date.value|date:'Y-m-d'|default:transaction_form.tx_date.value }}">
-                               <!-- value: django forms provide datetime object on the first load and date string after post -->
+                        id="{{transaction_form.tx_date.id_for_label}}"
+                        name="{{transaction_form.tx_date.html_name}}"
+                        {{transaction_form.tx_date.field.required|yesno:"required,"}}
+                        class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value="{{ transaction_form.tx_date.value|date:'Y-m-d'|default:transaction_form.tx_date.value }}">
+                        <!-- value: django forms provide datetime object on the first load and date string after post -->
                     </div>
 
                     <div class="flex space-x-4">
                         <button type="submit"
-                                name="save_transaction"
-                                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            name="save_transaction"
+                            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                             Save Transaction
                         </button>
                         <!-- submit this to cancel_transaction view -->
                         <button type="button"
-                                onclick="document.getElementById('cancel-form').submit();"
-                                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            onclick="document.getElementById('cancel-form').submit();"
+                            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                             Clear Transaction
                         </button>
                     </div>
                 </form>
             </div>
             <form id="cancel-form"
-                  method="POST"
-                  action="{% url 'data_entry:cancel_transaction' %}"
-                  class="hidden">
+                method="POST"
+                action="{% url 'data_entry:cancel_transaction' %}"
+                class="hidden">
                 {% csrf_token %}
             </form>
-        </div>
-        <!-- Split Table -->
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr>
-                        <th colspan="2" class="text-center font-bold text-lg pb-2">Debit</th>
-                        <th colspan="2" class="text-center font-bold text-lg pb-2">Credit</th>
-                    </tr>
-                    <tr class="bg-gray-100">
-                        <th class="px-4 py-2 border text-left">Account</th>
-                        <th class="px-4 py-2 border text-right">Amount</th>
-                        <th class="px-4 py-2 border text-left">Account</th>
-                        <th class="px-4 py-2 border text-right">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for sp in splits %}
-                        <tr class="{% cycle 'bg-white' 'bg-gray-50' %}">
-                            {% if sp.t_sp == 'dr' %}
-                                <td class="px-4 py-2 border">{{ sp.ac_name }} ({{ sp.ac_code }})</td>
-                                <td class="px-4 py-2 border text-right">{{ sp.am }}</td>
-                                <td class="px-4 py-2 border"></td>
-                                <td class="px-4 py-2 border"></td>
-                            {% else %}
-                                <td class="px-4 py-2 border"></td>
-                                <td class="px-4 py-2 border"></td>
-                                <td class="px-4 py-2 border">{{ sp.ac_name }} ({{ sp.ac_code }})</td>
-                                <td class="px-4 py-2 border text-right">{{ sp.am }}</td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr class="font-semibold">
-                        <td colspan="2" class="px-4 py-2 border text-right">Debit sum: {{ session_bals.dr_sum }}</td>
-                        <td colspan="2" class="px-4 py-2 border text-lef">Credit sum: {{ session_bals.cr_sum }}</td>
-                    </tr>
-                    <tr class="font-semibold">
-                        <td colspan="4" class="px-4 py-2 text-center">Difference: {{ session_bals.diff }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
     </div>
+    <!-- Split Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr>
+                    <th colspan="2" class="text-center font-bold text-lg pb-2">Debit</th>
+                    <th colspan="2" class="text-center font-bold text-lg pb-2">Credit</th>
+                </tr>
+                <tr class="bg-gray-100">
+                    <th class="px-4 py-2 border text-left">Account</th>
+                    <th class="px-4 py-2 border text-right">Amount</th>
+                    <th class="px-4 py-2 border text-left">Account</th>
+                    <th class="px-4 py-2 border text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sp in splits %}
+                <tr class="{% cycle 'bg-white' 'bg-gray-50' %}">
+                    {% if sp.t_sp == 'dr' %}
+                    <td class="px-4 py-2 border">{{ sp.ac_name }} ({{ sp.ac_code }})</td>
+                    <td class="px-4 py-2 border text-right">{{ sp.am }}</td>
+                    <td class="px-4 py-2 border"></td>
+                    <td class="px-4 py-2 border"></td>
+                    {% else %}
+                    <td class="px-4 py-2 border"></td>
+                    <td class="px-4 py-2 border"></td>
+                    <td class="px-4 py-2 border">{{ sp.ac_name }} ({{ sp.ac_code }})</td>
+                    <td class="px-4 py-2 border text-right">{{ sp.am }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="font-semibold">
+                    <td colspan="2" class="px-4 py-2 border text-right">Debit sum: {{ session_bals.dr_sum }}</td>
+                    <td colspan="2" class="px-4 py-2 border text-lef">Credit sum: {{ session_bals.cr_sum }}</td>
+                </tr>
+                <tr class="font-semibold">
+                    <td colspan="4" class="px-4 py-2 text-center">Difference: {{ session_bals.diff }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
 </div>
 {% endblock %}
