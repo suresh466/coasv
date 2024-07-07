@@ -22,7 +22,7 @@
                     <div class="w-full md:w-1/3 px-3 mb-4">
                         {% if split_form.ac.errors %}
                         {% for error in split_form.ac.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        <p class="mb-1 text-sm text-red-600">{{ error }}</p>
                         {% endfor %}
                         {% endif %}
                         <label for="{{ split_form.ac.id_for_label }}"
@@ -39,7 +39,7 @@
                     <div class="w-full md:w-1/3 px-3 mb-4">
                         {% if split_form.t_sp.errors %}
                         {% for error in split_form.t_sp.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        <p class="mb-1 text-sm text-red-600">{{ error }}</p>
                         {% endfor %}
                         {% endif %}
                         <label for="{{ split_form.t_sp.id_for_label }}"
@@ -65,7 +65,7 @@
 
                         {% if split_form.am.errors %}
                         {% for error in split_form.am.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        <p class="mb-1 text-sm text-red-600">{{ error }}</p>
                         {% endfor %}
                         {% endif %}
                     </div>
@@ -91,6 +91,11 @@
                             rows="3"
                             class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                             placeholder="Enter transaction description here">{{ transaction_form.desc.value }}</textarea>
+                            {% if transaction_form.desc.errors %}
+                            {% for error in transaction_form.desc.errors %}
+                            <p class="mb-1 text-sm text-red-600">{{ error }}</p>
+                            {% endfor %}
+                            {% endif %}
                     </div>
                     <div>
                         <label for="{{transaction_form.tx_date.id_for_label}}" class="block text-sm font-medium text-gray-700 mb-1">Transaction Date</label>
@@ -101,6 +106,11 @@
                         class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value="{{ transaction_form.tx_date.value|date:'Y-m-d'|default:transaction_form.tx_date.value }}">
                         <!-- value: django forms provide datetime object on the first load and date string after post -->
+                        {% if transaction_form.tx_date.errors %}
+                        {% for error in transaction_form.tx_date.errors %}
+                        <p class="mb-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                        {% endif %}
                     </div>
 
                     <div class="flex space-x-4">
