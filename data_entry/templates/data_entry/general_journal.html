@@ -155,10 +155,16 @@
                             <td class="px-4 py-2 border">
                                 <form action="" method="post">
                                     {% csrf_token %}
-                                    <input type="hidden" name="delete_split" value="{{ sp.sp_id }}">
+                                    <input type="hidden" name="sp_id" value="{{ sp.sp_id }}">
                                     <button type="submit"
+                                            name="delete_split"
                                             class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline">
                                         Delete
+                                    </button>
+                                    <button type="submit"
+                                            name="duplicate_split"
+                                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline">
+                                        Duplicate
                                     </button>
                                 </form>
                             </td>

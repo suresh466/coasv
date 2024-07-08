@@ -127,7 +127,7 @@ def general_journal(request):
                 message.error(request, "An error occurred while saving the transaction")
 
         elif "delete_split" in request.POST:
-            sp_id = request.POST.get("delete_split")
+            sp_id = request.POST.get("sp_id")
             for sp in splits:
                 if sp["sp_id"] == sp_id:
                     splits.remove(sp)
@@ -139,6 +139,25 @@ def general_journal(request):
                     return redirect(reverse("data_entry:general_journal"))
 
             message.error(request, "Split with id: {sp_id} not found, deletion failed")
+            return redirect(reverse("data_entry:general_journal"))
+
+        elif "duplicate_split" in request.POST:
+            sp_id = request.POST.get("sp_id")
+            for sp in splits:
+                if sp["sp_id"] == sp_id:
+                    dup_sp = sp.copy()
+                    dup_sp["sp_id"] = str(uuid.uuid4())
+                    splits.append(dup_sp)
+                    request.session.modified = True
+                    message.success(
+                        request,
+                        f"Split duplicated successfully: {sp['ac_name']} ({sp['ac_code']}) | {sp['t_sp']}: {sp['am']}",
+                    )
+                    return redirect(reverse("data_entry:general_journal"))
+
+            message.error(
+                request, "Split with id: {sp_id} not found, duplication failed"
+            )
             return redirect(reverse("data_entry:general_journal"))
 
     session_bals = session_balances(splits)
