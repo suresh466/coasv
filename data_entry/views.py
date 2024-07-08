@@ -34,7 +34,6 @@ def session_balances(splits):
 
     if splits is None:
         return {"dr_sum": dr_sum, "cr_sum": cr_sum, "diff": diff}
-
     for sp in splits:
         sp_am = Decimal(sp["am"])
 
