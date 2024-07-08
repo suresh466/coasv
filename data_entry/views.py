@@ -1,4 +1,5 @@
 import logging
+import uuid
 from decimal import Decimal
 
 from coasc.exceptions import AccountingEquationViolationError
@@ -65,6 +66,7 @@ def general_journal(request):
 
     if request.method == "POST":
         if "add_split" in request.POST and split_form.is_valid():
+            sp_id = str(uuid.uuid4())
             ac = split_form.cleaned_data["ac"]
             ac_pk = ac.pk
             ac_code = ac.code
@@ -74,6 +76,7 @@ def general_journal(request):
             am = str(split_form.cleaned_data["am"])
 
             split = {
+                "sp_id": sp_id,
                 "ac": ac_pk,
                 "ac_code": ac_code,
                 "ac_name": ac_name,
@@ -122,6 +125,21 @@ def general_journal(request):
             except Exception as e:
                 logger.error(e)
                 message.error(request, "An error occurred while saving the transaction")
+
+        elif "delete_split" in request.POST:
+            sp_id = request.POST.get("delete_split")
+            for sp in splits:
+                if sp["sp_id"] == sp_id:
+                    splits.remove(sp)
+                    request.session.modified = True
+                    message.warning(
+                        request,
+                        f"Split deleted successfully: {sp['ac_name']} ({sp['ac_code']}) | {sp['t_sp']}: {sp['am']}",
+                    )
+                    return redirect(reverse("data_entry:general_journal"))
+
+            message.error(request, "Split with id: {sp_id} not found, deletion failed")
+            return redirect(reverse("data_entry:general_journal"))
 
     session_bals = session_balances(splits)
 
