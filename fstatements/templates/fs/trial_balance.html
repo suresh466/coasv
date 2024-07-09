@@ -6,38 +6,40 @@
             <div class="prose p-4 mb-6">
                 <h1>Trial Balance</h1>
             </div>
-            <table class="min-w-full border-collapse prose divide-y">
-                <thead>
-                    <tr class="bg-gray-200 divide-x">
-                        <th class="px-4 py-2 text-left min-w-96">Ac Name</th>
-                        <th class="px-4 py-2 text-right min-w-28">Debit</th>
-                        <th class="px-4 py-2 text-right min-w-28">Credit</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    {% for ac in cr_acs %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                            <td class="px-4 py-2"></td>
-                            <td class="px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
+            <div class="overflow-x-auto">
+                <table class="min-w-full border-collapse prose divide-y">
+                    <thead>
+                        <tr class="bg-gray-200 divide-x">
+                            <th class="px-4 py-2 text-left min-w-96">Ac Name</th>
+                            <th class="px-4 py-2 text-right min-w-28">Debit</th>
+                            <th class="px-4 py-2 text-right min-w-28">Credit</th>
                         </tr>
-                    {% endfor %}
-                    {% for ac in dr_acs %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                            <td class="px-4 py-2 text-right">{{ ac.bal.dr_sum }}</td>
-                            <td class="px-4 py-2"></td>
+                    </thead>
+                    <tbody class="divide-y">
+                        {% for ac in cr_acs %}
+                            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
+                                <td class="px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
+                                <td class="px-4 py-2"></td>
+                                <td class="px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
+                            </tr>
+                        {% endfor %}
+                        {% for ac in dr_acs %}
+                            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
+                                <td class="px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
+                                <td class="px-4 py-2 text-right">{{ ac.bal.dr_sum }}</td>
+                                <td class="px-4 py-2"></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="divide-x bg-yellow-100">
+                            <td class="px-4 py-2 bg-yellow-50 min-w-96">Total:</td>
+                            <td class="px-4 py-2 text-right min-w-28">{{ total_sum.dr_acs }}</td>
+                            <td class="px-4 py-2 text-right min-w-28">{{ total_sum.cr_acs }}</td>
                         </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr class="divide-x bg-yellow-100">
-                        <td class="px-4 py-2 bg-yellow-50 min-w-96">Total:</td>
-                        <td class="px-4 py-2 text-right min-w-28">{{ total_sum.dr_acs }}</td>
-                        <td class="px-4 py-2 text-right min-w-28">{{ total_sum.cr_acs }}</td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}
