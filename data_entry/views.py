@@ -2,6 +2,7 @@ import logging
 import uuid
 from decimal import Decimal
 
+import django.forms as forms
 from coasc.exceptions import AccountingEquationViolationError
 from coasc.models import Ac, Split
 from django.contrib import messages as message
@@ -159,6 +160,76 @@ def general_journal(request):
                 request, "Split with id: {sp_id} not found, duplication failed"
             )
             return redirect(reverse("data_entry:general_journal"))
+
+        elif "edit_split" in request.POST:
+            sp_id = request.POST.get("sp_id")
+            for sp in splits:
+                if sp["sp_id"] == sp_id:
+                    data = {
+                        "ac": str(sp["ac"]),
+                        "t_sp": sp["t_sp"],
+                        "am": sp["am"],
+                    }
+
+                    split_form = SplitForm(initial=data, prefix="split")
+                    # dynamically add the session_sp_id field as a hidden input
+                    split_form.fields["session_sp_id"] = forms.CharField(
+                        widget=forms.HiddenInput(), initial=sp_id
+                    )
+                    message.info(request, "Editing Split")
+                    break
+            else:
+                message.error(
+                    request, "Split with id: {sp_id} not found, editing failed"
+                )
+                return redirect(reverse("data_entry:general_journal"))
+
+        elif "update_split" in request.POST:
+            print("update_split")
+            print(request.POST)
+            session_sp_id = request.POST.get("split-session_sp_id")
+            split_form = SplitForm(request.POST, prefix="split")
+            if split_form.is_valid():
+                print("update_split_form is valid")
+                for sp in splits:
+                    print(f'{sp["sp_id"]} == {session_sp_id}')
+                    if sp["sp_id"] == session_sp_id:
+                        ac = split_form.cleaned_data["ac"]
+                        ac_pk = ac.pk
+                        ac_code = ac.code
+                        ac_name = ac.name
+
+                        t_sp = split_form.cleaned_data["t_sp"]
+                        am = str(split_form.cleaned_data["am"])
+
+                        sp.update(
+                            {
+                                "ac": ac_pk,
+                                "ac_code": ac_code,
+                                "ac_name": ac_name,
+                                "t_sp": t_sp,
+                                "am": am,
+                            }
+                        )
+                        request.session.modified = True
+
+                        message.success(
+                            request,
+                            f"Split successfully updated: {ac_name} ({ac_code}) | {t_sp}: {am}",
+                        )
+                        return redirect(reverse("data_entry:general_journal"))
+
+                # if the loop completes without finding a matching sp_id
+                message.error(
+                    request,
+                    "Split with id: {session_sp_id} not found, updating failed",
+                )
+                return redirect(reverse("data_entry:general_journal"))
+            else:
+                # if the form is not valid, re-render the form with the errors and the session_sp_id field
+                split_form.fields["session_sp_id"] = forms.CharField(
+                    widget=forms.HiddenInput(), initial=session_sp_id
+                )
 
     session_bals = session_balances(splits)
 
