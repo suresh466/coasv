@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from fstatements.forms import DateFilterForm
 from fstatements.utils import (
     calculate_balance_sheet,
     calculate_income_statement,
@@ -10,12 +11,23 @@ from fstatements.utils import (
 def trial_balance(request):
     template = "fs/trial_balance.html"
 
-    cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance()
+    date_filter_form = DateFilterForm(request.GET or None)
+
+    if date_filter_form.is_valid():
+        start_date = date_filter_form.cleaned_data.get("start_date")
+        end_date = date_filter_form.cleaned_data.get("end_date")
+
+        cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance(
+            start_date=start_date, end_date=end_date
+        )
+    else:
+        cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance()
 
     context = {
         "cr_acs": cr_acs_with_bal,
         "dr_acs": dr_acs_with_bal,
         "total_sum": total_sum,
+        "form": date_filter_form,
     }
 
     return render(request, template, context)

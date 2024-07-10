@@ -1,12 +1,12 @@
 from coasc.models import Ac
 
 
-def calculate_trial_balance():
+def calculate_trial_balance(start_date=None, end_date=None):
     dr_acs = Ac.objects.filter(cat__in=["AS", "EX"])
     cr_acs = Ac.objects.filter(cat__in=["LI", "IN"])
 
-    cr_acs_with_bal = [{"ac": ac, "bal": ac.bal()} for ac in cr_acs]
-    dr_acs_with_bal = [{"ac": ac, "bal": ac.bal()} for ac in dr_acs]
+    cr_acs_with_bal = [{"ac": ac, "bal": ac.bal(start_date, end_date)} for ac in cr_acs]
+    dr_acs_with_bal = [{"ac": ac, "bal": ac.bal(start_date, end_date)} for ac in dr_acs]
 
     total_sum = {
         "cr_acs": sum(ac["bal"]["diff"] for ac in cr_acs_with_bal),
