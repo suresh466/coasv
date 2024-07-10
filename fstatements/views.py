@@ -18,7 +18,7 @@ def trial_balance(request):
         end_date = date_filter_form.cleaned_data.get("end_date")
 
         cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance(
-            start_date=start_date, end_date=end_date
+            start_date, end_date
         )
     else:
         cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance()
@@ -36,15 +36,26 @@ def trial_balance(request):
 def balance_sheet(request):
     template = "fs/balance_sheet.html"
 
-    as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal = (
-        calculate_balance_sheet()
-    )
+    date_filter_form = DateFilterForm(request.GET or None)
+
+    if date_filter_form.is_valid():
+        start_date = date_filter_form.cleaned_data.get("start_date")
+        end_date = date_filter_form.cleaned_data.get("end_date")
+
+        as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal = (
+            calculate_balance_sheet(start_date, end_date)
+        )
+    else:
+        as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal = (
+            calculate_balance_sheet()
+        )
 
     context = {
         "li_acs": li_acs_with_bal,
         "as_acs": as_acs_with_bal,
         "li_total_bal": li_total_bal,
         "as_total_bal": as_total_bal,
+        "form": date_filter_form,
     }
     return render(request, template, context)
 

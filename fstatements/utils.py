@@ -16,29 +16,35 @@ def calculate_trial_balance(start_date=None, end_date=None):
     return cr_acs_with_bal, dr_acs_with_bal, total_sum
 
 
-def calculate_balance_sheet():
+def calculate_balance_sheet(start_date=None, end_date=None):
     as_acs = Ac.objects.filter(cat="AS")
     li_acs = Ac.objects.filter(cat="LI")
 
     li_acs_with_bal = [
         {
             "ac": ac,
-            "bal": ac.bal(),
-            "children": [{"ac": ca, "bal": ca.bal()} for ca in ac.ac_set.all()],
+            "bal": ac.bal(start_date, end_date),
+            "children": [
+                {"ac": ca, "bal": ca.bal(start_date, end_date)}
+                for ca in ac.ac_set.all()
+            ],
         }
         for ac in li_acs
     ]
     as_acs_with_bal = [
         {
             "ac": ac,
-            "bal": ac.bal(),
-            "children": [{"ac": ca, "bal": ca.bal()} for ca in ac.ac_set.all()],
+            "bal": ac.bal(start_date, end_date),
+            "children": [
+                {"ac": ca, "bal": ca.bal(start_date, end_date)}
+                for ca in ac.ac_set.all()
+            ],
         }
         for ac in as_acs
     ]
 
-    as_total_bal = Ac.total_bal(cat="AS")
-    li_total_bal = Ac.total_bal(cat="LI")
+    as_total_bal = Ac.total_bal("AS", start_date, end_date)
+    li_total_bal = Ac.total_bal("LI", start_date, end_date)
 
     return as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal
 
