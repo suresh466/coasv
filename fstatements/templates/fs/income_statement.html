@@ -3,9 +3,40 @@
 {% block body %}
     <div class="container mx-auto">
         <div class="bg-white shadow-lg rounded-lg mb-12">
+            <!-- date filter row -->
             <div class="prose p-4 mb-6">
                 <h1>Income Statement</h1>
+                <form method="get" class="flex flex-wrap items-end gap-4">
+                    <div>
+                        <label for="{{ form.start_date.id_for_label }}"
+                               class="block mb-1 text-sm font-medium text-gray-700">Start Date:</label>
+                        <input type="date" id="{{ form.start_date.id_for_label }}" name="{{ form.start_date.html_name }}" {{ form.start_date.field.required|yesno:"required," }} class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ form.start_date.value|date:'Y-m-d'|default:form.start_date.value }}">
+                        {% if transaction_form.start_date.errors %}
+                            {% for error in transaction_form.start_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.end_date.id_for_label }}"
+                               class="block mb-1 text-sm font-medium text-gray-700">End Date:</label>
+                        <input type="date" id="{{ form.end_date.id_for_label }}" name="{{ form.end_date.html_name }}" {{ form.end_date.field.required|yesno:"required," }} class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ form.end_date.value|date:'Y-m-d'|default:form.end_date.value }}">
+                        {% if transaction_form.end_date.errors %}
+                            {% for error in transaction_form.end_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <button type="submit"
+                                name="filter"
+                                class="inline-block mr-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Filter
+                        </button>
+                        <a href="{% url 'fs:income_statement' %}"
+                           class="inline-block no-underline px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            Reset
+                        </a>
+                    </div>
+                </form>
             </div>
+            <!-- income statement table -->
             <table class="min-w-full border-collapse prose divide-y">
                 <thead class="divide-y">
                     <tr class="bg-gray-200 divide-x">

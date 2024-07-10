@@ -63,11 +63,22 @@ def balance_sheet(request):
 def income_statement(request):
     template = "fs/income_statement.html"
 
-    ex_ac_with_bal, in_ac_with_bal = calculate_income_statement()
+    date_filter_form = DateFilterForm(request.GET or None)
+
+    if date_filter_form.is_valid():
+        start_date = date_filter_form.cleaned_data.get("start_date")
+        end_date = date_filter_form.cleaned_data.get("end_date")
+
+        ex_ac_with_bal, in_ac_with_bal = calculate_income_statement(
+            start_date, end_date
+        )
+    else:
+        ex_ac_with_bal, in_ac_with_bal = calculate_income_statement()
 
     context = {
         "ex_ac": ex_ac_with_bal,
         "in_ac": in_ac_with_bal,
+        "form": date_filter_form,
     }
 
     return render(request, template, context)

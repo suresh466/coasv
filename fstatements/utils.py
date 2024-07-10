@@ -49,20 +49,24 @@ def calculate_balance_sheet(start_date=None, end_date=None):
     return as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal
 
 
-def calculate_income_statement():
+def calculate_income_statement(start_date=None, end_date=None):
     in_ac = Ac.objects.get(cat="IN")
     ex_ac = Ac.objects.get(cat="EX")
 
     in_ac_with_bal = {
         "ac": in_ac,
-        "bal": in_ac.bal(),
-        "children": [{"ac": ca, "bal": ca.bal()} for ca in in_ac.ac_set.all()],
+        "bal": in_ac.bal(start_date, end_date),
+        "children": [
+            {"ac": ca, "bal": ca.bal(start_date, end_date)} for ca in in_ac.ac_set.all()
+        ],
     }
 
     ex_ac_with_bal = {
         "ac": ex_ac,
-        "bal": ex_ac.bal(),
-        "children": [{"ac": ca, "bal": ca.bal()} for ca in ex_ac.ac_set.all()],
+        "bal": ex_ac.bal(start_date, end_date),
+        "children": [
+            {"ac": ca, "bal": ca.bal(start_date, end_date)} for ca in ex_ac.ac_set.all()
+        ],
     }
 
     return ex_ac_with_bal, in_ac_with_bal
