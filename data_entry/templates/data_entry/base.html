@@ -1,4 +1,5 @@
 {% extends 'common_base.html' %}
+{% load static %}
 {% block common_title %}
     Data Entry ->
     {% block title %}{% endblock %}
@@ -11,6 +12,10 @@
     <div id="ledgers-secondary-nav"
          class=" flex bg-gray-900 text-white p-4 mb-8 font-bold">
         <a class="p-4" href='{% url "data_entry:general_journal" %}'>General Journal</a>
+        <a class="p-4" href='{% url "data_entry:transaction_list" %}'>Transaction List</a>
     </div>
     {% block body %}{% endblock %}
+    {% block common_js %}
+        <script src="{% static 'js/data-entry.js' %}"></script>
+    {% endblock %}
 {% endblock %}

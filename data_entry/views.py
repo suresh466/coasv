@@ -4,10 +4,12 @@ from decimal import Decimal
 
 import django.forms as forms
 from coasc.exceptions import AccountingEquationViolationError
-from coasc.models import Ac, Split
+from coasc.models import Ac, Split, Transaction
 from django.contrib import messages as message
 from django.db import transaction as db_transaction
 from django.shortcuts import redirect, render, reverse
+from django.db.models import Sum, Q
+from django.db.models.functions import Coalesce
 
 from data_entry.forms import SplitForm, TransactionForm
 
@@ -249,3 +251,26 @@ def cancel_transaction(request):
     request.session["splits"] = []
 
     return redirect(reverse("data_entry:general_journal"))
+
+
+def transaction_list(request):
+    template = "data_entry/transaction_list.html"
+
+    loaded_transactions = (
+        Transaction.objects.prefetch_related("split_set")
+        .annotate(
+            total_debit=Coalesce(
+                Sum("split__am", filter=Q(split__t_sp="dr")), Decimal("0.00")
+            ),
+            total_credit=Coalesce(
+                Sum("split__am", filter=Q(split__t_sp="cr")), Decimal("0.00")
+            ),
+        )
+        .order_by("-tx_date", "-id")
+    )
+
+    context = {
+        "transactions": loaded_transactions,
+    }
+
+    return render(request, template, context)
