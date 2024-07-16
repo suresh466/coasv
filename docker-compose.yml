@@ -13,7 +13,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "80:8000"
     environment:
       - COASV_SECRET_KEY=insecurerandomsecretkeychangeit!=z_yb25jv_%%)o(+d6
       - COASV_DEBUG_VALUE=True
