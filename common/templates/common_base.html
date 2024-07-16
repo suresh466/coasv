@@ -16,6 +16,8 @@
         <nav class="flex gap-8 flex-col w-72 p-4 bg-gray-900 text-white font-extrabold">
             <a href='{% url "data_entry:general_journal" %}'
                class="hover:bg-gray-700 rounded-md transition duration-200 p-2">Data Entry</a>
+            <a href='{% url "inventory:sell" %}'
+               class="hover:bg-gray-700 rounded-md transition duration-200 p-2">Inventory</a>
             <a href='{% url "ledgers:general_ledger" %}'
                class="hover:bg-gray-700 rounded-md transition duration-200 p-2">Ledgers</a>
             <a href='{% url "fs:trial_balance" %}'

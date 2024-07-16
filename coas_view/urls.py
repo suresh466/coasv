@@ -21,11 +21,13 @@ from data_entry import urls as data_entry_urls
 from ledgers import urls as ledgers_urls
 from fstatements import urls as fstatements_urls
 from data_entry.views import general_journal
+from inventory import urls as inventory
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("data_entry/", include(data_entry_urls)),
     path("ledgers/", include(ledgers_urls)),
     path("fs/", include(fstatements_urls)),
+    path("inventory/", include(inventory)),
     path("", general_journal),
 ]

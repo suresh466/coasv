@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "data_entry",
     "ledgers",
     "fstatements",
+    "inventory",
 ]
 
 MIDDLEWARE = [

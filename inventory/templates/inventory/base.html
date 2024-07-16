@@ -1,0 +1,12 @@
+{% extends 'common_base.html' %}
+{% block common_title %}
+    Inventory ->
+    {% block title %}{% endblock %}
+{% endblock %}
+{% block common_body %}
+    <div id="ledgers-secondary-nav"
+         class=" flex bg-gray-900 text-white p-4 mb-8 font-bold">
+        <a class="p-4" href='{% url "inventory:sell" %}'>Sell</a>
+    </div>
+    {% block body %}{% endblock %}
+{% endblock %}
