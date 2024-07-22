@@ -11,7 +11,7 @@ class SplitForm(ModelForm):
         super().__init__(*args, **kwargs)
 
         acs = Ac.objects.all()
-        exclude_list = [ac.id for ac in acs if ac.who_am_i()["parent"]]
+        exclude_list = [ac.id for ac in acs if ac.is_parent]
 
         query_set = Ac.objects.exclude(id__in=exclude_list)
         self.fields["ac"].queryset = query_set
