@@ -4,7 +4,7 @@ from fstatements.forms import DateFilterForm
 from fstatements.utils import (
     calculate_balance_sheet,
     calculate_income_statement,
-    calculate_trial_balance,
+    generate_trial_balance,
 )
 
 
@@ -17,16 +17,12 @@ def trial_balance(request):
         start_date = date_filter_form.cleaned_data.get("start_date")
         end_date = date_filter_form.cleaned_data.get("end_date")
 
-        cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance(
-            start_date, end_date
-        )
+        trial_balance_data = generate_trial_balance(start_date, end_date)
     else:
-        cr_acs_with_bal, dr_acs_with_bal, total_sum = calculate_trial_balance()
+        trial_balance_data = generate_trial_balance()
 
     context = {
-        "cr_acs": cr_acs_with_bal,
-        "dr_acs": dr_acs_with_bal,
-        "total_sum": total_sum,
+        "trial_balance": trial_balance_data,
         "form": date_filter_form,
     }
 

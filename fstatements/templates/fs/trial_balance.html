@@ -40,32 +40,30 @@
                 <table class="min-w-full border-collapse prose divide-y">
                     <thead>
                         <tr class="bg-gray-200 divide-x">
-                            <th class="px-4 py-2 text-left min-w-96">Ac Name</th>
+                            <th class="px-4 py-2 text-left min-w-96">Account Name</th>
                             <th class="px-4 py-2 text-right min-w-28">Debit</th>
                             <th class="px-4 py-2 text-right min-w-28">Credit</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
-                        {% for ac in cr_acs %}
-                            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                                <td class="px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                                <td class="px-4 py-2"></td>
-                                <td class="px-4 py-2 text-right">{{ ac.bal.cr_sum }}</td>
-                            </tr>
-                        {% endfor %}
-                        {% for ac in dr_acs %}
-                            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                                <td class="px-4 py-2">{{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                                <td class="px-4 py-2 text-right">{{ ac.bal.dr_sum }}</td>
-                                <td class="px-4 py-2"></td>
+                        {% for account in trial_balance.accounts %}
+                            <tr class="{% cycle 'bg-white' 'bg-gray-100' %} divide-x hover:bg-gray-300">
+                                <td class="px-4 py-2">{{ account.account.name }} ({{ account.account.code }})</td>
+                                {% if account.balance.net_balance < 0 %}
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ account.balance.net_debit|default_if_none:'' }}</td>
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ account.balance.net_credit|default_if_none:'' }}</td>
+                                {% else %}
+                                    <td class="px-4 py-2 text-right">{{ account.balance.net_debit|default_if_none:'' }}</td>
+                                    <td class="px-4 py-2 text-right">{{ account.balance.net_credit|default_if_none:'' }}</td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr class="divide-x bg-yellow-100">
                             <td class="px-4 py-2 bg-yellow-50 min-w-96">Total:</td>
-                            <td class="px-4 py-2 text-right min-w-28">{{ total_sum.dr_acs }}</td>
-                            <td class="px-4 py-2 text-right min-w-28">{{ total_sum.cr_acs }}</td>
+                            <td class="px-4 py-2 text-right min-w-28">{{ trial_balance.total_net_debit }}</td>
+                            <td class="px-4 py-2 text-right min-w-28">{{ trial_balance.total_net_credit }}</td>
                         </tr>
                     </tfoot>
                 </table>
