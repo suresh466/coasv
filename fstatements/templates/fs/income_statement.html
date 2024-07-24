@@ -43,38 +43,92 @@
                         <th class="px-4 py-2 text-left min-w-96">AC name</th>
                         <th class="px-4 py-2 text-right min-w-28">Debit</th>
                         <th class="px-4 py-2 text-right min-w-28">Credit</th>
+                        <!-- TODO: remove it from here or add to others as well! -->
+                        <th class="px-4 py-2 text-right min-w-28">Balance</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    {% for ca in in_ac.children %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                            <td class="px-4 py-2"></td>
-                            <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                    {% for income_account in income_statement.income_accounts %}
+                        {% for child in income_account.children %}
+                            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
+                                <td class="px-4 py-2">{{ child.account }}</td>
+                                {% if child.balance.net_balance < 0 %}
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_debit }}</td>
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_credit }}</td>
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_balance }}</td>
+                                {% else %}
+                                    <td class="px-4 py-2 text-right">{{ child.balance.net_debit }}</td>
+                                    <td class="px-4 py-2 text-right">{{ child.balance.net_credit }}</td>
+                                    <td class="px-4 py-2 text-right">{{ child.balance.net_balance }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        <tr class="bg-gray-400">
+                            <!-- gross profit of sort!  -->
+                            <td class="px-4 py-4">{{ income_account.account }}</td>
+                            {% if income_account.balance.net_balance < 0 %}
+                                <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_debit }}</td>
+                                <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_credit }}</td>
+                                <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_balance }}</td>
+                            {% else %}
+                                <td class="px-4 py-4 text-right">{{ income_account.balance.net_debit }}</td>
+                                <td class="px-4 py-4 text-right">{{ income_account.balance.net_credit }}</td>
+                                <td class="px-4 py-4 text-right">{{ income_account.balance.net_balance }}</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
-                    <tr class="bg-gray-400">
-                        <td class="px-4 py-4">PA: {{ in_ac.ac.name }} ({{ in_ac.ac.code }})</td>
-                        <td class="px-4 py-4"></td>
-                        <td class="px-4 py-4 text-right">{{ in_ac.bal.diff }}</td>
-                    </tr>
-                    {% for ca in ex_ac.children %}
-                        <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">CA: {{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                            <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
-                            <td class="px-4 py-2"></td>
+                    {% for expense_account in income_statement.expense_accounts %}
+                        {% for child in expense_account.children %}
+                            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
+                                <td class="px-4 py-2">{{ child.account }}</td>
+                                {% if child.balance.net_balance < 0 %}
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_debit }}</td>
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_credit }}</td>
+                                    <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_balance }}</td>
+                                {% else %}
+                                    <td class="px-4 py-2 text-right">{{ child.balance.net_debit }}</td>
+                                    <td class="px-4 py-2 text-right">{{ child.balance.net_credit }}</td>
+                                    <td class="px-4 py-2 text-right">{{ child.balance.net_balance }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        <tr class="bg-gray-400">
+                            <!-- gross loss of sort!  -->
+                            <td class="px-4 py-4">{{ expense_account.account }}</td>
+                            {% if expense_account.balance.net_balance < 0 %}
+                                <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_debit }}</td>
+                                <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_credit }}</td>
+                                <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_balance }}</td>
+                            {% else %}
+                                <td class="px-4 py-4 text-right">{{ expense_account.balance.net_debit }}</td>
+                                <td class="px-4 py-4 text-right">{{ expense_account.balance.net_credit }}</td>
+                                <td class="px-4 py-4 text-right">{{ expense_account.balance.net_balance }}</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
-                    <tr class="bg-gray-400">
-                        <td class="px-4 py-4">PA: {{ ex_ac.ac.name }} ({{ in_ac.ac.code }})</td>
-                        <td class="px-4 py-4 text-right">{{ ex_ac.bal.diff }}</td>
-                        <td class="px-4 py-4"></td>
-                    </tr>
                 </tbody>
                 <tfoot class="bg-yellow-100">
-                    <td class="px-4 py-2 bg-yellow-50 min-w-96">Total</td>
-                    <td class="px-4 py-2 text-right min-w-28">{{ ex_ac.bal.diff }}</td>
-                    <td class="px-4 py-2 text-right min-w-28">{{ in_ac.bal.diff }}</td>
+                    <tr>
+                        <td class="px-4 py-2 font-bold">Total Income</td>
+                        <td colspan="3"
+                            class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-100{% endif %}">
+                            {{ income_statement.total_income }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 font-bold">Total Expenses</td>
+                        <td colspan="3"
+                            class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-100{% endif %}">
+                            {{ income_statement.total_expenses }}
+                        </td>
+                    </tr>
+                    <tr class="bg-green-200 {% if income_statement.net_income < 0 %}bg-red-200{% endif %}">
+                        <td class="px-4 py-2 font-bold">Net Profit/Loss</td>
+                        <td colspan="3"
+                            class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-200{% endif %}">
+                            {{ income_statement.net_income }}
+                        </td>
+                    </tr>
                 </tfoot>
             </table>
         </div>

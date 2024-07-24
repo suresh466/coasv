@@ -47,24 +47,18 @@ def calculate_balance_sheet(start_date=None, end_date=None):
     return as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal
 
 
-def calculate_income_statement(start_date=None, end_date=None):
-    in_ac = Ac.objects.get(cat="IN")
-    ex_ac = Ac.objects.get(cat="EX")
+def generate_income_statement(start_date=None, end_date=None):
+    income_accounts = Ac.get_hierarchical_balances("IN", start_date, end_date)
+    expense_accounts = Ac.get_hierarchical_balances("EX", start_date, end_date)
 
-    in_ac_with_bal = {
-        "ac": in_ac,
-        "bal": in_ac.bal(start_date, end_date),
-        "children": [
-            {"ac": ca, "bal": ca.bal(start_date, end_date)} for ca in in_ac.ac_set.all()
-        ],
+    total_income = sum(ac["balance"]["net_balance"] for ac in income_accounts)
+    total_expenses = sum(ac["balance"]["net_balance"] for ac in expense_accounts)
+    net_income = total_income - total_expenses
+
+    return {
+        "income_accounts": income_accounts,
+        "expense_accounts": expense_accounts,
+        "total_income": total_income,
+        "total_expenses": total_expenses,
+        "net_income": net_income,
     }
-
-    ex_ac_with_bal = {
-        "ac": ex_ac,
-        "bal": ex_ac.bal(start_date, end_date),
-        "children": [
-            {"ac": ca, "bal": ca.bal(start_date, end_date)} for ca in ex_ac.ac_set.all()
-        ],
-    }
-
-    return ex_ac_with_bal, in_ac_with_bal
