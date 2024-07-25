@@ -14,37 +14,24 @@ def generate_trial_balance(start_date=None, end_date=None):
     }
 
 
-def calculate_balance_sheet(start_date=None, end_date=None):
-    as_acs = Ac.objects.filter(cat="AS")
-    li_acs = Ac.objects.filter(cat="LI")
+def generate_balance_sheet(start_date=None, end_date=None):
+    asset_accounts = Ac.get_hierarchical_balances("AS", start_date, end_date)
+    liability_accounts = Ac.get_hierarchical_balances("LI", start_date, end_date)
 
-    li_acs_with_bal = [
-        {
-            "ac": ac,
-            "bal": ac.bal(start_date, end_date),
-            "children": [
-                {"ac": ca, "bal": ca.bal(start_date, end_date)}
-                for ca in ac.ac_set.all()
-            ],
-        }
-        for ac in li_acs
-    ]
-    as_acs_with_bal = [
-        {
-            "ac": ac,
-            "bal": ac.bal(start_date, end_date),
-            "children": [
-                {"ac": ca, "bal": ca.bal(start_date, end_date)}
-                for ca in ac.ac_set.all()
-            ],
-        }
-        for ac in as_acs
-    ]
+    total_assets = sum(ac["balance"]["net_balance"] for ac in asset_accounts)
+    total_liabilities = sum(ac["balance"]["net_balance"] for ac in liability_accounts)
 
-    as_total_bal = Ac.total_bal("AS", start_date, end_date)
-    li_total_bal = Ac.total_bal("LI", start_date, end_date)
+    # rearranging as = li + eq we get as - li = eq
+    equity = total_assets - total_liabilities
+    total_liabilities_and_equity = total_liabilities + equity
 
-    return as_acs_with_bal, li_acs_with_bal, as_total_bal, li_total_bal
+    return {
+        "asset_accounts": asset_accounts,
+        "liability_accounts": liability_accounts,
+        "total_assets": total_assets,
+        "equity": equity,
+        "total_liabilities_and_equity": total_liabilities_and_equity,
+    }
 
 
 def generate_income_statement(start_date=None, end_date=None):

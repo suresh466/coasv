@@ -48,46 +48,63 @@
                     <tr class="bg-gray-100">
                         <td class="px-4 py-2 text-center" colspan="2">Liabilities</td>
                     </tr>
-                    {% for ac in li_acs %}
-                        {% for ca in ac.children %}
+                    {% for liability_account in balance_sheet.liability_accounts %}
+                        {% for child in liability_account.children %}
                             <!-- liabilities child accounts -->
                             <tr class="bg-gray-50 divide-x hover:bg-gray-300">
-                                <td class="px-4 py-2">&emsp; {{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                                <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                                <td class="px-4 py-2">&emsp; {{ child.account }}</td>
+                                <td class="px-4 py-2 text-right {% if child.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                                    {{ child.balance.net_balance }}
+                                </td>
                             </tr>
                         {% endfor %}
                         <!-- liabilities parent accounts -->
                         <tr class="divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                            <td class="px-4 py-2 text-right">{{ ac.bal.diff }}</td>
+                            <td class="px-4 py-2">{{ liability_account.account }}</td>
+                            <td class="px-4 py-2 text-right {% if liability_account.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                                {{ liability_account.balance.net_balance }}
+                            </td>
                         </tr>
                     {% endfor %}
+                    <!-- equity -->
+                    <tr class="divide-x hover:bg-gray-300">
+                        <td class="px-4 py-2">Equity</td>
+                        <td class="px-4 py-2 text-right {% if balance_sheet.equity < 0 %}bg-red-100{% endif %}">{{ balance_sheet.equity }}</td>
+                    </tr>
                     <tr class="bg-yellow-100">
                         <td class="px-4 py-2 min-w-96">Total Liabilities</td>
-                        <td class="px-4 py-2 text-right min-w-28">{{ li_total_bal.diff }}</td>
+                        <td class="px-4 py-2 text-right min-w-28 {% if balance_sheet.total_liabilities_and_equity < 0 %}bg-red-100{% endif %}">
+                            {{ balance_sheet.total_liabilities_and_equity }}
+                        </td>
                     </tr>
                     <tr class="bg-gray-100">
                         <td class="px-4 py-2 text-center" colspan="2">Assets</td>
                     </tr>
-                    {% for ac in as_acs %}
-                        {% for ca in ac.children %}
+                    {% for asset_account in balance_sheet.asset_accounts %}
+                        {% for child in asset_account.children %}
                             <!-- assets child accounts -->
                             <tr class="bg-gray-50 divide-x hover:bg-gray-300">
-                                <td class="px-4 py-2">&emsp;{{ ca.ac.name }} ({{ ca.ac.code }})</td>
-                                <td class="px-4 py-2 text-right">{{ ca.bal.diff }}</td>
+                                <td class="px-4 py-2">&emsp;{{ child.account }}</td>
+                                <td class="px-4 py-2 text-right {% if child.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                                    {{ child.balance.net_balance }}
+                                </td>
                             </tr>
                         {% endfor %}
                         <!-- liabilities parent accounts -->
                         <tr class="divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">PA: {{ ac.ac.name }} ({{ ac.ac.code }})</td>
-                            <td class="px-4 py-2 text-right">{{ ac.bal.diff }}</td>
+                            <td class="px-4 py-2">{{ asset_account.account }}</td>
+                            <td class="px-4 py-2 text-right {% if asset_account.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                                {{ asset_account.balance.net_balance }}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr class="bg-yellow-100">
                         <td class="px-4 py-2 min-w-96">Total Assets</td>
-                        <td class="px-4 py-2 text-right min-w-28">{{ as_total_bal.diff }}</td>
+                        <td class="px-4 py-2 text-right min-w-28 {% if balance_sheet.total_assets < 0 %}bg-red-100{% endif %}">
+                            {{ balance_sheet.total_assets }}
+                        </td>
                     </tr>
                 </tfoot>
             </table>
