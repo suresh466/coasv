@@ -1,4 +1,5 @@
-from coasc.models import Ac
+from coasc.models import Ac, Split
+from django.db.models import Prefetch, Q
 from django.http import Http404
 from django.shortcuts import render
 
@@ -20,17 +21,55 @@ from ledgers.utils import (
 def general_ledger(request):
     template = "ledgers/general_ledger.html"
 
-    tables = []
-    for account in Ac.objects.all():
-        if account.who_am_i()["parent"]:
-            continue
-        else:
-            table = generate_table(account)
-            tables.append(table)
+    # get all the accounts and related splits and transactions in two database hits
+    operating_accounts = Ac.objects.filter(~Q(ac__isnull=False)).order_by("code")
+    # prefetch related splits and transactions; TODO: order by tx_date or id?
+    splits = Split.objects.select_related("tx").order_by("tx__id")
 
-    context = {
-        "tables": tables,
-    }
+    operating_accounts = operating_accounts.prefetch_related(
+        Prefetch("split_set", queryset=splits, to_attr="prefetched_splits")
+    )
+
+    ledger_data = []
+    for account in operating_accounts:
+        transactions_data = []
+        running_balance = 0
+
+        # group splits by transaction
+        splits_by_tx = {}
+        for split in account.prefetched_splits:
+            if split.tx_id not in splits_by_tx:
+                splits_by_tx[split.tx_id] = []
+            splits_by_tx[split.tx_id].append(split)
+
+        for tx_id, tx_splits in splits_by_tx.items():
+            debit = sum(s.am for s in tx_splits if s.t_sp == "dr")
+            credit = sum(s.am for s in tx_splits if s.t_sp == "cr")
+
+            # Update running balance based on account category
+            cat = account.p_ac.cat if account.is_child else account.cat
+            if cat in [Ac.ASSET, Ac.EXPENSES]:
+                running_balance += debit - credit
+            elif cat in [Ac.LIABILITY, Ac.INCOME]:
+                running_balance += credit - debit
+
+            transaction_data = {
+                "date": tx_splits[0].tx.tx_date,
+                "description": tx_splits[0].tx.desc,
+                "debit": debit,
+                "credit": credit,
+                "running_balance": running_balance,
+            }
+            transactions_data.append(transaction_data)
+
+        data = {
+            "account": account,
+            "transactions": transactions_data,
+            "balance": account.bal(),
+        }
+        ledger_data.append(data)
+
+    context = {"operating_accounts": ledger_data}
 
     return render(request, template, context)
 
