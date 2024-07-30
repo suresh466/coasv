@@ -115,8 +115,6 @@ def purchase_ledger(request):
             running_balances[account.id] += net_balance
             row["accounts_data"].append(
                 {
-                    "debit": debit,
-                    "credit": credit,
                     "net_balance": net_balance,
                     "running_balance": running_balances[account.id],
                 }
@@ -132,36 +130,42 @@ def purchase_ledger(request):
 def sales_ledger(request):
     template = "ledgers/sales_ledger.html"
 
-    # parent = Ac.objects.get(code="150")
-    parent = Ac.objects.get(cat="IN")
+    # get income accounts with balances (parent and child)
+    accounts_balances = Ac.get_hierarchical_balances("IN")
 
-    headers = generate_parent_headers(parent)
-    footers = generate_parent_footers(parent)
+    # get all income child accounts (it is specific to the predefined accounts hierarchy in scripts/insert-accounts.py)
+    splits = Split.objects.select_related("tx")
+    operating_accounts = Ac.objects.filter(p_ac__cat="IN").prefetch_related(
+        Prefetch("split_set", queryset=splits, to_attr="prefetched_splits")
+    )
+    running_balances = {account.id: 0 for account in operating_accounts}
 
-    txs = get_parent_txs(parent)
-    rows = generate_parent_rows(txs, parent)
-    parent_total = parent.bal()
+    # get all involved transactions
+    transactions = set()
+    for account in operating_accounts:
+        transactions.update(s.tx for s in account.prefetched_splits)
+    transactions = sorted(transactions, key=lambda tx: tx.id)
 
-    total_col = []
-    total = 0
-    for row in rows:
-        for data in row:
-            total += data["cr_sum"]
+    # prepare rows for the ledger
+    rows = []
+    for transaction in transactions:
+        row = {"description": transaction.desc, "accounts_data": [], "grand_total": 0}
+        for account in operating_accounts:
+            splits = [s for s in account.prefetched_splits if s.tx == transaction]
+            debit = sum(s.am for s in splits if s.t_sp == "dr")
+            credit = sum(s.am for s in splits if s.t_sp == "cr")
+            net_balance = credit - debit
+            running_balances[account.id] += net_balance
+            row["accounts_data"].append(
+                {
+                    "net_balance": net_balance,
+                    "running_balance": running_balances[account.id],
+                }
+            )
+            row["grand_total"] += running_balances[account.id]
+        rows.append(row)
 
-        total_col.append(total)
-
-    loaded_rows = zip(txs, rows, total_col)
-
-    table = {
-        "headers": headers,
-        "footers": footers,
-        "loaded_rows": loaded_rows,
-        "parent_total": parent_total,
-    }
-
-    context = {
-        "table": table,
-    }
+    context = {"accounts_balances": accounts_balances, "rows": rows}
 
     return render(request, template, context)
 
