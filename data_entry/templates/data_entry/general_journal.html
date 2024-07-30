@@ -139,38 +139,25 @@
                 <div class="prose p-4 m-6">
                     <h1>Journal Table</h1>
                 </div>
-                <div class="uppercase flex justify-between px-8 pb-4">
-                    <div class="prose">
-                        <h3>Debit</h3>
-                    </div>
-                    <div class="prose">
-                        <h3>Credit</h3>
-                    </div>
-                </div>
                 <table class="min-w-full border-collapse divide-y prose">
                     <thead>
                         <tr class="bg-gray-200 divide-x uppercase">
-                            <th scope="col" class="p-4 text-left w-2/7 min-w-36">Account</th>
-                            <th scope="col" class="p-4 text-right w-1/7 min-w-28">Amount</th>
-                            <th scope="col" class="p-4 text-left w-2/7 min-w-36">Account</th>
-                            <th scope="col" class="p-4 text-right w-1/7 min-w-28">Amount</th>
-                            <th scope="col" class="p-4 text-right w-1/7 min-w-28">Actions</th>
+                            <th scope="col" class="p-4 text-left w-2/5 min-w-36">Account</th>
+                            <th scope="col" class="p-4 text-right w-1/5 min-w-28">Debit</th>
+                            <th scope="col" class="p-4 text-right w-1/5 min-w-28">Credit</th>
+                            <th scope="col" class="p-4 text-right w-1/5 min-w-28">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
                         {% for sp in splits %}
                             <tr class="{% cycle 'bg-white' 'bg-gray-50' %} {% if sp.sp_id == split_form.fields.session_sp_id.initial %}bg-yellow-100{% endif %} divide-x hover:bg-gray-200">
-                                {% if sp.t_sp == 'dr' %}
-                                    <td class="px-4 py-2 bg-gray-50">{{ sp.ac_name }} ({{ sp.ac_code }})</td>
-                                    <td class="px-4 py-2 text-right">{{ sp.am }}</td>
-                                    <td class="px-4 py-2 bg-gray-50"></td>
-                                    <td class="px-4 py-2"></td>
-                                {% else %}
-                                    <td class="px-4 py-2 bg-gray-50"></td>
-                                    <td class="px-4 py-2"></td>
-                                    <td class="px-4 py-2 bg-gray-50">{{ sp.ac_name }} ({{ sp.ac_code }})</td>
-                                    <td class="px-4 py-2 text-right">{{ sp.am }}</td>
-                                {% endif %}
+                                <td class="px-4 py-2 bg-gray-50">{{ sp.ac_name }} ({{ sp.ac_code }})</td>
+                                <td class="px-4 py-2 text-right">
+                                    {% if sp.t_sp == 'dr' %}{{ sp.am }}{% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-right">
+                                    {% if sp.t_sp == 'cr' %}{{ sp.am }}{% endif %}
+                                </td>
                                 <td class="px-4 py-2">
                                     <form action="" method="post">
                                         {% csrf_token %}
@@ -202,9 +189,9 @@
                     </tbody>
                     <tfoot>
                         <tr class="divide-x bg-yellow-100">
-                            <td colspan="1" class="p-4 text-left bg-yellow-50">Total</td>
-                            <td colspan="1" class="p-4 text-right">Debit sum: {{ session_bals.dr_sum }}</td>
-                            <td colspan="2" class="p-4 text-right">Credit sum: {{ session_bals.cr_sum }}</td>
+                            <td class="p-4 text-left bg-yellow-50">Total</td>
+                            <td class="p-4 text-right">Debit sum: {{ session_bals.dr_sum }}</td>
+                            <td class="p-4 text-right">Credit sum: {{ session_bals.cr_sum }}</td>
                             <td class="p-4 text-right font-bold">Difference: {{ session_bals.diff }}</td>
                         </tr>
                     </tfoot>

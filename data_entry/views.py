@@ -7,9 +7,9 @@ from coasc.exceptions import AccountingEquationViolationError
 from coasc.models import Ac, Split, Transaction
 from django.contrib import messages as message
 from django.db import transaction as db_transaction
-from django.shortcuts import redirect, render, reverse
-from django.db.models import Sum, Q
+from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
+from django.shortcuts import redirect, render, reverse
 
 from data_entry.forms import SplitForm, TransactionForm
 
@@ -113,6 +113,7 @@ def general_journal(request):
                         am = Decimal(sp["am"])
                         Split.objects.create(ac=ac, t_sp=t_sp, am=am, tx=tx)
 
+                    # maybe validate just the current transaction later
                     Ac.validate_accounting_equation()
                     request.session["splits"] = []
                     message.success(
