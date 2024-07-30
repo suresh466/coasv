@@ -14,26 +14,30 @@
                                 class="w-1/3 min-w-96 px-4 py-2 text-left uppercase sticky left-0 bg-gray-100 z-10">
                                 Desc
                             </th>
-                            {% for header in table.headers %}<th scope="col" class="min-w-28 px-4 py-2 uppercase">{{ header }}</th>{% endfor %}
+                            {% for account_balance in accounts_balances.0.children %}
+                                <th scope="col" class="min-w-28 px-4 py-2 uppercase">{{ account_balance.account }}</th>
+                            {% endfor %}
                             <th scope="col" class="px-4 py-2 uppercase bg-gray-100">Total Exp</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-300">
-                        {% for tx, row, col_data in table.loaded_rows %}
+                        {% for row in rows %}
                             <tr class="divide-x {% cycle "bg-white" "bg-gray-50" %} hover:bg-gray-300">
-                                <td class="px-4 py-2 bg-gray-100 sticky left-0">{{ tx.desc }}</td>
-                                {% for data in row %}<td class="px-4 py-2 whitespace-nowrap text-right">{{ data.diff }}</td>{% endfor %}
-                                <td class="px-4 py-2 whitespace-nowrap text-right">{{ col_data }}</td>
+                                <td class="px-4 py-2 bg-gray-100 sticky left-0">{{ row.description }}</td>
+                                {% for data in row.accounts_data %}
+                                    <td class="px-4 py-2 whitespace-nowrap text-right">{{ data.net_balance }}</td>
+                                {% endfor %}
+                                <td class="px-4 py-2 whitespace-nowrap text-right">{{ row.grand_total }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr class="divide-x">
                             <td class="px-4 py-2 whitespace-nowrap sticky left-0 bg-yellow-50">Total</td>
-                            {% for footer in table.footers %}
-                                <td class="px-4 py-2 whitespace-nowrap bg-yellow-100 text-right">{{ footer.diff }}</td>
+                            {% for account_balance in accounts_balances.0.children %}
+                                <td class="px-4 py-2 whitespace-nowrap bg-yellow-100 text-right">{{ account_balance.balance.net_balance }}</td>
                             {% endfor %}
-                            <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 text-right">{{ table.parent_total.diff }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 text-right">{{ accounts_balances.0.balance.net_balance }}</td>
                         </tr>
                     </tfoot>
                 </table>
