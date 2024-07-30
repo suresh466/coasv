@@ -2,7 +2,7 @@ from coasc.models import Ac
 
 
 def generate_trial_balance(start_date=None, end_date=None):
-    accounts = Ac.get_flat_balances()
+    accounts = Ac.get_flat_balances(None, start_date, end_date)
 
     total_net_debit = sum(ac["balance"]["net_debit"] for ac in accounts)
     total_net_credit = sum(ac["balance"]["net_credit"] for ac in accounts)
