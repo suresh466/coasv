@@ -1,5 +1,8 @@
 {% extends 'inventory/base.html' %}
 {% block title %}Sell{% endblock %}
 {% block body %}
-<h1>somke test</h1>
+    <form method="post">
+        {{ form.as_table }}
+        {% csrf_token %}
+    </form>
 {% endblock %}
