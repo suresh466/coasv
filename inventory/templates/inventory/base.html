@@ -1,12 +1,21 @@
 {% extends 'common_base.html' %}
+{% load static %}
 {% block common_title %}
     Inventory ->
     {% block title %}{% endblock %}
+{% endblock %}
+{% block common_css %}
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 {% endblock %}
 {% block common_body %}
     <div id="ledgers-secondary-nav"
          class=" flex bg-gray-900 text-white p-4 mb-8 font-bold">
         <a class="p-4" href='{% url "inventory:sell" %}'>Sell</a>
+        <a class="p-4" href='{% url "inventory:transactions" %}'>Transactions</a>
     </div>
     {% block body %}{% endblock %}
+    {% block common_js %}
+        <script src="{% static 'js/scripts.js' %}"></script>
+    {% endblock %}
 {% endblock %}

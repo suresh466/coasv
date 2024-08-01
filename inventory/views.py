@@ -5,9 +5,10 @@ from coasc.exceptions import (
     EmptyTransactionError,
     UnbalancedTransactionError,
 )
-from coasc.models import Ac, Split, Transaction
+from coasc.models import Ac, Decimal, Q, Split, Sum, Transaction
 from django.contrib import messages as message
 from django.db import transaction as db_transaction
+from django.db.models.aggregates import Coalesce
 from django.shortcuts import redirect, render, reverse
 
 from inventory.forms import SaleForm
@@ -46,10 +47,10 @@ def sell(request):
 
         try:
             with db_transaction.atomic():
-                Sale.objects.create(**data)
-
                 description = f"Sale-Transaction for InventoryItem: {item.name}({item.code}), quantity {quantity}, {item.unit}"
                 transaction = Transaction.objects.create(desc=description)
+
+                Sale.objects.create(**data, transaction=transaction)
 
                 amount = data["total_amount"]
                 Split.objects.create(
@@ -75,5 +76,32 @@ def sell(request):
             message.error(request, "Accountion Equation is Violated")
 
     context = {"form": form}
+
+    return render(request, template, context)
+
+
+def transactions(request):
+    template = "inventory/transactions.html"
+
+    if request.method == "POST" and "revert" in request.POST:
+        pass
+
+    loaded_transactions = (
+        Transaction.objects.filter(sale__isnull=False)
+        .prefetch_related("split_set")
+        .annotate(
+            total_debit=Coalesce(
+                Sum("split__am", filter=Q(split__t_sp="dr")), Decimal("0.00")
+            ),
+            total_credit=Coalesce(
+                Sum("split__am", filter=Q(split__t_sp="cr")), Decimal("0.00")
+            ),
+        )
+        .order_by("-tx_date", "-id")
+    )
+
+    context = {
+        "transactions": loaded_transactions,
+    }
 
     return render(request, template, context)

@@ -1,0 +1,82 @@
+{% extends 'inventory/base.html' %}
+{% block title %}Sale Transaction List{% endblock %}
+{% block body %}
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-6">Transaction List</h1>
+        <div class="space-y-4">
+            {% for transaction in transactions %}
+                <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                    <div class="p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-150 ease-in-out flex items-center justify-between"
+                         onclick="toggleTransaction({{ transaction.id }})">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-gray-600 font-medium">
+                                <i class="fas fa-calendar-alt mr-2"></i>{{ transaction.tx_date|date:"M d, Y" }}
+                            </div>
+                            <div class="text-lg font-semibold text-gray-800">{{ transaction.desc }}</div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-green-600 font-medium">
+                                <i class="fas fa-arrow-down mr-1"></i>{{ transaction.total_debit }}
+                            </div>
+                            <div class="text-red-600 font-medium">
+                                <i class="fas fa-arrow-up mr-1"></i>{{ transaction.total_credit }}
+                            </div>
+                            <i class="fas fa-chevron-down text-gray-400 transform transition-transform duration-200 ease-in-out"
+                               id="chevron-{{ transaction.id }}"></i>
+                        </div>
+                    </div>
+                    <div id="transaction-{{ transaction.id }}"
+                         class="transaction-details {% if forloop.first %}{% else %}hidden{% endif %}">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Account
+                                        </th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Debit
+                                        </th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Credit
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for sp in transaction.split_set.all %}
+                                        <tr class="{% cycle 'bg-gray-100' 'bg-white' %} hover:bg-gray-200">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ sp.ac }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500 text-right">
+                                                {% if sp.t_sp == 'dr' %}{{ sp.am }}{% endif %}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500 text-right">
+                                                {% if sp.t_sp == 'cr' %}{{ sp.am }}{% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Revert button -->
+                        <div class="p-4 bg-gray-50 flex justify-end">
+                            <form method="post"
+                                  action="{% url 'inventory:transactions' %}"
+                                  onsubmit="return confirm('Are you sure you want to revert this transaction?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
+                                <button type="submit"
+                                        name="revert"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                                    <i class="fas fa-undo mr-2"></i>Revert Transaction
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
