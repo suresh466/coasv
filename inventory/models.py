@@ -16,6 +16,10 @@ class InventoryItem(models.Model):
         to=Ac, related_name="inventory_credit_accounts", on_delete=models.PROTECT
     )
 
+    def __str__(self):
+        string = f"{self.name} ({self.code})"
+        return string
+
 
 class Sale(models.Model):
     item = models.ForeignKey(
