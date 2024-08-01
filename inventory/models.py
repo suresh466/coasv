@@ -1,4 +1,4 @@
-from coasc.models import Ac
+from coasc.models import Ac, Transaction
 from django.db import models
 
 
@@ -38,3 +38,6 @@ class Sale(models.Model):
     )
     total_amount = models.DecimalField(max_digits=11, decimal_places=2)
     quantity = models.DecimalField(max_digits=12, decimal_places=3)
+    transaction = models.ForeignKey(
+        to=Transaction, on_delete=models.SET_NULL, null=True
+    )
