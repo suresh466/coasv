@@ -1,80 +1,111 @@
 {% extends 'inventory/base.html' %}
-{% block title %}Sale Transaction List{% endblock %}
+{% block title %}Sale Transactions{% endblock %}
 {% block body %}
     <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold mb-6">Transaction List</h1>
+        {% for message in messages %}
+            <div class="mb-4 rounded-lg p-4 text-sm {% if message.tags == 'error' %} bg-red-100 text-red-700 {% elif message.tags == 'success' %} bg-green-100 text-green-700 {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-700 {% elif message.tags == 'info' %} bg-blue-100 text-blue-700 {% else %} bg-gray-100 text-gray-700 {% endif %}"
+                 role="alert">
+                <p class="font-medium">{{ message }}</p>
+            </div>
+        {% endfor %}
+        <h1 class="text-3xl font-bold mb-6">Sale Transactions</h1>
         <div class="space-y-4">
             {% for transaction in transactions %}
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                    <div class="p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-150 ease-in-out flex items-center justify-between"
+                    <div class="p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-150 ease-in-out"
                          onclick="toggleTransaction({{ transaction.id }})">
-                        <div class="flex items-center space-x-4">
-                            <div class="text-gray-600 font-medium">
-                                <i class="fas fa-calendar-alt mr-2"></i>{{ transaction.tx_date|date:"M d, Y" }}
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center space-x-4">
+                                <div class="text-gray-600 font-medium">
+                                    <i class="fas fa-calendar-alt mr-2"></i>{{ transaction.tx_date|date:"M d, Y" }}
+                                </div>
+                                <div class="text-lg font-semibold text-gray-800">
+                                    {% if transaction.sale.stock_increased %}
+                                        <i class="fas fa-undo text-red-500 mr-2" title="Reversal"></i>
+                                    {% else %}
+                                        <i class="fas fa-shopping-cart text-green-500 mr-2" title="Sale"></i>
+                                    {% endif %}
+                                    {{ transaction.sale.item.name }}
+                                </div>
                             </div>
-                            <div class="text-lg font-semibold text-gray-800">{{ transaction.desc }}</div>
+                            <div class="text-lg font-bold {% if transaction.sale.stock_increased %}text-red-600{% else %}text-green-600{% endif %}">
+                                {{ transaction.total_credit }}
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-4">
-                            <div class="text-green-600 font-medium">
-                                <i class="fas fa-arrow-down mr-1"></i>{{ transaction.total_debit }}
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <div>
+                                <i class="fas fa-box mr-2"></i>Quantity: {{ transaction.sale.quantity }} {{ transaction.sale.item.unit }}
                             </div>
-                            <div class="text-red-600 font-medium">
-                                <i class="fas fa-arrow-up mr-1"></i>{{ transaction.total_credit }}
+                            <div>
+                                <i class="fas fa-tag mr-2"></i>Price: {{ transaction.sale.price }} per {{ transaction.sale.item.unit }}
                             </div>
-                            <i class="fas fa-chevron-down text-gray-400 transform transition-transform duration-200 ease-in-out"
-                               id="chevron-{{ transaction.id }}"></i>
                         </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform duration-200 ease-in-out float-right mt-2"
+                           id="chevron-{{ transaction.id }}"></i>
                     </div>
                     <div id="transaction-{{ transaction.id }}"
                          class="transaction-details {% if forloop.first %}{% else %}hidden{% endif %}">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Account
-                                        </th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Debit
-                                        </th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Credit
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    {% for sp in transaction.split_set.all %}
-                                        <tr class="{% cycle 'bg-gray-100' 'bg-white' %} hover:bg-gray-200">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ sp.ac }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500 text-right">
-                                                {% if sp.t_sp == 'dr' %}{{ sp.am }}{% endif %}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500 text-right">
-                                                {% if sp.t_sp == 'cr' %}{{ sp.am }}{% endif %}
-                                            </td>
+                        <div class="p-4 bg-gray-50">
+                            <h3 class="text-lg font-semibold mb-2">Transaction Details</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Account
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Debit
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Credit
+                                            </th>
                                         </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        {% for sp in transaction.split_set.all %}
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ sp.ac }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500 text-right">
+                                                    {% if sp.t_sp == 'dr' %}{{ sp.am }}{% endif %}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500 text-right">
+                                                    {% if sp.t_sp == 'cr' %}{{ sp.am }}{% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <!-- Revert button -->
-                        <div class="p-4 bg-gray-50 flex justify-end">
-                            <form method="post"
-                                  action="{% url 'inventory:transactions' %}"
-                                  onsubmit="return confirm('Are you sure you want to revert this transaction?');">
-                                {% csrf_token %}
-                                <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
-                                <button type="submit"
-                                        name="revert"
-                                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                                    <i class="fas fa-undo mr-2"></i>Revert Transaction
-                                </button>
-                            </form>
+                        <!-- Description and Revert button -->
+                        <div class="p-4 bg-gray-100 flex justify-between items-center">
+                            <p class="text-gray-700 mr-4">{{ transaction.desc }}</p>
+                            {% if not transaction.sale.is_reverted %}
+                                <form method="post"
+                                      action="{% url 'inventory:transactions' %}"
+                                      onsubmit="return confirm('Are you sure you want to revert this sale transaction? This action cannot be undone.');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
+                                    <button type="submit"
+                                            name="revert"
+                                            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                        <i class="fas fa-undo mr-2"></i>Revert Sale
+                                    </button>
+                                </form>
+                            {% elif transaction.sale.is_reverted %}
+                                <span class="text-gray-500 italic">This sale has been reverted</span>
+                            {% endif %}
                         </div>
                     </div>
+                </div>
+            {% empty %}
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <p>No sale transactions found.</p>
                 </div>
             {% endfor %}
         </div>
