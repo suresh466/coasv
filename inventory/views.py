@@ -64,7 +64,7 @@ def sell(request):
                 item.stock -= quantity
                 item.save()
 
-                transaction.validate_transaction
+                transaction.validate_transaction()
                 Ac.validate_accounting_equation()
                 message.success(request, description)
                 return redirect(reverse("inventory:sell"))
@@ -94,7 +94,8 @@ def transactions(request):
                 transaction = Transaction.objects.get(id=transaction_id)
                 sale = transaction.sale
                 reverted_sale = sale.revert()
-                transaction.validate_transaction
+                transaction.validate_transaction()
+                Ac.validate_accounting_equation()
                 message.success(
                     request,
                     f"Successfully reverted sale {sale.id}. New revert sale created with ID {reverted_sale.id}.",

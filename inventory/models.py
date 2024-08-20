@@ -54,6 +54,7 @@ class Sale(models.Model):
         default=None,
     )
     stock_increased = models.BooleanField(default=False)
+    # each sale transaction can only be reverted once. (But the revert sale can be reverted again)
     is_reverted = models.BooleanField(default=False)
 
     def clean(self):
