@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "ledgers",
     "fstatements",
     "inventory",
+    "loan_management",
 ]
 
 MIDDLEWARE = [
