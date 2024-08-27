@@ -5,6 +5,9 @@
 # tailwind output file
 # output.css
 
+# intellej files
+.idea/
+
 # vim
 *.swp
 
