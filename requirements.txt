@@ -1,5 +1,5 @@
 Django>=5.0.6,<6.0
-psycopg2>=2.9.9,<3.0
+psycopg2-binary>=2.9.9,<3.0
 
 #localpackage
-#-e ./django-coasc*.tar.gz
+./django-coasc-0.9.7.4.tar.gz
