@@ -26,7 +26,10 @@ class Loan(models.Model):
     YEARLY = "YEARLY"
 
     LOAN_PAYMENT_FREQUENCY = [(MONTHLY, "Monthly"), (YEARLY, "Yearly")]
-    TWOPLACES = Decimal("0.01")  # for the methods that require rounding
+
+    # default rounding method is round_half_even
+    TWOPLACES = Decimal("0.01")  # round to two decimal places
+    WHOLE = Decimal("1")  # round to nearest whole number
 
     member = models.ForeignKey(Member, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
@@ -50,7 +53,9 @@ class Loan(models.Model):
     purpose = models.TextField()
     # what to do for multiple disbursements, save the latest date or save all dates
     disbursed_at = models.DateTimeField(null=True, blank=True)
-    # minimum_payment = models.DecimalField(max_length=15, decimal_places=2)
+    minimum_payment = models.DecimalField(
+        max_digits=15, decimal_places=2, default=100.00
+    )
 
     def __str__(self):
         return f"Loan #{self.id} - {self.member.name} - {self.amount}"
@@ -59,14 +64,21 @@ class Loan(models.Model):
         if self.amount <= 0:
             raise ValidationError("Principal amount must be positive")
 
-    # def is_final_payment(self, amount):
-    #     remaining_term = self.term - (
-    #         (date.today() - self.disbursed_at.date()).days // 30
-    #     )
-    #
-    #     return remaining_term == 1 or amount <= self.minimum_payment
+    def is_final_payment(self, amount):
+        # todo: only accept decimal with two decimal places
+        remaining_term = self.term - (
+            (date.today() - self.disbursed_at.date()).days // 30
+        )
+
+        # todo: look into final payment in case amount > minimum_payment
+        # and not the last month of the term period (amount == annual_interest + outstanding_principal)
+
+        return remaining_term == 1 or amount <= self.minimum_payment
 
     def calculate_loan_payoff_amount(self):
+        """
+        Don't round the final payment to nearest whole number
+        """
         if self.status != self.ACTIVE:
             print("cannot calculate payoff amount, loan is not active")
             return
@@ -86,15 +98,11 @@ class Loan(models.Model):
             print("Cannot calculate next payment amount, loan is not active")
             return
 
-        # when auual_interest for payoff_amount don't round up, just quantize two places
         annual_interest = (
             self.interest_rate / Decimal("100.00") * self.outstanding_principal
         )
 
-        # quantize because passing it to is_final_payment method
-        total_amount = (self.outstanding_principal + annual_interest).quantize(
-            self.TWOPLACES
-        )
+        total_amount = self.outstanding_principal + annual_interest
 
         remaining_term = self.term - (
             (date.today() - self.disbursed_at.date()).days // 30
@@ -105,14 +113,10 @@ class Loan(models.Model):
         else:
             installments = remaining_term / 12
 
-        # if self.is_final_payment(total_amount):
-        #     # don't round the final installment amount
-        #     installment_amount = total_amount
-        # else:
-        #     # round up to the nearest whole number, if 24.49 round to 24 if 24.51 round to 25
-        #     installment_amount = total_amount / installments
-
-        installment_amount = (total_amount / installments).quantize(self.TWOPLACES)
+        if self.is_final_payment(total_amount.quantize(self.TWOPLACES)):
+            installment_amount = total_amount.quantize(self.TWOPLACES)
+        else:
+            installment_amount = (total_amount / installments).quantize(self.WHOLE)
 
         return installment_amount
 
@@ -146,6 +150,7 @@ class Loan(models.Model):
         return installment_amount
 
     def process_payment(self, amount, payoff=False):
+        # todo: only accept decimal with two decimal places
         """
         pay interest and principal
 
@@ -195,6 +200,7 @@ class Loan(models.Model):
             self.save()
 
     def disburse(self, amount):
+        # todo: only accept decimal with two decimal places
         """
         not decided on if want to store each disbursement seperately yet
         """
@@ -222,6 +228,7 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=credit_account, am=amount, t_sp="cr")
 
     def process_interest(self, amount, debit_account, credit_account):
+        # todo: only accept decimal with two places
         if amount <= 0:
             print("amount must be a positive number")
             return
@@ -242,13 +249,14 @@ class Loan(models.Model):
         )
 
     def process_principal(self, amount, debit_account, credit_account):
+        # todo: only accept decimal with two places
         if amount > self.outstanding_principal:
             extra_amount = amount - self.outstanding_principal
             print(
                 f"cant pay more than owed, you owe {self.outstanding_principal} but you are paying {amount} which is {extra_amount} more than required"
             )
             return
-        if amount <= 0:
+        if amount <= Decimal("0.00"):
             print("amount needs to be a positive number greater than 0")
             return
 
