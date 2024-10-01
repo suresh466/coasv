@@ -77,6 +77,34 @@ class Loan(models.Model):
 
         return remaining_term == 1 or self.outstanding_principal <= self.minimum_payment
 
+    def disburse(self, amount):
+        # todo: only accept decimal with two decimal places
+        """
+        not decided on if want to store each disbursement seperately yet
+        """
+        if self.status not in (self.APPROVED, self.ACTIVE):
+            print("cannot disburse loan, loan not approved")
+            return
+        total_disburse = (self.disbursed_amount + amount).quantize(self.TWOPLACES)
+        if total_disburse > self.amount:
+            print("cannot disburse more than loan amount")
+            return
+
+        self.disbursed_at = datetime.now()
+        self.status = self.ACTIVE
+        self.outstanding_principal += amount
+        self.disbursed_amount += amount
+        self.save()
+
+        debit_account = Ac.objects.get(code="110")
+        credit_account = Ac.objects.get(code="80")
+
+        tx = Transaction.objects.create(
+            desc=f"Loan disbursed for Loan #{self.id} of amount {amount}"
+        )
+        Split.objects.create(tx=tx, ac=debit_account, am=amount, t_sp="dr")
+        Split.objects.create(tx=tx, ac=credit_account, am=amount, t_sp="cr")
+
     def calculate_next_payment_amount(self, payoff=False):
         if self.status != self.ACTIVE:
             print("cannot calculate payoff amount, loan is not active")
@@ -191,10 +219,14 @@ class Loan(models.Model):
             annual_interest if payoff else (annual_interest / installments)
         ).quantize(self.TWOPLACES)
 
-        # todo: make sure to only accept amount in 50.50 format (decimal perhaps!!!)
         principal_amount = (amount - interest_amount).quantize(self.TWOPLACES)
 
-        # use calculate next payment method by returning interest and principal through it and everything else uses them maybe.
+        if amount <= interest_amount:
+            interest_amount = amount
+            self.process_interest(interest_amount, interest_debit, interest_credit)
+            return
+
+        # create method for interest calculation for the next payment maybe
         self.process_interest(interest_amount, interest_debit, interest_credit)
         self.process_principal(principal_amount, principal_debit, principal_credit)
 
@@ -203,37 +235,9 @@ class Loan(models.Model):
             self.end_date = datetime.now()
             self.save()
 
-    def disburse(self, amount):
-        # todo: only accept decimal with two decimal places
-        """
-        not decided on if want to store each disbursement seperately yet
-        """
-        if self.status not in (self.APPROVED, self.ACTIVE):
-            print("cannot disburse loan, loan not approved")
-            return
-        total_disburse = (self.disbursed_amount + amount).quantize(self.TWOPLACES)
-        if total_disburse > self.amount:
-            print("cannot disburse more than loan amount")
-            return
-
-        self.disbursed_at = datetime.now()
-        self.status = self.ACTIVE
-        self.outstanding_principal += amount
-        self.disbursed_amount += amount
-        self.save()
-
-        debit_account = Ac.objects.get(code="110")
-        credit_account = Ac.objects.get(code="80")
-
-        tx = Transaction.objects.create(
-            desc=f"Loan disbursed for Loan #{self.id} of amount {amount}"
-        )
-        Split.objects.create(tx=tx, ac=debit_account, am=amount, t_sp="dr")
-        Split.objects.create(tx=tx, ac=credit_account, am=amount, t_sp="cr")
-
     def process_interest(self, amount, debit_account, credit_account):
         # todo: only accept decimal with two places
-        if amount <= 0:
+        if amount <= Decimal("0.00"):
             print("amount must be a positive number")
             return
 
@@ -254,14 +258,15 @@ class Loan(models.Model):
 
     def process_principal(self, amount, debit_account, credit_account):
         # todo: only accept decimal with two places
+        if amount <= Decimal("0.00"):
+            print("amount needs to be a positive number greater than 0")
+            return
+
         if amount > self.outstanding_principal:
             extra_amount = amount - self.outstanding_principal
             print(
                 f"cant pay more than owed, you owe {self.outstanding_principal} but you are paying {amount} which is {extra_amount} more than required"
             )
-            return
-        if amount <= Decimal("0.00"):
-            print("amount needs to be a positive number greater than 0")
             return
 
         tx = Transaction.objects.create(
@@ -283,6 +288,7 @@ class Loan(models.Model):
         self.save()
 
 
+# maybe consolidate interest payment and principal payment models (if it helps with late payments later)
 class InterestPayment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
