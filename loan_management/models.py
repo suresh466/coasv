@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
+from math import ceil
 
 from coasc.models import Ac, Member, Split, Transaction
 from django.core.exceptions import ValidationError
@@ -64,7 +65,7 @@ class Loan(models.Model):
         if self.amount <= 0:
             raise ValidationError("Principal amount must be positive")
 
-    def is_final_payment(self, amount):
+    def is_final_payment(self):
         # todo: only accept decimal with two decimal places
         remaining_term = self.term - (
             (date.today() - self.disbursed_at.date()).days // 30
@@ -72,53 +73,56 @@ class Loan(models.Model):
 
         # todo: look into final payment in case amount > minimum_payment
         # and not the last month of the term period (amount == annual_interest + outstanding_principal)
+        # if self.outstanding_principal == calculated_principal then final payment !!
 
-        return remaining_term == 1 or amount <= self.minimum_payment
+        return remaining_term == 1 or self.outstanding_principal <= self.minimum_payment
 
-    def calculate_loan_payoff_amount(self):
-        """
-        Don't round the final payment to nearest whole number
-        """
+    def calculate_next_payment_amount(self, payoff=False):
         if self.status != self.ACTIVE:
             print("cannot calculate payoff amount, loan is not active")
             return
 
-        total_interest = (
-            self.interest_rate / Decimal("100.00") * self.outstanding_principal
-        )
+        if self.is_final_payment():
+            payoff = True
 
-        payoff_amount = (self.outstanding_principal + total_interest).quantize(
-            self.TWOPLACES
-        )
+        # Don't round the amounts to the nearest whole number
+        if payoff:
+            interest = (
+                self.interest_rate / Decimal("100.00") * self.outstanding_principal
+            ).quantize(self.TWOPLACES)
+            principal = self.outstanding_principal
+            total = (self.outstanding_principal + interest).quantize(self.TWOPLACES)
 
-        return payoff_amount
-
-    def calculate_next_payment_amount(self):
-        if self.status != self.ACTIVE:
-            print("Cannot calculate next payment amount, loan is not active")
-            return
-
-        annual_interest = (
-            self.interest_rate / Decimal("100.00") * self.outstanding_principal
-        )
-
-        total_amount = self.outstanding_principal + annual_interest
-
-        remaining_term = self.term - (
-            (date.today() - self.disbursed_at.date()).days // 30
-        )
-
-        if self.payment_frequency == self.MONTHLY:
-            installments = remaining_term
+            return interest, principal, total
         else:
-            installments = remaining_term / 12
+            annual_interest = (
+                self.interest_rate / Decimal("100.00") * self.outstanding_principal
+            )
 
-        if self.is_final_payment(total_amount.quantize(self.TWOPLACES)):
-            installment_amount = total_amount.quantize(self.TWOPLACES)
-        else:
-            installment_amount = (total_amount / installments).quantize(self.WHOLE)
+            remaining_term = self.term - (
+                (date.today() - self.disbursed_at.date()).days // 30
+            )
+            if self.payment_frequency == self.MONTHLY:
+                installments = remaining_term
+            else:
+                installments = ceil(remaining_term / 12)
 
-        return installment_amount
+            interest = (annual_interest / installments).quantize(self.TWOPLACES)
+            principal = (self.outstanding_principal / installments).quantize(
+                self.TWOPLACES
+            )
+            total = (interest + principal).quantize(self.TWOPLACES)
+
+            # Not rounding the final payment to make up for rounded amount in previous payments
+            # and rounding the rest of the payments for convinience
+            if principal != self.outstanding_principal:
+                rounded_total = (interest + principal).quantize(self.WHOLE)
+                rounding_amount = (rounded_total - total).quantize(self.TWOPLACES)
+
+                principal = principal + rounding_amount
+                total = rounded_total
+
+        return interest, principal, total
 
     def generate_repayment_schedule(self):
         """
