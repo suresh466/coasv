@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from decimal import Decimal
+from decimal import ROUND_CEILING, Decimal
 from math import ceil
 
 from coasc.models import Ac, Member, Split, Transaction
@@ -135,6 +135,9 @@ class Loan(models.Model):
             else:
                 installments = ceil(remaining_term / 12)
 
+            # make it decimal because in following calculations both operands being decimal is better
+            installments = Decimal(installments)
+
             interest = (annual_interest / installments).quantize(self.TWOPLACES)
             principal = (self.outstanding_principal / installments).quantize(
                 self.TWOPLACES
@@ -144,11 +147,25 @@ class Loan(models.Model):
             # Not rounding the final payment to make up for rounded amount in previous payments
             # and rounding the rest of the payments for convinience
             if principal != self.outstanding_principal:
-                rounded_total = (interest + principal).quantize(self.WHOLE)
+                rounded_total = (interest + principal).quantize(
+                    self.WHOLE, rounding=ROUND_CEILING
+                )
                 rounding_amount = (rounded_total - total).quantize(self.TWOPLACES)
+                rounded_principal = principal + rounding_amount
 
-                principal = principal + rounding_amount
-                total = rounded_total
+                # for edge cases like:
+                # minimum payment = 100
+                # outstanding_principal = 100.50
+                # calculated_principal = 101 (due to adding the additional rounding_amount)
+                # since outstanding_principal > minimum_payment it is not caught by is_final_payment
+                # so, principal + rounding_amount > owed principal. This could happen towards the end of the loan payment
+                # it is basically an edge last payment case
+                if rounded_principal > self.outstanding_principal:
+                    principal = self.outstanding_principal
+                    total = (interest + principal).quantize(self.TWOPLACES)
+                else:
+                    principal = rounded_principal
+                    total = rounded_total
 
         return interest, principal, total
 
