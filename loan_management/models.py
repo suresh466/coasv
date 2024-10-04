@@ -66,16 +66,19 @@ class Loan(models.Model):
             raise ValidationError("Principal amount must be positive")
 
     def is_final_payment(self):
-        # todo: only accept decimal with two decimal places
         remaining_term = self.term - (
             (date.today() - self.disbursed_at.date()).days // 30
         )
+        if self.payment_frequency == self.MONTHLY:
+            installments = remaining_term
+        else:
+            installments = ceil(remaining_term / 12)
 
         # todo: look into final payment in case amount > minimum_payment
         # and not the last month of the term period (amount == annual_interest + outstanding_principal)
         # if self.outstanding_principal == calculated_principal then final payment !!
 
-        return remaining_term == 1 or self.outstanding_principal <= self.minimum_payment
+        return installments <= 1 or self.outstanding_principal <= self.minimum_payment
 
     def disburse(self, amount):
         # todo: only accept decimal with two decimal places
@@ -106,66 +109,75 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=credit_account, am=amount, t_sp="cr")
 
     def calculate_next_payment_amount(self, payoff=False):
+        """
+        We are assuming that on loan payoff, annual interest needs to be paid in full on the current outstanding_principal
+        regardless of remaining installments
+        """
         if self.status != self.ACTIVE:
-            print("cannot calculate payoff amount, loan is not active")
+            print("cannot calculate next payment amount, loan is not active")
             return
 
-        if self.is_final_payment():
+        remaining_term = self.term - (
+            (date.today() - self.disbursed_at.date()).days // 30
+        )
+        if self.payment_frequency == self.MONTHLY:
+            installments = remaining_term
+        else:
+            installments = ceil(remaining_term / 12)
+        # make it decimal because in following calculations both operands being decimal is better
+        installments = Decimal(installments)
+        if installments <= 1:
             payoff = True
 
-        # Don't round the amounts to the nearest whole number
+        # Don't round payoff amount to the nearest whole number to maintain accuracy
         if payoff:
             interest = (
                 self.interest_rate / Decimal("100.00") * self.outstanding_principal
             ).quantize(self.TWOPLACES)
             principal = self.outstanding_principal
             total = (self.outstanding_principal + interest).quantize(self.TWOPLACES)
-
-            return interest, principal, total
         else:
             annual_interest = (
                 self.interest_rate / Decimal("100.00") * self.outstanding_principal
             )
 
-            remaining_term = self.term - (
-                (date.today() - self.disbursed_at.date()).days // 30
+            installment_interest = (annual_interest / installments).quantize(
+                self.TWOPLACES
             )
-            if self.payment_frequency == self.MONTHLY:
-                installments = remaining_term
-            else:
-                installments = ceil(remaining_term / 12)
-
-            # make it decimal because in following calculations both operands being decimal is better
-            installments = Decimal(installments)
-
-            interest = (annual_interest / installments).quantize(self.TWOPLACES)
             principal = (self.outstanding_principal / installments).quantize(
                 self.TWOPLACES
             )
-            total = (interest + principal).quantize(self.TWOPLACES)
+            total = (installment_interest + principal).quantize(self.TWOPLACES)
 
-            # Not rounding the final payment to make up for rounded amount in previous payments
-            # and rounding the rest of the payments for convinience
-            if principal != self.outstanding_principal:
-                rounded_total = (interest + principal).quantize(
-                    self.WHOLE, rounding=ROUND_CEILING
-                )
-                rounding_amount = (rounded_total - total).quantize(self.TWOPLACES)
-                rounded_principal = principal + rounding_amount
+            # rounding the total to the nearest whole number for convinience
+            rounded_total = (installment_interest + principal).quantize(
+                self.WHOLE, rounding=ROUND_CEILING
+            )
+            rounding_amount = (rounded_total - total).quantize(self.TWOPLACES)
+            principal_with_rounding_amount = (principal + rounding_amount).quantize(
+                self.TWOPLACES
+            )
 
-                # for edge cases like:
-                # minimum payment = 100
-                # outstanding_principal = 100.50
-                # calculated_principal = 101 (due to adding the additional rounding_amount)
-                # since outstanding_principal > minimum_payment it is not caught by is_final_payment
-                # so, principal + rounding_amount > owed principal. This could happen towards the end of the loan payment
-                # it is basically an edge last payment case
-                if rounded_principal > self.outstanding_principal:
-                    principal = self.outstanding_principal
-                    total = (interest + principal).quantize(self.TWOPLACES)
-                else:
-                    principal = rounded_principal
-                    total = rounded_total
+            future_outstanding_principal = (
+                self.outstanding_principal - principal_with_rounding_amount
+            ).quantize(self.TWOPLACES)
+
+            if (
+                # if future_outstanding_principal < minimum_payment, include future_outstanding_principal in this payment
+                future_outstanding_principal <= self.minimum_payment
+                # future_outstanding_principal is negative if rounded_principal is more than outstanding_principal
+                #
+                # future_outstanding_principal is 0 if outstanding_principal can be paid off with this payment
+                # (maybe outstanding_principal is paid when remaining installments are > 1) so we need to make interest = annual_interest
+                or future_outstanding_principal <= Decimal("0.00")
+            ):
+                interest = annual_interest
+                principal = self.outstanding_principal
+                total = (interest + principal).quantize(self.TWOPLACES)
+            else:
+                interest = installment_interest
+                principal = principal_with_rounding_amount
+                total = rounded_total
 
         return interest, principal, total
 
@@ -231,6 +243,7 @@ class Loan(models.Model):
             installments = remaining_term
         else:
             installments = remaining_term / 12
+        installments = Decimal(installments)
 
         interest_amount = (
             annual_interest if payoff else (annual_interest / installments)
