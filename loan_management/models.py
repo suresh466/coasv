@@ -108,7 +108,9 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=debit_account, am=amount, t_sp="dr")
         Split.objects.create(tx=tx, ac=credit_account, am=amount, t_sp="cr")
 
-    def calculate_next_payment_amount(self, payoff=False):
+    def calculate_next_payment_amount(
+        self, outstanding_principal=None, installments=None, payoff=False
+    ):
         """
         We are assuming that on loan payoff, annual interest needs to be paid in full on the current outstanding_principal
         regardless of remaining installments
@@ -117,36 +119,39 @@ class Loan(models.Model):
             print("cannot calculate next payment amount, loan is not active")
             return
 
-        remaining_term = self.term - (
-            (date.today() - self.disbursed_at.date()).days // 30
-        )
-        if self.payment_frequency == self.MONTHLY:
-            installments = remaining_term
-        else:
-            installments = ceil(remaining_term / 12)
-        # make it decimal because in following calculations both operands being decimal is better
-        installments = Decimal(installments)
+        # taking outstanding_principal and installments as argument to call this method from generate_amortization_schedule
+        if outstanding_principal is None:
+            outstanding_principal = self.outstanding_principal
+        if installments is None:
+            remaining_term = self.term - (
+                (date.today() - self.disbursed_at.date()).days // 30
+            )
+            if self.payment_frequency == self.MONTHLY:
+                installments = remaining_term
+            else:
+                installments = ceil(remaining_term / 12)
+            # make it decimal because in following calculations both operands being decimal is better
+            installments = Decimal(installments)
+
         if installments <= 1:
             payoff = True
 
         # Don't round payoff amount to the nearest whole number to maintain accuracy
         if payoff:
             interest = (
-                self.interest_rate / Decimal("100.00") * self.outstanding_principal
+                self.interest_rate / Decimal("100.00") * outstanding_principal
             ).quantize(self.TWOPLACES)
-            principal = self.outstanding_principal
-            total = (self.outstanding_principal + interest).quantize(self.TWOPLACES)
+            principal = outstanding_principal
+            total = (outstanding_principal + interest).quantize(self.TWOPLACES)
         else:
             annual_interest = (
-                self.interest_rate / Decimal("100.00") * self.outstanding_principal
+                self.interest_rate / Decimal("100.00") * outstanding_principal
             )
 
             installment_interest = (annual_interest / installments).quantize(
                 self.TWOPLACES
             )
-            principal = (self.outstanding_principal / installments).quantize(
-                self.TWOPLACES
-            )
+            principal = (outstanding_principal / installments).quantize(self.TWOPLACES)
             total = (installment_interest + principal).quantize(self.TWOPLACES)
 
             # rounding the total to the nearest whole number for convinience
@@ -159,7 +164,7 @@ class Loan(models.Model):
             )
 
             future_outstanding_principal = (
-                self.outstanding_principal - principal_with_rounding_amount
+                outstanding_principal - principal_with_rounding_amount
             ).quantize(self.TWOPLACES)
 
             if (
@@ -171,17 +176,18 @@ class Loan(models.Model):
                 # (maybe outstanding_principal is paid when remaining installments are > 1) so we need to make interest = annual_interest
                 or future_outstanding_principal <= Decimal("0.00")
             ):
-                interest = annual_interest
-                principal = self.outstanding_principal
+                interest = annual_interest.quantize(self.TWOPLACES)
+                principal = outstanding_principal
                 total = (interest + principal).quantize(self.TWOPLACES)
+                payoff = True
             else:
                 interest = installment_interest
                 principal = principal_with_rounding_amount
                 total = rounded_total
 
-        return interest, principal, total
+        return interest, principal, total, payoff
 
-    def generate_repayment_schedule(self):
+    def generate_amortization_schedule(self):
         """
         redo this method to generate expected payment amounts after each payment
         for the whole payment term. Interest decreases with each payment.
@@ -193,22 +199,43 @@ class Loan(models.Model):
             print("cannot generate repayment schedule loan is not active")
             return
 
-        annual_interest = (
-            self.interest_rate / Decimal("100.00") * self.outstanding_principal
-        )
-        total_amount = self.outstanding_principal + annual_interest
         remaining_term = self.term - (
             (date.today() - self.disbursed_at.date()).days // 30
         )
-
         if self.payment_frequency == self.MONTHLY:
             installments = remaining_term
         else:
-            installments = remaining_term / 12
+            installments = ceil(remaining_term / 12)
 
-        installment_amount = total_amount / installments
+        final_payment = False
+        installments = installments
+        outstanding_principal = self.outstanding_principal
 
-        return installment_amount
+        running_interest = Decimal("0.00")
+        running_principal = Decimal("0.00")
+        running_total = Decimal("0.00")
+        while not final_payment:
+            interest, principal, total, payoff = self.calculate_next_payment_amount(
+                outstanding_principal=outstanding_principal, installments=installments
+            )
+            running_interest += interest
+            running_principal += principal
+            running_total += total
+
+            print(f"Interest: {interest}, Principal: {principal}, Total: {total}")
+
+            final_payment = payoff
+            installments -= 1
+            outstanding_principal = (outstanding_principal - principal).quantize(
+                self.TWOPLACES
+            )
+
+            print(
+                f"current_outstanding: {outstanding_principal}, run_in: {running_interest}, run_pr: {running_principal}, run_total: {running_total}"
+            )
+            print("\n")
+
+        return
 
     def process_payment(self, amount, payoff=False):
         # todo: only accept decimal with two decimal places
