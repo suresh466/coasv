@@ -1,0 +1,7 @@
+{% extends 'loan_management/base.html' %}
+{% block title %} Loans List {% endblock %}
+{% block body %}
+    {% for loan in loans %}
+    {{ loan }}
+    {% endfor %}
+{% endblock %}

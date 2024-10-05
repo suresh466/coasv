@@ -15,13 +15,14 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 from data_entry import urls as data_entry_urls
-from ledgers import urls as ledgers_urls
-from fstatements import urls as fstatements_urls
 from data_entry.views import general_journal
+from fstatements import urls as fstatements_urls
 from inventory import urls as inventory
+from ledgers import urls as ledgers_urls
+from loan_management import urls as loan
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,5 +30,6 @@ urlpatterns = [
     path("ledgers/", include(ledgers_urls)),
     path("fs/", include(fstatements_urls)),
     path("inventory/", include(inventory)),
+    path("loan/", include(loan)),
     path("", general_journal),
 ]
