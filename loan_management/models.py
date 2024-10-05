@@ -252,6 +252,9 @@ class Loan(models.Model):
         if self.status != self.ACTIVE:
             print("loan needs to be active to make a payment")
             return
+        if amount <= Decimal("0.00"):
+            print("amount needs to be more than 0")
+            return
 
         interest_debit = Ac.objects.get(code="80")
         interest_credit = Ac.objects.get(code="160.2")
@@ -265,20 +268,27 @@ class Loan(models.Model):
         remaining_term = self.term - (
             (date.today() - self.disbursed_at.date()).days // 30
         )
-
         if self.payment_frequency == self.MONTHLY:
             installments = remaining_term
         else:
-            installments = remaining_term / 12
+            installments = ceil(remaining_term / 12)
         installments = Decimal(installments)
 
-        interest_amount = (
-            annual_interest if payoff else (annual_interest / installments)
-        ).quantize(self.TWOPLACES)
+        if payoff:
+            interest_amount, principal_amount, total_amount, _ = (
+                self.calculate_next_payment_amount(payoff=True)
+            )
+            if amount < total_amount:
+                print(f"Infuccient amount: {amount}, required: {total_amount}")
+                return
+        else:
+            interest_amount = (annual_interest / installments).quantize(self.TWOPLACES)
+            principal_amount = (amount - interest_amount).quantize(self.TWOPLACES)
 
-        principal_amount = (amount - interest_amount).quantize(self.TWOPLACES)
-
-        if amount <= interest_amount:
+        if principal_amount <= Decimal("0"):
+            print(
+                "WARN: amount is equal to or less than interest payment amount only, nothing for principal"
+            )
             interest_amount = amount
             self.process_interest(interest_amount, interest_debit, interest_credit)
             return
@@ -322,7 +332,7 @@ class Loan(models.Model):
         if amount > self.outstanding_principal:
             extra_amount = amount - self.outstanding_principal
             print(
-                f"cant pay more than owed, you owe {self.outstanding_principal} but you are paying {amount} which is {extra_amount} more than required"
+                f"paying more than owed; outstanding_principal: {self.outstanding_principal}, paying: {amount} which is: {extra_amount} more than required principal"
             )
             return
 
