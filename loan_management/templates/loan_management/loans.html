@@ -1,7 +1,7 @@
 {% extends 'loan_management/base.html' %}
-{% block title %} Loans List {% endblock %}
+{% block title %}Loans List{% endblock %}
 {% block body %}
     {% for loan in loans %}
-    {{ loan }}
+        <a href="{% url 'loan:loan' loan.id %}">{{ loan }}</a>
     {% endfor %}
 {% endblock %}

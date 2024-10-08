@@ -6,4 +6,5 @@ app_name = "loan"
 
 urlpatterns = [
     path("", views.loans, name="loans"),
+    path("<id>/", views.loan, name="loan"),
 ]
