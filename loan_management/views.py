@@ -28,6 +28,8 @@ def loan(request, id):
         loan.calculate_next_payment_amount(payoff=True)
     )
     _, _, next_payment_amount, _ = loan.calculate_next_payment_amount()
+    # Generate repayment schedule
+    repayment_schedule = loan.generate_amortization_schedule()
 
     # Get payment history
     interest_payments = InterestPayment.objects.filter(loan=loan).order_by(
@@ -36,13 +38,12 @@ def loan(request, id):
     principal_payments = PrincipalPayment.objects.filter(loan=loan).order_by(
         "-payment_date"
     )
-
-    # Combine and sort payments for history
     running_interest = Decimal("0.00")
     running_principal = Decimal("0.00")
     running_total = Decimal("0.00")
     payment_history = []
 
+    # Combine and sort payments for history
     for ip in interest_payments:
         end_time = ip.payment_date + timedelta(seconds=2)
         pp = principal_payments.filter(
@@ -64,38 +65,44 @@ def loan(request, id):
                     "running_total": running_total,
                 }
             )
+        else:
+            running_interest += ip.amount
+            running_total = running_interest + running_principal
 
-    # Generate repayment schedule
-    repayment_schedule = loan.generate_amortization_schedule()
+            payment_history.append(
+                {
+                    "date": ip.payment_date,
+                    "interest": ip.amount,
+                    "principal": 0,
+                    "total": ip.amount + 0,
+                    "running_interest": running_interest,
+                    "running_principal": running_principal,
+                    "running_total": running_total,
+                }
+            )
 
-    if request.method == "POST":
-        form = LoanPaymentForm(
-            request.POST,
-            loan=loan,
-            next_payment_amount=next_payment_amount,
-            payoff_amount=payoff_total,
-        )
-        if form.is_valid():
+    form = LoanPaymentForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        payment_type = form.cleaned_data["payment_type"]
+
+        if payment_type == "payoff":
+            amount = payoff_total
+            is_payoff = True
+        elif payment_type == "regular":
+            amount = next_payment_amount
+            is_payoff = False
+        else:
             amount = form.cleaned_data["amount"]
-            payment_type = form.cleaned_data["payment_type"]
+            is_payoff = False
 
-            try:
-                if payment_type == "payoff":
-                    loan.process_payment(amount, payoff=True)
-                else:
-                    loan.process_payment(amount)
-                messages.success(
-                    request, f"Payment of ${amount} successfully processed"
-                )
-                return redirect("loan:loan", id=id)
-            except Exception as e:
-                messages.error(request, str(e))
-    else:
-        form = LoanPaymentForm(
-            loan=loan,
-            next_payment_amount=next_payment_amount,
-            payoff_amount=payoff_total,
-        )
+        try:
+            loan.process_payment(amount, payoff=is_payoff)
+            messages.success(request, f"Payment of ${amount} successfully processed")
+            return redirect("loan:loan", id=id)
+        except Exception as e:
+            print(e)
+            messages.error(request, str(e))
+            raise e
 
     context = {
         "loan": loan,
