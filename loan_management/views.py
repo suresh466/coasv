@@ -1,5 +1,6 @@
 from datetime import timedelta
 from decimal import Decimal
+from logging import error
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -12,16 +13,26 @@ from .models import InterestPayment, Loan, PrincipalPayment
 
 def loans(request):
     loans = Loan.objects.all()
-    print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-    print(loans)
     template = "loan_management/loans.html"
     context = {"loans": loans}
     return render(request, template, context)
 
 
 def loan(request, id):
-    template = "loan_management/loan.html"
     loan = Loan.objects.get(id=id)
+    if loan.status == Loan.ACTIVE:
+        return active_loan(request, loan)
+    elif loan.status in (Loan.FULLYPAID, Loan.DEFAULTED):
+        return closed_loan(request, loan)
+    elif loan.status in (Loan.PENDING, Loan.APPROVED):
+        return pending_loan(request, loan)
+    else:
+        messages.error(request, "Loan status not recognized")
+        return redirect("loan:loans")
+
+
+def active_loan(request, loan):
+    template = "loan_management/loan.html"
 
     # Calculate necessary amounts
     payoff_interest, payoff_principal, payoff_total, _ = (
@@ -120,5 +131,79 @@ def loan(request, id):
             "principal": running_principal,
             "total": running_total,
         },
+    }
+    return render(request, template, context)
+
+
+def closed_loan(request, loan):
+    template = "loan_management/closed_loan.html"
+
+    # Get payment history
+    interest_payments = InterestPayment.objects.filter(loan=loan).order_by(
+        "-payment_date"
+    )
+    principal_payments = PrincipalPayment.objects.filter(loan=loan).order_by(
+        "-payment_date"
+    )
+    running_interest = Decimal("0.00")
+    running_principal = Decimal("0.00")
+    running_total = Decimal("0.00")
+    payment_history = []
+
+    # Combine and sort payments for history
+    for ip in interest_payments:
+        end_time = ip.payment_date + timedelta(seconds=2)
+        pp = principal_payments.filter(
+            payment_date__gte=ip.payment_date, payment_date__lte=end_time
+        ).first()
+        if pp:
+            running_interest += ip.amount
+            running_principal += pp.amount
+            running_total = running_interest + running_principal
+
+            payment_history.append(
+                {
+                    "date": ip.payment_date,
+                    "interest": ip.amount,
+                    "principal": pp.amount,
+                    "total": ip.amount + pp.amount,
+                    "running_interest": running_interest,
+                    "running_principal": running_principal,
+                    "running_total": running_total,
+                }
+            )
+        else:
+            running_interest += ip.amount
+            running_total = running_interest + running_principal
+
+            payment_history.append(
+                {
+                    "date": ip.payment_date,
+                    "interest": ip.amount,
+                    "principal": 0,
+                    "total": ip.amount + 0,
+                    "running_interest": running_interest,
+                    "running_principal": running_principal,
+                    "running_total": running_total,
+                }
+            )
+
+    context = {
+        "loan": loan,
+        "payment_history": payment_history,
+        "total_paid": {
+            "interest": running_interest,
+            "principal": running_principal,
+            "total": running_total,
+        },
+    }
+    return render(request, template, context)
+
+
+def pending_loan(request, loan):
+    template = "loan_management/pending_loan.html"
+
+    context = {
+        "loan": loan,
     }
     return render(request, template, context)

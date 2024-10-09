@@ -2,6 +2,14 @@
 {% block title %}Loans List{% endblock %}
 {% block body %}
     {% for loan in loans %}
-        <a href="{% url 'loan:loan' loan.id %}">{{ loan }}</a>
+        {% if loan.status == 'ACTIVE' %}
+            <a href="{% url 'loan:loan' loan.id %}">{{ loan }}</a>
+        {% endif %}
+        {% if loan.status == 'FULLYPAID' or loan.status == 'DEFAULTED' %}
+            <a href="{% url 'loan:loan' loan.id %}">{{ loan }}</a>
+        {% endif %}
+        {% if loan.status == 'PENDING' or loan.status == 'APPROVED' %}
+            <a href="{% url 'loan:loan' loan.id %}">{{ loan }}</a>
+        {% endif %}
     {% endfor %}
 {% endblock %}
