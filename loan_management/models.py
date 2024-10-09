@@ -1,10 +1,11 @@
-from datetime import date, datetime
+from datetime import date
 from decimal import ROUND_CEILING, Decimal
 from math import ceil
 
 from coasc.models import Ac, Member, Split, Transaction
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 
 class Loan(models.Model):
@@ -42,7 +43,7 @@ class Loan(models.Model):
     )
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     term = models.IntegerField(help_text="Loan term in months")
-    started_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(default=timezone.now)
     end_at = models.DateTimeField(null=True, blank=True)
     # make status only editable by staff who can approve loans
     status = models.CharField(
@@ -93,7 +94,7 @@ class Loan(models.Model):
             print("cannot disburse more than loan amount")
             return
 
-        self.disbursed_at = datetime.now()
+        self.disbursed_at = timezone.now()
         self.status = self.ACTIVE
         self.outstanding_principal += amount
         self.disbursed_amount += amount
@@ -386,7 +387,7 @@ class Loan(models.Model):
 
         if self.outstanding_principal == Decimal("0.00"):
             self.status = self.FULLYPAID
-            self.end_date = datetime.now()
+            self.end_at = timezone.now()
             self.save()
 
     def process_interest(self, amount, debit_account, credit_account):
@@ -404,7 +405,7 @@ class Loan(models.Model):
         InterestPayment.objects.create(
             loan=self,
             amount=amount,
-            payment_date=datetime.now(),
+            payment_date=timezone.now(),
             transaction=tx,
             debit_account=debit_account,
             credit_account=credit_account,
@@ -432,7 +433,7 @@ class Loan(models.Model):
         PrincipalPayment.objects.create(
             loan=self,
             amount=amount,
-            payment_date=datetime.now(),
+            payment_date=timezone.now(),
             transaction=tx,
             debit_account=debit_account,
             credit_account=credit_account,
@@ -446,7 +447,7 @@ class Loan(models.Model):
 class InterestPayment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    payment_date = models.DateTimeField()
+    payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     debit_account = models.ForeignKey(
         Ac, related_name="interest_payment_debits", on_delete=models.PROTECT
@@ -462,7 +463,7 @@ class InterestPayment(models.Model):
 class PrincipalPayment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    payment_date = models.DateTimeField()
+    payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     debit_account = models.ForeignKey(
         Ac, related_name="principal_payment_debits", on_delete=models.PROTECT
@@ -473,3 +474,17 @@ class PrincipalPayment(models.Model):
 
     def __str__(self):
         return f"Payment of {self.amount} for Loan #{self.loan.id}"
+
+
+# # maybe merge principal and interest payments into one model
+# class LoanPayment(models.Model):
+#     loan = models.ForeignKey(Loan, models.PROTECT)
+#     # payment_term = models.IntegerField() would be easier to figure out missed payments
+#     payment_date = models.DateTimeField(timezone.now)
+#     interest = models.ForeignKey(InterestPayment, models.PROTECT)
+#     principal = models.ForeignKey(PrincipalPayment, models.PROTECT)
+#
+#     def __str__(self):
+#         return (
+#             f"interest - {self.interest} - principal - {self.principal} for loan #self."
+#         )
