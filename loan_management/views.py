@@ -1,11 +1,10 @@
 from datetime import timedelta
 from decimal import Decimal
-from logging import error
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
-from .forms import LoanPaymentForm
+from .forms import LoanDisbursementForm, LoanPaymentForm
 from .models import InterestPayment, Loan, PrincipalPayment
 
 # Create your views here.
@@ -25,7 +24,7 @@ def loan(request, id):
     elif loan.status in (Loan.FULLYPAID, Loan.DEFAULTED):
         return closed_loan(request, loan)
     elif loan.status in (Loan.PENDING, Loan.APPROVED):
-        return pending_loan(request, loan)
+        return disburse_loan(request, id)
     else:
         messages.error(request, "Loan status not recognized")
         return redirect("loan:loans")
@@ -109,7 +108,7 @@ def active_loan(request, loan):
         try:
             loan.process_payment(amount, payoff=is_payoff)
             messages.success(request, f"Payment of ${amount} successfully processed")
-            return redirect("loan:loan", id=id)
+            return redirect("loan:loan", id=loan.id)
         except Exception as e:
             print(e)
             messages.error(request, str(e))
@@ -131,6 +130,7 @@ def active_loan(request, loan):
             "principal": running_principal,
             "total": running_total,
         },
+        "pending_disbursement": loan.amount - loan.disbursed_amount,
     }
     return render(request, template, context)
 
@@ -200,10 +200,27 @@ def closed_loan(request, loan):
     return render(request, template, context)
 
 
-def pending_loan(request, loan):
+def disburse_loan(request, id):
     template = "loan_management/pending_loan.html"
+    loan = Loan.objects.get(id=id)
+
+    form = LoanDisbursementForm(request.POST or None)
+    if request.method == "POST":
+        if loan.status == Loan.PENDING:
+            messages.warning(request, "Loan is still pending approval, cannot disburse")
+            return redirect("loan:loan", id=loan.id)
+
+        if form.is_valid():
+            amount = form.cleaned_data["amount"]
+            loan.disburse(amount)
+            messages.success(
+                request, f"Loan disbursement of ${amount} successfully processed"
+            )
+            return redirect("loan:loan", id=loan.id)
 
     context = {
         "loan": loan,
+        "pending_disbursement": loan.amount - loan.disbursed_amount,
+        "form": form,
     }
     return render(request, template, context)

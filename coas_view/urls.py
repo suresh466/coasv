@@ -30,6 +30,6 @@ urlpatterns = [
     path("ledgers/", include(ledgers_urls)),
     path("fs/", include(fstatements_urls)),
     path("inventory/", include(inventory)),
-    path("loan/", include(loan)),
+    path("loans/", include(loan)),
     path("", general_journal),
 ]
