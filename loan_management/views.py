@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -37,36 +38,36 @@ def loan(request, id):
     )
 
     # Combine and sort payments for history
+    running_interest = Decimal("0.00")
+    running_principal = Decimal("0.00")
+    running_total = Decimal("0.00")
     payment_history = []
+
     for ip in interest_payments:
-        upper_bound = ip.payment_date + timedelta(seconds=2)
+        end_time = ip.payment_date + timedelta(seconds=2)
         pp = principal_payments.filter(
-            payment_date__gte=ip.payment_date, payment_date__lt=upper_bound
+            payment_date__gte=ip.payment_date, payment_date__lte=end_time
         ).first()
         if pp:
+            running_interest += ip.amount
+            running_principal += pp.amount
+            running_total = running_interest + running_principal
+
             payment_history.append(
                 {
                     "date": ip.payment_date,
                     "interest": ip.amount,
                     "principal": pp.amount,
                     "total": ip.amount + pp.amount,
-                }
-            )
-        else:
-            payment_history.append(
-                {
-                    "date": ip.payment_date,
-                    "interest": ip.amount,
-                    "principal": 0,
-                    "total": ip.amount,
+                    "running_interest": running_interest,
+                    "running_principal": running_principal,
+                    "running_total": running_total,
                 }
             )
 
-    payment_history_sums = {
-        "interest": sum([x["interest"] for x in payment_history]),
-        "principal": sum([x["principal"] for x in payment_history]),
-        "total": sum([x["total"] for x in payment_history]),
-    }
+    # Generate repayment schedule
+    repayment_schedule = loan.generate_amortization_schedule()
+
     if request.method == "POST":
         form = LoanPaymentForm(
             request.POST,
@@ -106,6 +107,11 @@ def loan(request, id):
             "total": payoff_total,
         },
         "next_payment_amount": next_payment_amount,
-        "payment_history_sums": payment_history_sums,
+        "repayment_schedule": repayment_schedule,
+        "total_paid": {
+            "interest": running_interest,
+            "principal": running_principal,
+            "total": running_total,
+        },
     }
     return render(request, template, context)
