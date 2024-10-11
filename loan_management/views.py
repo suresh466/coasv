@@ -203,6 +203,7 @@ def closed_loan(request, loan):
 def disburse_loan(request, id):
     template = "loan_management/pending_loan.html"
     loan = Loan.objects.get(id=id)
+    pending_disbursement = loan.amount - loan.disbursed_amount
 
     form = LoanDisbursementForm(request.POST or None)
     if request.method == "POST":
@@ -212,6 +213,10 @@ def disburse_loan(request, id):
 
         if form.is_valid():
             amount = form.cleaned_data["amount"]
+            if amount > pending_disbursement:
+                messages.warning(request, "Cannot disburse more than loan amount")
+                return redirect("loan:loan", id=loan.id)
+
             loan.disburse(amount)
             messages.success(
                 request, f"Loan disbursement of ${amount} successfully processed"
@@ -220,7 +225,7 @@ def disburse_loan(request, id):
 
     context = {
         "loan": loan,
-        "pending_disbursement": loan.amount - loan.disbursed_amount,
+        "pending_disbursement": pending_disbursement,
         "form": form,
     }
     return render(request, template, context)
