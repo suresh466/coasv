@@ -201,7 +201,7 @@ def closed_loan(request, loan):
 
 
 def disburse_loan(request, id):
-    template = "loan_management/pending_loan.html"
+    template = "loan_management/disburse_loan.html"
     loan = Loan.objects.get(id=id)
     pending_disbursement = loan.amount - loan.disbursed_amount
 
