@@ -2,7 +2,9 @@ services:
   db:
     image: postgres
     volumes:
-      - ~/.local/share/postgres_data/db:/var/lib/postgresql/data
+      - database:/var/lib/postgresql/data
+    networks:
+      - app-network
     ports:
       # exposing the postgresql for local dev
       - "54321:5432"
@@ -15,6 +17,8 @@ services:
     command: /app/entrypoint.sh
     volumes:
       - .:/app
+    networks:
+      - app-network
     ports:
       - "8000:8000"
     environment:
@@ -24,5 +28,11 @@ services:
       - COASV_DB_NAME=postgres_db
       - COASV_DB_USER=postgres_user
       - COASV_DB_PASS=postgres_password
+      - COASV_DB_PORT=5432
     depends_on:
       - db
+volumes:
+  database:
+
+networks:
+  app-network:

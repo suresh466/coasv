@@ -88,7 +88,8 @@ DATABASES = {
         "USER": os.environ.get("COASV_DB_USER"),
         "PASSWORD": os.environ.get("COASV_DB_PASS"),
         "HOST": os.environ.get("COASV_DB_HOST"),
-        "PORT": os.environ.get("COASV_DB_PORT"),
+        # "PORT": os.environ.get("COASV_DB_PORT", 54321),
+        "PORT": os.environ.get("COASV_DB_PORT", 5432),
     }
 }
 

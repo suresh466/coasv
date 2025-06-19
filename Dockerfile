@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12
+FROM python:3.13
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -12,6 +12,4 @@ COPY . /app/
 # ensure entrypoint.sh is executable
 RUN chmod +x /app/entrypoint.sh
 
-RUN pip install django-coasc*.tar.gz
 RUN pip install -r requirements.txt
-
