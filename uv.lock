@@ -24,7 +24,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.1.7" },
-    { name = "django-coasc", specifier = ">=0.1.1" },
+    { name = "django-coasc", specifier = ">=0.1.2" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
 ]
 
@@ -44,14 +44,14 @@ wheels = [
 
 [[package]]
 name = "django-coasc"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/af/3fc22114173e227286c7cbc6346bc7056ddb362cdb68b843bd3a511797d6/django_coasc-0.1.1.tar.gz", hash = "sha256:3a94a036831b818999a6ae3dbb2be1d1c0a49a968a76aea584e6633acd010f13", size = 8439 }
+sdist = { url = "https://files.pythonhosted.org/packages/28/b8/98c68c346801ec38422d368e9b8cb3c50b1a69a968cda407a9711e26c763/django_coasc-0.1.2.tar.gz", hash = "sha256:8898a5c9512be280652b3ac1bc323adb80072365462fba171577fc8dbef86694", size = 12458 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/2c/af732a9decaaf201f03f1c7155756d4c768f6292fdf547d526bb91c74e2b/django_coasc-0.1.1-py3-none-any.whl", hash = "sha256:9e600467e00d3f49f2d615f9588fa77f8c0bdbbbfa717dd59709a857c2564c36", size = 8522 },
+    { url = "https://files.pythonhosted.org/packages/1d/5d/d250d654079cf533516bca9f091f1d35a5ae9dc414f2b62303b47a2b62eb/django_coasc-0.1.2-py3-none-any.whl", hash = "sha256:984e7642b90ed76011e437142709d2a7d0be472a1eded6952a15621ff2fc7c8e", size = 18929 },
 ]
 
 [[package]]

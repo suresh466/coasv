@@ -7,7 +7,7 @@ services:
       - app-network
     ports:
       # exposing the postgresql for local dev
-      - "54321:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_DB=postgres_db
       - POSTGRES_USER=postgres_user
