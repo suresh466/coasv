@@ -88,7 +88,6 @@ DATABASES = {
         "USER": os.environ.get("COASV_DB_USER"),
         "PASSWORD": os.environ.get("COASV_DB_PASS"),
         "HOST": os.environ.get("COASV_DB_HOST"),
-        # "PORT": os.environ.get("COASV_DB_PORT", 54321),
         "PORT": os.environ.get("COASV_DB_PORT", 5432),
     }
 }
@@ -116,13 +115,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = "ne"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
+# LANGUAGE_CODE = "ne"
+#
+# TIME_ZONE = "UTC"
+#
+# USE_I18N = True
+#
+# USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

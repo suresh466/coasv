@@ -1,0 +1,21 @@
+services:
+  db:
+    container_name: coasv-dev-db
+    image: postgres
+    volumes:
+      - dev-database:/var/lib/postgresql/data
+    networks:
+      - dev-db-network
+    ports:
+      # exposing the postgresql for local dev
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres_db
+      - POSTGRES_USER=postgres_user
+      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_PORT=5432
+
+volumes:
+  dev-database:
+networks:
+  dev-db-network:
