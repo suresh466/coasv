@@ -23,7 +23,7 @@
   </head>
   <body class="bg-gray-200">
     <!-- navbar -->
-    <nav>
+    <nav class='sticky top-0 z-10'>
       <ul class="flex items-center h-16 px-4 bg-gray-900 text-white font-medium gap-4">
         <!-- data entry -->
         <li class="group relative">
@@ -34,7 +34,7 @@
               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
             </svg>
           </button>
-          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
             <li>
               <a href='{% url "data_entry:general_journal" %}'
                  class="block px-4 py-2 text-white hover:bg-gray-600 rounded-md">General Journal</a>
@@ -54,7 +54,7 @@
               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
             </svg>
           </button>
-          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
             <li>
               <a href='{% url "inventory:sell" %}'
                  class="block px-4 py-2 text-white hover:bg-gray-600 rounded-md">Sell</a>
@@ -74,7 +74,7 @@
               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
             </svg>
           </button>
-          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
             <li>
               <a href='{% url "ledgers:general_ledger" %}'
                  class="block px-4 py-2 text-white hover:bg-gray-600 rounded-md">General</a>
@@ -106,7 +106,7 @@
               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
             </svg>
           </button>
-          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          <ul class="absolute left-0 mt-1 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
             <li>
               <a href='{% url "fs:balance_sheet" %}'
                  class="block px-4 py-2 text-white hover:bg-gray-600 rounded-md">Balance Sheet</a>
@@ -137,7 +137,7 @@
     </nav>
   </nav>
   <!-- content -->
-  <main class="flex-1 overflow-auto">
+  <main class="overflow-auto">
     {% block common_body %}{% endblock %}
   </main>
   <script src="{% static 'js/scripts.js' %}"></script>
