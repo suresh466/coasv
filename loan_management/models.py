@@ -26,6 +26,7 @@ class Loan(models.Model):
     TWOPLACES = Decimal("0.01")  # round to two decimal places
     WHOLE = Decimal("1")  # round to nearest whole number
 
+    id = models.AutoField(primary_key=True)
     current_term = models.IntegerField(default=1)
     member = models.ForeignKey(Member, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
@@ -52,7 +53,7 @@ class Loan(models.Model):
         return f"Loan #{self.id} - {self.member.name} - {self.amount}"
 
     def clean(self):
-        if self.amount <= 0:
+        if self.amount < 0:
             raise ValidationError("Principal amount must be positive")
 
     def disburse(self, amount):
@@ -83,8 +84,8 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=debit_account, am=amount, t_sp="dr")
         Split.objects.create(tx=tx, ac=credit_account, am=amount, t_sp="cr")
 
-    def process_payment(self, amount, payoff=False):
-        # todo: only accept decimal with two decimal places
+    def process_payment(self, interest_amount=0, principal_amount=0):
+        # TODO: only accept decimal with two decimal places
         """
         pay interest and principal
 
@@ -96,26 +97,20 @@ class Loan(models.Model):
             principal_credit (test_default=110): account to be credited for principal payment
         """
         if self.status != self.ACTIVE:
-            print("loan needs to be active to make a payment")
-            return
+            raise ValidationError("Loan needs to be active to make a payment")
+        if interest_amount is None or principal_amount is None:
+            raise ValidationError("Amount is None")
+        if interest_amount == 0 and principal_amount == 0:
+            raise ValidationError("Amount is 0")
 
         interest_debit = Ac.objects.get(code="80")
         interest_credit = Ac.objects.get(code="160.2")
         principal_debit = Ac.objects.get(code="80")
         principal_credit = Ac.objects.get(code="110")
 
-        # TODO:: Assuming amount >= interest for now
-        interest = (self.outstanding_principal * self.interest_rate * 30) / (100 * 365)
-        principal = amount - interest if (amount - interest) > 0 else 0
+        self.process_interest(interest_amount, interest_debit, interest_credit)
+        self.process_principal(principal_amount, principal_debit, principal_credit)
 
-        if (interest + principal) > amount:
-            return
-
-        self.process_interest(interest, interest_debit, interest_credit)
-        if principal:
-            self.process_principal(principal, principal_debit, principal_credit)
-
-        self.current_term = self.current_term + 1
         self.save()
 
         if self.outstanding_principal == Decimal("0.00"):
@@ -124,7 +119,7 @@ class Loan(models.Model):
 
     def process_interest(self, amount, debit_account, credit_account):
         # todo: only accept decimal with two places
-        if amount <= Decimal("0.00"):
+        if amount < Decimal("0.00"):
             print("amount must be a positive number")
             return
 
@@ -146,7 +141,7 @@ class Loan(models.Model):
 
     def process_principal(self, amount, debit_account, credit_account):
         # todo: only accept decimal with two places
-        if amount <= Decimal("0.00"):
+        if amount < Decimal("0.00"):
             print("amount needs to be a positive number greater than 0")
             return
 
@@ -178,6 +173,7 @@ class Loan(models.Model):
 
 
 class InterestPayment(models.Model):
+    id = models.AutoField(primary_key=True)
     term = models.IntegerField()
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
@@ -195,6 +191,7 @@ class InterestPayment(models.Model):
 
 
 class PrincipalPayment(models.Model):
+    id = models.AutoField(primary_key=True)
     term = models.IntegerField()
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)

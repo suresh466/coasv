@@ -144,20 +144,6 @@
   <script src="{% static 'js/data-entry.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const paymentTypeInputs = document.querySelectorAll('input[name="payment_type"]');
-      const customAmountField = document.getElementById('custom-amount-field');
-
-      function toggleCustomAmount() {
-        const selectedValue = document.querySelector('input[name="payment_type"]:checked').value;
-        customAmountField.style.display = selectedValue === 'custom' ? 'block' : 'none';
-      }
-
-      paymentTypeInputs.forEach(input => {
-        input.addEventListener('change', toggleCustomAmount);
-      });
-
-      toggleCustomAmount(); // Initial state
-
       // Tab handling
       const tabButtons = document.querySelectorAll('.tab-btn');
       const tabContents = document.querySelectorAll('.tab-content');

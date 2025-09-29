@@ -76,20 +76,8 @@
       <h2 class="text-xl font-semibold mb-4">Make a Payment</h2>
       <form method="post" class="space-y-4">
         {% csrf_token %}
-        {% for radio in form.payment_type %}
-          <div class="flex items-center space-x-3">
-            {{ radio.tag }}
-            <label for="{{ radio.id_for_label }}" class="flex flex-col">
-              <span class="font-medium">{{ radio.choice_label }}</span>
-              {% if forloop.counter == 1 %}
-                <span class="text-sm text-gray-500">${{ next_payment_amount }}</span>
-              {% elif forloop.counter == 3 %}
-                <span class="text-sm text-gray-500">${{ payoff_amount.total }}</span>
-              {% endif %}
-            </label>
-          </div>
-        {% endfor %}
-        <div id="custom-amount-field" class="hidden">{{ form.amount }}</div>
+        <div id="custom-interest-field">{{ form.interest_amount }}</div>
+        <div id="custom-principal-field">{{ form.principal_amount }}</div>
         {% if form.errors %}<div class="text-red-500 text-sm">{{ form.errors }}</div>{% endif %}
         <button type="submit"
                 class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200">

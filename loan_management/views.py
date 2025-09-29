@@ -33,14 +33,6 @@ def loan(request, id):
 def active_loan(request, loan):
     template = "loan_management/loan.html"
 
-    # Calculate necessary amounts
-    payoff_interest, payoff_principal, payoff_total, _ = (
-        loan.calculate_next_payment_amount(payoff=True)
-    )
-    _, _, next_payment_amount, _ = loan.calculate_next_payment_amount()
-    # Generate repayment schedule
-    repayment_schedule = loan.generate_amortization_schedule()
-
     # Get payment history
     interest_payments = InterestPayment.objects.filter(loan=loan).order_by(
         "-payment_date"
@@ -93,21 +85,15 @@ def active_loan(request, loan):
 
     form = LoanPaymentForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        payment_type = form.cleaned_data["payment_type"]
-
-        if payment_type == "payoff":
-            amount = payoff_total
-            is_payoff = True
-        elif payment_type == "regular":
-            amount = next_payment_amount
-            is_payoff = False
-        else:
-            amount = form.cleaned_data["amount"]
-            is_payoff = False
+        interest_amount = form.cleaned_data["interest_amount"]
+        principal_amount = form.cleaned_data["principal_amount"]
 
         try:
-            loan.process_payment(amount, payoff=is_payoff)
-            messages.success(request, f"Payment of ${amount} successfully processed")
+            loan.process_payment(interest_amount, principal_amount)
+            messages.success(
+                request,
+                f"Payment of Interest: ${interest_amount} Principal: ${principal_amount} successfully processed",
+            )
             return redirect("loan:loan", id=loan.id)
         except Exception as e:
             print(e)
@@ -118,13 +104,6 @@ def active_loan(request, loan):
         "loan": loan,
         "form": form,
         "payment_history": payment_history,
-        "payoff_amount": {
-            "interest": payoff_interest,
-            "principal": payoff_principal,
-            "total": payoff_total,
-        },
-        "next_payment_amount": next_payment_amount,
-        "repayment_schedule": repayment_schedule,
         "total_paid": {
             "interest": running_interest,
             "principal": running_principal,
