@@ -1,51 +1,44 @@
 {% extends 'common_base.html' %}
 {% block common_title %}General Ledger{% endblock %}
 {% block common_body %}
-  <div class="container mx-auto">
-    <div class="prose p-4 mb-6">
-      <h1>General Ledger</h1>
+  {% for operating_account in operating_accounts %}
+    <!-- only render table if table.rows not empty -->
+    <div class="bg-white rounded-md mb-4">
+      <div class="p-4">
+        <h2>{{ operating_account.account }}</h2>
+      </div>
+      <div>
+        <table id="id_{{ operating_account.name }}_ledger"
+               class="min-w-full divide-y divide-y-gray-200">
+          <thead class="divide-y">
+            <tr>
+              <th class="px-4 py-2 text-left">Description</th>
+              <th class="px-4 py-2 text-right">Debit</th>
+              <th class="px-4 py-2 text-right">Credit</th>
+              <th class="px-4 py-2 text-right">Balance</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            {% for transaction in operating_account.transactions %}
+              <tr class="{% cycle "bg-white" "bg-gray-100" as rowcolors %} divide-x hover:bg-gray-300">
+                <td class="px-4 py-2">{{ transaction.description }}</td>
+                <td class="px-4 py-2 text-right">{{ transaction.debit }}</td>
+                <td class="px-4 py-2 text-right">{{ transaction.credit }}</td>
+                <td class="px-4 py-2 text-right">{{ transaction.running_balance }}</td>
+              </tr>
+            {% endfor %}
+            {% resetcycle rowcolors %}
+          </tbody>
+          <tfoot>
+            <tr class="bg-yellow-100">
+              <td class="px-4 py-2">Total:</td>
+              <td class="px-4 py-2 text-right">{{ operating_account.balance.total_debit }}</td>
+              <td class="px-4 py-2 text-right">{{ operating_account.balance.total_credit }}</td>
+              <td class="px-4 py-2 text-right">{{ operating_account.balance.net_balance }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
-    <div class="space-y-8 mb-12">
-      {% for operating_account in operating_accounts %}
-        <!-- only render table if table.rows not empty -->
-        <div class="bg-white rounded-lg shadow-lg">
-          <div class="p-4 mb-6 prose">
-            <h2>{{ operating_account.account }}</h2>
-          </div>
-          <div class="overflow-x-auto">
-            <table id="id_{{ operating_account.name }}_ledger"
-                   class="min-w-full border-collapse prose divide-y">
-              <thead class="divide-y">
-                <tr class="bg-gray-200">
-                  <th class="px-4 py-2 text-left">Description</th>
-                  <th class="px-4 py-2 text-right">Debit</th>
-                  <th class="px-4 py-2 text-right">Credit</th>
-                  <th class="px-4 py-2 text-right">Balance</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y">
-                {% for transaction in operating_account.transactions %}
-                  <tr class="{% cycle "bg-white" "bg-gray-100" as rowcolors %} divide-x hover:bg-gray-300">
-                    <td class="px-4 py-2">{{ transaction.description }}</td>
-                    <td class="px-4 py-2 text-right">{{ transaction.debit }}</td>
-                    <td class="px-4 py-2 text-right">{{ transaction.credit }}</td>
-                    <td class="px-4 py-2 text-right">{{ transaction.running_balance }}</td>
-                  </tr>
-                {% endfor %}
-                {% resetcycle rowcolors %}
-              </tbody>
-              <tfoot>
-                <tr class="bg-yellow-100">
-                  <td class="px-4 py-2">Total:</td>
-                  <td class="px-4 py-2 text-right">{{ operating_account.balance.total_debit }}</td>
-                  <td class="px-4 py-2 text-right">{{ operating_account.balance.total_credit }}</td>
-                  <td class="px-4 py-2 text-right">{{ operating_account.balance.net_balance }}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  </div>
+  {% endfor %}
 {% endblock %}

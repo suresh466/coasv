@@ -1,45 +1,38 @@
 {% extends 'common_base.html' %}
 {% block common_title %}Sales{% endblock %}
 {% block common_body %}
-  <div class="container mx-auto">
-    <div class="rounded-lg shadow-lg bg-white">
-      <div class="prose mb-6 p-4">
-        <h1>Sales Ledger</h1>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="prose min-w-full border-collapse divide-y divide-gray-300">
-          <thead class="bg-gray-200">
-            <tr class="divide-x">
-              <th scope="col"
-                  class="w-1/3 min-w-96 px-4 py-2 uppercase bg-gray-100 text-left sticky left-0 z-9">Desc</th>
-              {% for account_balance in accounts_balances.0.children %}
-                <th scope="col" class="min-w-28 px-4 py-2 uppercase">{{ account_balance.account }}</th>
-              {% endfor %}
-              <th scope="col" class="px-4 py-2 uppercase bg-gray-100">Total Inc</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-300">
-            {% for row in rows %}
-              <tr class="divide-x {% cycle "bg-white" "bg-gray-50" %} hover:bg-gray-300">
-                <td class="px-4 py-2 bg-gray-100 sticky left-0">{{ row.description }}</td>
-                {% for data in row.accounts_data %}
-                  <td class="px-4 py-2 whitespace-nowrap text-right">{{ data.net_balance }}</td>
-                {% endfor %}
-                <td class="px-4 py-2 whitespace-nowrap text-right">{{ row.grand_total }}</td>
-              </tr>
+  <div class="bg-white rounded-md">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-200">
+        <tr class="divide-x">
+          <th scope="col"
+              class="w-1/3 min-w-96 px-4 py-2 uppercase bg-gray-100 text-left sticky left-0 z-9">Desc</th>
+          {% for account_balance in accounts_balances.0.children %}
+            <th scope="col" class="min-w-28 px-4 py-2 uppercase">{{ account_balance.account }}</th>
+          {% endfor %}
+          <th scope="col" class="px-4 py-2 uppercase bg-gray-100">Total Inc</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-300">
+        {% for row in rows %}
+          <tr class="divide-x {% cycle "bg-white" "bg-gray-50" %} hover:bg-gray-300">
+            <td class="px-4 py-2 bg-gray-100 sticky left-0">{{ row.description }}</td>
+            {% for data in row.accounts_data %}
+              <td class="px-4 py-2 whitespace-nowrap text-right">{{ data.net_balance }}</td>
             {% endfor %}
-          </tbody>
-          <tfoot>
-            <tr class="divide-x">
-              <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 sticky left-0">Total</td>
-              {% for account_balance in accounts_balances.0.children %}
-                <td class="px-4 py-2 whitespace-nowrap bg-yellow-100 text-right">{{ account_balance.balance.net_balance }}</td>
-              {% endfor %}
-              <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 text-right">{{ accounts_balances.0.balance.net_balance }}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
+            <td class="px-4 py-2 whitespace-nowrap text-right">{{ row.grand_total }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="divide-x">
+          <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 sticky left-0">Total</td>
+          {% for account_balance in accounts_balances.0.children %}
+            <td class="px-4 py-2 whitespace-nowrap bg-yellow-100 text-right">{{ account_balance.balance.net_balance }}</td>
+          {% endfor %}
+          <td class="px-4 py-2 whitespace-nowrap bg-yellow-50 text-right">{{ accounts_balances.0.balance.net_balance }}</td>
+        </tr>
+      </tfoot>
+    </table>
   </div>
 {% endblock %}

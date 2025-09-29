@@ -1,146 +1,141 @@
 {% extends 'common_base.html' %}
 {% block common_title %}Income Statement{% endblock %}
 {% block common_body %}
-  <div class="container mx-auto">
-    <div class="bg-white shadow-lg rounded-lg mb-12">
-      <!-- date filter row -->
-      <div class="prose p-4 mb-6">
-        <h1>Income Statement</h1>
-        <form method="get" class="flex flex-wrap items-end gap-4">
-          <div>
-            <label for="{{ form.start_date.id_for_label }}"
-                   class="block mb-1 text-sm font-medium text-gray-700">Start Date:</label>
-            <input type="date"
-                   id="{{ form.start_date.id_for_label }}"
-                   name="{{ form.start_date.html_name }}"
-                   {{ form.start_date.field.required|yesno:"required," }}
-                   class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   value="{{ form.start_date.value|date:'Y-m-d'|default:form.start_date.value }}">
-            {% if form.start_date.errors %}
-              {% for error in form.start_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
-            {% endif %}
-          </div>
-          <div>
-            <label for="{{ form.end_date.id_for_label }}"
-                   class="block mb-1 text-sm font-medium text-gray-700">End Date:</label>
-            <input type="date"
-                   id="{{ form.end_date.id_for_label }}"
-                   name="{{ form.end_date.html_name }}"
-                   {{ form.end_date.field.required|yesno:"required," }}
-                   class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   value="{{ form.end_date.value|date:'Y-m-d'|default:form.end_date.value }}">
-            {% if form.end_date.errors %}
-              {% for error in form.end_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
-            {% endif %}
-          </div>
-          <div>
-            <button type="submit"
-                    name="filter"
-                    class="inline-block mr-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-              Filter
-            </button>
-            <a href="{% url 'fs:income_statement' %}"
-               class="inline-block no-underline px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-              Reset
-            </a>
-          </div>
-        </form>
+  <!-- date filter row -->
+  <form method="get">
+    <div class="flex items-end gap-4 bg-white rounded-md p-4">
+      <div>
+        <label for="{{ form.start_date.id_for_label }}"
+               class="block text-sm font-medium text-gray-700">Start Date:</label>
+        <input type="date"
+               id="{{ form.start_date.id_for_label }}"
+               name="{{ form.start_date.html_name }}"
+               {{ form.start_date.field.required|yesno:"required," }}
+               class="mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               value="{{ form.start_date.value|date:'Y-m-d'|default:form.start_date.value }}">
+        {% if form.start_date.errors %}
+          {% for error in form.start_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+        {% endif %}
       </div>
-      <!-- income statement table -->
-      <table class="min-w-full border-collapse prose divide-y">
-        <thead class="divide-y">
-          <tr class="bg-gray-200 divide-x">
-            <th class="px-4 py-2 text-left min-w-96">AC name</th>
-            <th class="px-4 py-2 text-right min-w-28">Debit</th>
-            <th class="px-4 py-2 text-right min-w-28">Credit</th>
-            <!-- TODO: remove it from here or add to others as well! -->
-            <th class="px-4 py-2 text-right min-w-28">Balance</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y">
-          {% for income_account in income_statement.income_accounts %}
-            {% for child in income_account.children %}
-              <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                <td class="px-4 py-2">{{ child.account }}</td>
-                {% if child.balance.net_balance < 0 %}
-                  <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_debit }}</td>
-                  <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_credit }}</td>
-                  <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_balance }}</td>
-                {% else %}
-                  <td class="px-4 py-2 text-right">{{ child.balance.net_debit }}</td>
-                  <td class="px-4 py-2 text-right">{{ child.balance.net_credit }}</td>
-                  <td class="px-4 py-2 text-right">{{ child.balance.net_balance }}</td>
-                {% endif %}
-              </tr>
-            {% endfor %}
-            <tr class="bg-gray-400">
-              <!-- gross profit of sort!  -->
-              <td class="px-4 py-4">{{ income_account.account }}</td>
-              {% if income_account.balance.net_balance < 0 %}
-                <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_debit }}</td>
-                <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_credit }}</td>
-                <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_balance }}</td>
-              {% else %}
-                <td class="px-4 py-4 text-right">{{ income_account.balance.net_debit }}</td>
-                <td class="px-4 py-4 text-right">{{ income_account.balance.net_credit }}</td>
-                <td class="px-4 py-4 text-right">{{ income_account.balance.net_balance }}</td>
-              {% endif %}
-            </tr>
-          {% endfor %}
-          {% for expense_account in income_statement.expense_accounts %}
-            {% for child in expense_account.children %}
-              <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
-                <td class="px-4 py-2">{{ child.account }}</td>
-                {% if child.balance.net_balance < 0 %}
-                  <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_debit }}</td>
-                  <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_credit }}</td>
-                  <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_balance }}</td>
-                {% else %}
-                  <td class="px-4 py-2 text-right">{{ child.balance.net_debit }}</td>
-                  <td class="px-4 py-2 text-right">{{ child.balance.net_credit }}</td>
-                  <td class="px-4 py-2 text-right">{{ child.balance.net_balance }}</td>
-                {% endif %}
-              </tr>
-            {% endfor %}
-            <tr class="bg-gray-400">
-              <!-- gross loss of sort!  -->
-              <td class="px-4 py-4">{{ expense_account.account }}</td>
-              {% if expense_account.balance.net_balance < 0 %}
-                <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_debit }}</td>
-                <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_credit }}</td>
-                <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_balance }}</td>
-              {% else %}
-                <td class="px-4 py-4 text-right">{{ expense_account.balance.net_debit }}</td>
-                <td class="px-4 py-4 text-right">{{ expense_account.balance.net_credit }}</td>
-                <td class="px-4 py-4 text-right">{{ expense_account.balance.net_balance }}</td>
-              {% endif %}
-            </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot class="bg-yellow-100">
-          <tr>
-            <td class="px-4 py-2 font-bold">Total Income</td>
-            <td colspan="3"
-                class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-100{% endif %}">
-              {{ income_statement.total_income }}
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-2 font-bold">Total Expenses</td>
-            <td colspan="3"
-                class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-100{% endif %}">
-              {{ income_statement.total_expenses }}
-            </td>
-          </tr>
-          <tr class="bg-green-200 {% if income_statement.net_income < 0 %}bg-red-200{% endif %}">
-            <td class="px-4 py-2 font-bold">Net Profit/Loss</td>
-            <td colspan="3"
-                class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-200{% endif %}">
-              {{ income_statement.net_income }}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+      <div>
+        <label for="{{ form.end_date.id_for_label }}"
+               class="block text-sm font-medium text-gray-700">End Date:</label>
+        <input type="date"
+               id="{{ form.end_date.id_for_label }}"
+               name="{{ form.end_date.html_name }}"
+               {{ form.end_date.field.required|yesno:"required," }}
+               class="mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               value="{{ form.end_date.value|date:'Y-m-d'|default:form.end_date.value }}">
+        {% if form.end_date.errors %}
+          {% for error in form.end_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+        {% endif %}
+      </div>
+      <button type="submit"
+              name="filter"
+              class="inline-block mr-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        Filter
+      </button>
+      <a href="{% url 'fs:income_statement' %}"
+         class="inline-block no-underline px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+        Reset
+      </a>
     </div>
+  </form>
+  <!-- income statement table -->
+  <div class="bg-white rounded-md">
+    <table class="min-w-full divide-y divide-y-gray-200">
+      <thead class="divide-y">
+        <tr class="bg-gray-200 divide-x">
+          <th class="px-4 py-2 text-left min-w-96">AC name</th>
+          <th class="px-4 py-2 text-right min-w-28">Debit</th>
+          <th class="px-4 py-2 text-right min-w-28">Credit</th>
+          <!-- TODO: remove it from here or add to others as well! -->
+          <th class="px-4 py-2 text-right min-w-28">Balance</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        {% for income_account in income_statement.income_accounts %}
+          {% for child in income_account.children %}
+            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
+              <td class="px-4 py-2">{{ child.account }}</td>
+              {% if child.balance.net_balance < 0 %}
+                <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_debit }}</td>
+                <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_credit }}</td>
+                <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_balance }}</td>
+              {% else %}
+                <td class="px-4 py-2 text-right">{{ child.balance.net_debit }}</td>
+                <td class="px-4 py-2 text-right">{{ child.balance.net_credit }}</td>
+                <td class="px-4 py-2 text-right">{{ child.balance.net_balance }}</td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+          <tr class="bg-gray-400">
+            <!-- gross profit of sort!  -->
+            <td class="px-4 py-4">{{ income_account.account }}</td>
+            {% if income_account.balance.net_balance < 0 %}
+              <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_debit }}</td>
+              <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_credit }}</td>
+              <td class="px-4 py-4 text-right bg-red-100">{{ income_account.balance.net_balance }}</td>
+            {% else %}
+              <td class="px-4 py-4 text-right">{{ income_account.balance.net_debit }}</td>
+              <td class="px-4 py-4 text-right">{{ income_account.balance.net_credit }}</td>
+              <td class="px-4 py-4 text-right">{{ income_account.balance.net_balance }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        {% for expense_account in income_statement.expense_accounts %}
+          {% for child in expense_account.children %}
+            <tr class="{% cycle "bg-white" "bg-gray-100" %} divide-x hover:bg-gray-300">
+              <td class="px-4 py-2">{{ child.account }}</td>
+              {% if child.balance.net_balance < 0 %}
+                <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_debit }}</td>
+                <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_credit }}</td>
+                <td class="px-4 py-2 text-right bg-red-100">{{ child.balance.net_balance }}</td>
+              {% else %}
+                <td class="px-4 py-2 text-right">{{ child.balance.net_debit }}</td>
+                <td class="px-4 py-2 text-right">{{ child.balance.net_credit }}</td>
+                <td class="px-4 py-2 text-right">{{ child.balance.net_balance }}</td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+          <tr class="bg-gray-400">
+            <!-- gross loss of sort!  -->
+            <td class="px-4 py-4">{{ expense_account.account }}</td>
+            {% if expense_account.balance.net_balance < 0 %}
+              <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_debit }}</td>
+              <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_credit }}</td>
+              <td class="px-4 py-4 text-right bg-red-100">{{ expense_account.balance.net_balance }}</td>
+            {% else %}
+              <td class="px-4 py-4 text-right">{{ expense_account.balance.net_debit }}</td>
+              <td class="px-4 py-4 text-right">{{ expense_account.balance.net_credit }}</td>
+              <td class="px-4 py-4 text-right">{{ expense_account.balance.net_balance }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="bg-yellow-100">
+        <tr>
+          <td class="px-4 py-2 font-bold">Total Income</td>
+          <td colspan="3"
+              class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-100{% endif %}">
+            {{ income_statement.total_income }}
+          </td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2 font-bold">Total Expenses</td>
+          <td colspan="3"
+              class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-100{% endif %}">
+            {{ income_statement.total_expenses }}
+          </td>
+        </tr>
+        <tr class="bg-green-200 {% if income_statement.net_income < 0 %}bg-red-200{% endif %}">
+          <td class="px-4 py-2 font-bold">Net Profit/Loss</td>
+          <td colspan="3"
+              class="px-4 py-2 text-right font-bold {% if income_statement.total_income < 0 %}bg-red-200{% endif %}">
+            {{ income_statement.net_income }}
+          </td>
+        </tr>
+      </tfoot>
+    </table>
   </div>
 {% endblock %}
