@@ -1,113 +1,123 @@
-{% extends 'fs/base.html' %}
-{% block title %}BalanceSheet{% endblock %}
-{% block body %}
-    <div class="container mx-auto">
-        <div class="bg-white shadow-lg rounded-lg mb-12">
-            <!-- date filter row -->
-            <div class="prose p-4 mb-6">
-                <h1>Balance Sheet</h1>
-                <form method="get" class="flex flex-wrap items-end gap-4">
-                    <div>
-                        <label for="{{ form.start_date.id_for_label }}"
-                               class="block mb-1 text-sm font-medium text-gray-700">Start Date:</label>
-                        <input type="date" id="{{ form.start_date.id_for_label }}" name="{{ form.start_date.html_name }}" {{ form.start_date.field.required|yesno:"required," }} class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ form.start_date.value|date:'Y-m-d'|default:form.start_date.value }}">
-                        {% if form.start_date.errors %}
-                            {% for error in form.start_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label for="{{ form.end_date.id_for_label }}"
-                               class="block mb-1 text-sm font-medium text-gray-700">End Date:</label>
-                        <input type="date" id="{{ form.end_date.id_for_label }}" name="{{ form.end_date.html_name }}" {{ form.end_date.field.required|yesno:"required," }} class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ form.end_date.value|date:'Y-m-d'|default:form.end_date.value }}">
-                        {% if form.end_date.errors %}
-                            {% for error in form.end_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
-                        {% endif %}
-                    </div>
-                    <div>
-                        <button type="submit"
-                                name="filter"
-                                class="inline-block mr-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            Filter
-                        </button>
-                        <a href="{% url 'fs:balance_sheet' %}"
-                           class="inline-block no-underline px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                            Reset
-                        </a>
-                    </div>
-                </form>
-            </div>
-            <!-- balance sheet table -->
-            <table class="min-w-full border-collapse divide-y prose">
-                <thead class="divide-y">
-                    <tr class="bg-gray-200 divide-x">
-                        <th class="px-4 py-2 text-left min-w-96">Ac Name</th>
-                        <th class="px-4 py-2 text-right min-w-28">Amount</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr class="bg-gray-100">
-                        <td class="px-4 py-2 text-center" colspan="2">Liabilities</td>
-                    </tr>
-                    {% for liability_account in balance_sheet.liability_accounts %}
-                        {% for child in liability_account.children %}
-                            <!-- liabilities child accounts -->
-                            <tr class="bg-gray-50 divide-x hover:bg-gray-300">
-                                <td class="px-4 py-2">&emsp; {{ child.account }}</td>
-                                <td class="px-4 py-2 text-right {% if child.balance.net_balance < 0 %}bg-red-100{% endif %}">
-                                    {{ child.balance.net_balance }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        <!-- liabilities parent accounts -->
-                        <tr class="divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">{{ liability_account.account }}</td>
-                            <td class="px-4 py-2 text-right {% if liability_account.balance.net_balance < 0 %}bg-red-100{% endif %}">
-                                {{ liability_account.balance.net_balance }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    <!-- equity -->
-                    <tr class="divide-x hover:bg-gray-300">
-                        <td class="px-4 py-2">Equity</td>
-                        <td class="px-4 py-2 text-right {% if balance_sheet.equity < 0 %}bg-red-100{% endif %}">{{ balance_sheet.equity }}</td>
-                    </tr>
-                    <tr class="bg-yellow-100">
-                        <td class="px-4 py-2 min-w-96">Total Liabilities</td>
-                        <td class="px-4 py-2 text-right min-w-28 {% if balance_sheet.total_liabilities_and_equity < 0 %}bg-red-100{% endif %}">
-                            {{ balance_sheet.total_liabilities_and_equity }}
-                        </td>
-                    </tr>
-                    <tr class="bg-gray-100">
-                        <td class="px-4 py-2 text-center" colspan="2">Assets</td>
-                    </tr>
-                    {% for asset_account in balance_sheet.asset_accounts %}
-                        {% for child in asset_account.children %}
-                            <!-- assets child accounts -->
-                            <tr class="bg-gray-50 divide-x hover:bg-gray-300">
-                                <td class="px-4 py-2">&emsp;{{ child.account }}</td>
-                                <td class="px-4 py-2 text-right {% if child.balance.net_balance < 0 %}bg-red-100{% endif %}">
-                                    {{ child.balance.net_balance }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        <!-- liabilities parent accounts -->
-                        <tr class="divide-x hover:bg-gray-300">
-                            <td class="px-4 py-2">{{ asset_account.account }}</td>
-                            <td class="px-4 py-2 text-right {% if asset_account.balance.net_balance < 0 %}bg-red-100{% endif %}">
-                                {{ asset_account.balance.net_balance }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr class="bg-yellow-100">
-                        <td class="px-4 py-2 min-w-96">Total Assets</td>
-                        <td class="px-4 py-2 text-right min-w-28 {% if balance_sheet.total_assets < 0 %}bg-red-100{% endif %}">
-                            {{ balance_sheet.total_assets }}
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+{% extends 'common_base.html' %}
+{% block common_title %}BalanceSheet{% endblock %}
+{% block common_body %}
+  <div class="container mx-auto">
+    <div class="bg-white shadow-lg rounded-lg mb-12">
+      <!-- date filter row -->
+      <div class="prose p-4 mb-6">
+        <h1>Balance Sheet</h1>
+        <form method="get" class="flex flex-wrap items-end gap-4">
+          <div>
+            <label for="{{ form.start_date.id_for_label }}"
+                   class="block mb-1 text-sm font-medium text-gray-700">Start Date:</label>
+            <input type="date"
+                   id="{{ form.start_date.id_for_label }}"
+                   name="{{ form.start_date.html_name }}"
+                   {{ form.start_date.field.required|yesno:"required," }}
+                   class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   value="{{ form.start_date.value|date:'Y-m-d'|default:form.start_date.value }}">
+            {% if form.start_date.errors %}
+              {% for error in form.start_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            {% endif %}
+          </div>
+          <div>
+            <label for="{{ form.end_date.id_for_label }}"
+                   class="block mb-1 text-sm font-medium text-gray-700">End Date:</label>
+            <input type="date"
+                   id="{{ form.end_date.id_for_label }}"
+                   name="{{ form.end_date.html_name }}"
+                   {{ form.end_date.field.required|yesno:"required," }}
+                   class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   value="{{ form.end_date.value|date:'Y-m-d'|default:form.end_date.value }}">
+            {% if form.end_date.errors %}
+              {% for error in form.end_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            {% endif %}
+          </div>
+          <div>
+            <button type="submit"
+                    name="filter"
+                    class="inline-block mr-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              Filter
+            </button>
+            <a href="{% url 'fs:balance_sheet' %}"
+               class="inline-block no-underline px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+              Reset
+            </a>
+          </div>
+        </form>
+      </div>
+      <!-- balance sheet table -->
+      <table class="min-w-full border-collapse divide-y prose">
+        <thead class="divide-y">
+          <tr class="bg-gray-200 divide-x">
+            <th class="px-4 py-2 text-left min-w-96">Ac Name</th>
+            <th class="px-4 py-2 text-right min-w-28">Amount</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr class="bg-gray-100">
+            <td class="px-4 py-2 text-center" colspan="2">Liabilities</td>
+          </tr>
+          {% for liability_account in balance_sheet.liability_accounts %}
+            {% for child in liability_account.children %}
+              <!-- liabilities child accounts -->
+              <tr class="bg-gray-50 divide-x hover:bg-gray-300">
+                <td class="px-4 py-2">&emsp; {{ child.account }}</td>
+                <td class="px-4 py-2 text-right {% if child.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                  {{ child.balance.net_balance }}
+                </td>
+              </tr>
+            {% endfor %}
+            <!-- liabilities parent accounts -->
+            <tr class="divide-x hover:bg-gray-300">
+              <td class="px-4 py-2">{{ liability_account.account }}</td>
+              <td class="px-4 py-2 text-right {% if liability_account.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                {{ liability_account.balance.net_balance }}
+              </td>
+            </tr>
+          {% endfor %}
+          <!-- equity -->
+          <tr class="divide-x hover:bg-gray-300">
+            <td class="px-4 py-2">Equity</td>
+            <td class="px-4 py-2 text-right {% if balance_sheet.equity < 0 %}bg-red-100{% endif %}">{{ balance_sheet.equity }}</td>
+          </tr>
+          <tr class="bg-yellow-100">
+            <td class="px-4 py-2 min-w-96">Total Liabilities</td>
+            <td class="px-4 py-2 text-right min-w-28 {% if balance_sheet.total_liabilities_and_equity < 0 %}bg-red-100{% endif %}">
+              {{ balance_sheet.total_liabilities_and_equity }}
+            </td>
+          </tr>
+          <tr class="bg-gray-100">
+            <td class="px-4 py-2 text-center" colspan="2">Assets</td>
+          </tr>
+          {% for asset_account in balance_sheet.asset_accounts %}
+            {% for child in asset_account.children %}
+              <!-- assets child accounts -->
+              <tr class="bg-gray-50 divide-x hover:bg-gray-300">
+                <td class="px-4 py-2">&emsp;{{ child.account }}</td>
+                <td class="px-4 py-2 text-right {% if child.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                  {{ child.balance.net_balance }}
+                </td>
+              </tr>
+            {% endfor %}
+            <!-- liabilities parent accounts -->
+            <tr class="divide-x hover:bg-gray-300">
+              <td class="px-4 py-2">{{ asset_account.account }}</td>
+              <td class="px-4 py-2 text-right {% if asset_account.balance.net_balance < 0 %}bg-red-100{% endif %}">
+                {{ asset_account.balance.net_balance }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="bg-yellow-100">
+            <td class="px-4 py-2 min-w-96">Total Assets</td>
+            <td class="px-4 py-2 text-right min-w-28 {% if balance_sheet.total_assets < 0 %}bg-red-100{% endif %}">
+              {{ balance_sheet.total_assets }}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
+  </div>
 {% endblock %}
