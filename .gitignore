@@ -3,6 +3,8 @@
 
 # tailwind output file
 output.css
+node_modules
+package-lock.json
 
 # intellej files
 .idea/
