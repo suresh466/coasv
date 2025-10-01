@@ -1,8 +1,10 @@
 from datetime import timedelta
 from decimal import Decimal
+from itertools import chain
+from operator import attrgetter
 
 from django.contrib import messages
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import LoanPaymentForm
@@ -140,54 +142,44 @@ def disburse(request, id):
 
 
 def generate_payment_history(loan):
-    # Get payment history
-    interest_payments = InterestPayment.objects.filter(loan=loan).order_by(
-        "-payment_date"
+    interest_payments = InterestPayment.objects.filter(loan=loan)
+    principal_payments = PrincipalPayment.objects.filter(loan=loan)
+
+    # Combine and sort payments by date
+    all_payments = sorted(
+        chain(interest_payments, principal_payments), key=attrgetter("payment_date")
     )
-    principal_payments = PrincipalPayment.objects.filter(loan=loan).order_by(
-        "-payment_date"
-    )
+
     running_interest = Decimal("0.00")
     running_principal = Decimal("0.00")
-    running_total = Decimal("0.00")
     payment_history = []
 
-    # Combine and sort payments for history
-    for ip in interest_payments:
-        end_time = ip.payment_date + timedelta(seconds=2)
-        pp = principal_payments.filter(
-            payment_date__gte=ip.payment_date, payment_date__lte=end_time
-        ).first()
-        if pp:
-            running_interest += ip.amount
-            running_principal += pp.amount
-            running_total = running_interest + running_principal
+    for payment in all_payments:
+        interest = Decimal("0.00")
+        principal = Decimal("0.00")
 
-            payment_history.append(
-                {
-                    "date": ip.payment_date,
-                    "interest": ip.amount,
-                    "principal": pp.amount,
-                    "total": ip.amount + pp.amount,
-                    "running_interest": running_interest,
-                    "running_principal": running_principal,
-                    "running_total": running_total,
-                }
-            )
+        # Determine payment type and update amounts
+        if isinstance(payment, InterestPayment):
+            interest = payment.amount
+            running_interest += interest
         else:
-            running_interest += ip.amount
-            running_total = running_interest + running_principal
+            principal = payment.amount
+            running_principal += principal
 
-            payment_history.append(
-                {
-                    "date": ip.payment_date,
-                    "interest": ip.amount,
-                    "principal": 0,
-                    "total": ip.amount + 0,
-                    "running_interest": running_interest,
-                    "running_principal": running_principal,
-                    "running_total": running_total,
-                }
-            )
+        payment_history.append(
+            {
+                "date": payment.payment_date,
+                "interest": interest,
+                "principal": principal,
+                "running_interest": running_interest,
+                "running_principal": running_principal,
+                "running_total": running_interest + running_principal,
+            }
+        )
 
-    return payment_history, running_interest, running_principal, running_total
+    return (
+        payment_history,
+        running_interest,
+        running_principal,
+        (running_interest + running_principal),
+    )
