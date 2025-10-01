@@ -2,9 +2,10 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
+from django.views.decorators.http import require_POST
 
-from .forms import LoanDisbursementForm, LoanPaymentForm
+from .forms import LoanPaymentForm
 from .models import InterestPayment, Loan, PrincipalPayment
 
 # Create your views here.
@@ -19,80 +20,29 @@ def loans(request):
 
 def loan(request, id):
     loan = Loan.objects.get(id=id)
-    if loan.status == Loan.ACTIVE:
-        return active_loan(request, loan)
-    elif loan.status in (Loan.FULLYPAID, Loan.DEFAULTED):
+    if loan.status in (Loan.FULLYPAID, Loan.DEFAULTED):
         return closed_loan(request, loan)
-    elif loan.status in (Loan.PENDING, Loan.APPROVED):
-        return disburse_loan(request, id)
     else:
-        messages.error(request, "Loan status not recognized")
-        return redirect("loan:loans")
+        return active_loan(request, loan)
 
 
 def active_loan(request, loan):
     template = "loan_management/loan.html"
 
-    # Get payment history
-    interest_payments = InterestPayment.objects.filter(loan=loan).order_by(
-        "-payment_date"
+    payment_history, running_interest, running_principal, running_total = (
+        generate_payment_history(loan)
     )
-    principal_payments = PrincipalPayment.objects.filter(loan=loan).order_by(
-        "-payment_date"
-    )
-    running_interest = Decimal("0.00")
-    running_principal = Decimal("0.00")
-    running_total = Decimal("0.00")
-    payment_history = []
-
-    # Combine and sort payments for history
-    for ip in interest_payments:
-        end_time = ip.payment_date + timedelta(seconds=2)
-        pp = principal_payments.filter(
-            payment_date__gte=ip.payment_date, payment_date__lte=end_time
-        ).first()
-        if pp:
-            running_interest += ip.amount
-            running_principal += pp.amount
-            running_total = running_interest + running_principal
-
-            payment_history.append(
-                {
-                    "date": ip.payment_date,
-                    "interest": ip.amount,
-                    "principal": pp.amount,
-                    "total": ip.amount + pp.amount,
-                    "running_interest": running_interest,
-                    "running_principal": running_principal,
-                    "running_total": running_total,
-                }
-            )
-        else:
-            running_interest += ip.amount
-            running_total = running_interest + running_principal
-
-            payment_history.append(
-                {
-                    "date": ip.payment_date,
-                    "interest": ip.amount,
-                    "principal": 0,
-                    "total": ip.amount + 0,
-                    "running_interest": running_interest,
-                    "running_principal": running_principal,
-                    "running_total": running_total,
-                }
-            )
 
     form = LoanPaymentForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        interest_amount = form.cleaned_data["interest_amount"]
-        principal_amount = form.cleaned_data["principal_amount"]
+        interest = form.cleaned_data["interest"]
+        principal = form.cleaned_data["principal"]
 
         try:
-            loan.process_payment(interest_amount, principal_amount)
+            loan.process_payment(interest, principal)
             messages.success(
                 request,
-                f"Payment of Interest: ${interest_amount} Principal: ${principal_amount} successfully processed",
+                f"Payment of Interest: ${interest} Principal: ${principal} successfully processed",
             )
             return redirect("loan:loan", id=loan.id)
         except Exception as e:
@@ -109,7 +59,6 @@ def active_loan(request, loan):
             "principal": running_principal,
             "total": running_total,
         },
-        "pending_disbursement": loan.amount - loan.disbursed_amount,
     }
     return render(request, template, context)
 
@@ -179,32 +128,66 @@ def closed_loan(request, loan):
     return render(request, template, context)
 
 
-def disburse_loan(request, id):
-    template = "loan_management/disburse_loan.html"
-    loan = Loan.objects.get(id=id)
-    pending_disbursement = loan.amount - loan.disbursed_amount
+@require_POST
+def disburse(request, id):
+    loan = get_object_or_404(Loan, id=id)
+    try:
+        loan.disburse()
+        messages.success(request, f"Loan #{loan.id} successfully disbursed!")
+    except ValueError as e:
+        messages.error(request, str(e))
+    return redirect("loan:loan", id=id)
 
-    form = LoanDisbursementForm(request.POST or None)
-    if request.method == "POST":
-        if loan.status == Loan.PENDING:
-            messages.warning(request, "Loan is still pending approval, cannot disburse")
-            return redirect("loan:loan", id=loan.id)
 
-        if form.is_valid():
-            amount = form.cleaned_data["amount"]
-            if amount > pending_disbursement:
-                messages.warning(request, "Cannot disburse more than loan amount")
-                return redirect("loan:loan", id=loan.id)
+def generate_payment_history(loan):
+    # Get payment history
+    interest_payments = InterestPayment.objects.filter(loan=loan).order_by(
+        "-payment_date"
+    )
+    principal_payments = PrincipalPayment.objects.filter(loan=loan).order_by(
+        "-payment_date"
+    )
+    running_interest = Decimal("0.00")
+    running_principal = Decimal("0.00")
+    running_total = Decimal("0.00")
+    payment_history = []
 
-            loan.disburse(amount)
-            messages.success(
-                request, f"Loan disbursement of ${amount} successfully processed"
+    # Combine and sort payments for history
+    for ip in interest_payments:
+        end_time = ip.payment_date + timedelta(seconds=2)
+        pp = principal_payments.filter(
+            payment_date__gte=ip.payment_date, payment_date__lte=end_time
+        ).first()
+        if pp:
+            running_interest += ip.amount
+            running_principal += pp.amount
+            running_total = running_interest + running_principal
+
+            payment_history.append(
+                {
+                    "date": ip.payment_date,
+                    "interest": ip.amount,
+                    "principal": pp.amount,
+                    "total": ip.amount + pp.amount,
+                    "running_interest": running_interest,
+                    "running_principal": running_principal,
+                    "running_total": running_total,
+                }
             )
-            return redirect("loan:loan", id=loan.id)
+        else:
+            running_interest += ip.amount
+            running_total = running_interest + running_principal
 
-    context = {
-        "loan": loan,
-        "pending_disbursement": pending_disbursement,
-        "form": form,
-    }
-    return render(request, template, context)
+            payment_history.append(
+                {
+                    "date": ip.payment_date,
+                    "interest": ip.amount,
+                    "principal": 0,
+                    "total": ip.amount + 0,
+                    "running_interest": running_interest,
+                    "running_principal": running_principal,
+                    "running_total": running_total,
+                }
+            )
+
+    return payment_history, running_interest, running_principal, running_total

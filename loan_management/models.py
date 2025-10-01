@@ -27,12 +27,8 @@ class Loan(models.Model):
     WHOLE = Decimal("1")  # round to nearest whole number
 
     id = models.AutoField(primary_key=True)
-    current_term = models.IntegerField(default=1)
     member = models.ForeignKey(Member, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    disbursed_amount = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.00
-    )
     outstanding_principal = models.DecimalField(
         max_digits=15, decimal_places=2, default=0.00
     )
@@ -43,11 +39,7 @@ class Loan(models.Model):
         max_length=20, choices=LOAN_STATUS_CHOICES, default=PENDING
     )
     purpose = models.TextField()
-    #  what to do for multiple disbursements, save the latest date or save all dates
     disbursed_at = models.DateTimeField(null=True, blank=True)
-    minimum_payment = models.DecimalField(
-        max_digits=15, decimal_places=2, default=100.00
-    )
 
     def __str__(self):
         return f"Loan #{self.id} - {self.member.name} - {self.amount}"
@@ -56,35 +48,29 @@ class Loan(models.Model):
         if self.amount < 0:
             raise ValidationError("Principal amount must be positive")
 
-    def disburse(self, amount):
+    def disburse(self):
         # todo: only accept decimal with two decimal places
         """
         not decided on if want to store each disbursement seperately yet
         """
-        if self.status not in (self.APPROVED, self.ACTIVE):
-            print("cannot disburse loan, loan not approved")
-            return
-        total_disburse = self.disbursed_amount + amount
-        if total_disburse > self.amount:
-            print("cannot disburse more than loan amount")
-            return
+        if self.status != Loan.APPROVED:
+            raise ValueError("Loan not approved or already disbursed")
 
         self.disbursed_at = timezone.now()
         self.status = self.ACTIVE
-        self.outstanding_principal += amount
-        self.disbursed_amount += amount
+        self.outstanding_principal = self.amount
         self.save()
 
         debit_account = Ac.objects.get(code="110")
         credit_account = Ac.objects.get(code="80")
 
         tx = Transaction.objects.create(
-            desc=f"Loan disbursed for Loan #{self.id} of amount {amount}"
+            desc=f"Loan disbursed for Loan #{self.id} of amount {self.amount}"
         )
-        Split.objects.create(tx=tx, ac=debit_account, am=amount, t_sp="dr")
-        Split.objects.create(tx=tx, ac=credit_account, am=amount, t_sp="cr")
+        Split.objects.create(tx=tx, ac=debit_account, am=self.amount, t_sp="dr")
+        Split.objects.create(tx=tx, ac=credit_account, am=self.amount, t_sp="cr")
 
-    def process_payment(self, interest_amount=0, principal_amount=0):
+    def process_payment(self, interest, principal):
         # TODO: only accept decimal with two decimal places
         """
         pay interest and principal
@@ -98,53 +84,41 @@ class Loan(models.Model):
         """
         if self.status != self.ACTIVE:
             raise ValidationError("Loan needs to be active to make a payment")
-        if interest_amount is None or principal_amount is None:
-            raise ValidationError("Amount is None")
-        if interest_amount == 0 and principal_amount == 0:
-            raise ValidationError("Amount is 0")
+        if not interest and not principal:
+            raise ValidationError("No Amount")
 
-        interest_debit = Ac.objects.get(code="80")
-        interest_credit = Ac.objects.get(code="160.2")
-        principal_debit = Ac.objects.get(code="80")
-        principal_credit = Ac.objects.get(code="110")
+        i_debit = Ac.objects.get(code="80")
+        i_credit = Ac.objects.get(code="160.2")
+        p_debit = Ac.objects.get(code="80")
+        p_credit = Ac.objects.get(code="110")
 
-        self.process_interest(interest_amount, interest_debit, interest_credit)
-        self.process_principal(principal_amount, principal_debit, principal_credit)
-
-        self.save()
+        if interest:
+            self.process_interest(interest, i_debit, i_credit)
+        if principal:
+            self.process_principal(principal, p_debit, p_credit)
+            self.save()
 
         if self.outstanding_principal == Decimal("0.00"):
             self.status = self.FULLYPAID
             self.save()
 
-    def process_interest(self, amount, debit_account, credit_account):
-        # todo: only accept decimal with two places
-        if amount < Decimal("0.00"):
-            print("amount must be a positive number")
-            return
-
+    def process_interest(self, amount, debit, credit):
         tx = Transaction.objects.create(
             desc=f"Interest-payment for Loan #{self.id} of amount {amount}"
         )
-        Split.objects.create(tx=tx, ac=debit_account, t_sp="dr", am=amount)
-        Split.objects.create(tx=tx, ac=credit_account, t_sp="cr", am=amount)
+        Split.objects.create(tx=tx, ac=debit, t_sp="dr", am=amount)
+        Split.objects.create(tx=tx, ac=credit, t_sp="cr", am=amount)
 
         InterestPayment.objects.create(
-            term=self.current_term,
             loan=self,
             amount=amount,
             payment_date=timezone.now(),
             transaction=tx,
-            debit_account=debit_account,
-            credit_account=credit_account,
+            debit_account=debit,
+            credit_account=credit,
         )
 
-    def process_principal(self, amount, debit_account, credit_account):
-        # todo: only accept decimal with two places
-        if amount < Decimal("0.00"):
-            print("amount needs to be a positive number greater than 0")
-            return
-
+    def process_principal(self, amount, debit, credit):
         if amount > self.outstanding_principal:
             extra_amount = amount - self.outstanding_principal
             print(
@@ -155,26 +129,32 @@ class Loan(models.Model):
         tx = Transaction.objects.create(
             desc=f"Principal-payment for Loan #{self.id} of amount {amount}"
         )
-        Split.objects.create(tx=tx, ac=debit_account, t_sp="dr", am=amount)
-        Split.objects.create(tx=tx, ac=credit_account, t_sp="cr", am=amount)
+        Split.objects.create(tx=tx, ac=debit, t_sp="dr", am=amount)
+        Split.objects.create(tx=tx, ac=credit, t_sp="cr", am=amount)
 
         PrincipalPayment.objects.create(
-            term=self.current_term,
             loan=self,
             amount=amount,
             payment_date=timezone.now(),
             transaction=tx,
-            debit_account=debit_account,
-            credit_account=credit_account,
+            debit_account=debit,
+            credit_account=credit,
         )
 
         self.outstanding_principal -= amount
         self.save()
 
+    # def calculate_interest(self, days=None):
+    #     if not days:
+    #         last_payment = self.interestpayment_set.order_by("-payment_date").first()  # type: ignore[attr-defined]
+    #         if not last_payment:
+    #             last_payment = self.disbursed_at
+    #         days = (timezone.now().date() - last_payment.date()).days
+    #     return self.outstanding_principal * (self.interest_rate / 100) * days / 365
+
 
 class InterestPayment(models.Model):
     id = models.AutoField(primary_key=True)
-    term = models.IntegerField()
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
@@ -192,7 +172,6 @@ class InterestPayment(models.Model):
 
 class PrincipalPayment(models.Model):
     id = models.AutoField(primary_key=True)
-    term = models.IntegerField()
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)

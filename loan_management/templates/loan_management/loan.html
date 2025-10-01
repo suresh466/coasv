@@ -31,25 +31,21 @@
           <p class="font-semibold">{{ loan.interest_rate }}%</p>
         </div>
         <div>
-          <p class="text-gray-600">Term</p>
-          <p class="font-semibold">{{ loan.term }} months</p>
-        </div>
-        <div>
           <p class="text-gray-600">Started</p>
           <p class="font-semibold">{{ loan.started_at }}</p>
         </div>
-        <div>
-          <p class="text-gray-600">Disbursed</p>
-          <p class="font-semibold">{{ loan.disbursed_at }}</p>
-        </div>
-        <div>
-          <p class="text-gray-600">Pending Disbursement</p>
-          <p class="font-semibold">{{ pending_disbursement }}</p>
-        </div>
-        <div>
-          <a href="{% url 'loan:disburse_loan' loan.id %}"
-             class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200">
-          Disburse Loan</a>
+        <div class="col-span-2 flex justify-center">
+          {% if loan.disbursed_at %}
+            <p class="font-semibold text-green-600">Disbursed At: {{ loan.disbursed_at }}</p>
+          {% else %}
+            <form method="post" action="{% url 'loan:disburse' loan.id %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-6 rounded-md w-full max-w-xs text-center">
+                Disburse Loan
+              </button>
+            </form>
+          {% endif %}
         </div>
       </div>
       <!-- Total Paid Summary -->
@@ -76,8 +72,8 @@
       <h2 class="text-xl font-semibold mb-4">Make a Payment</h2>
       <form method="post" class="space-y-4">
         {% csrf_token %}
-        <div id="custom-interest-field">{{ form.interest_amount }}</div>
-        <div id="custom-principal-field">{{ form.principal_amount }}</div>
+        <div id="custom-interest-field">{{ form.interest }}</div>
+        <div id="custom-principal-field">{{ form.principal }}</div>
         {% if form.errors %}<div class="text-red-500 text-sm">{{ form.errors }}</div>{% endif %}
         <button type="submit"
                 class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200">
@@ -86,85 +82,39 @@
       </form>
     </div>
   </div>
-  <!-- Tabs for Payment History and Repayment Schedule -->
-  <div class="mt-8">
-    <div class="border-b border-gray-200">
-      <nav class="-mb-px flex">
-        <button class="tab-btn w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700"
-                data-tab="schedule">Repayment Schedule</button>
-        <button class="tab-btn w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700"
-                data-tab="history">Payment History</button>
-      </nav>
-    </div>
-    <!-- Repayment Schedule Tab -->
-    <div id="schedule-tab"
-         class="tab-content hidden bg-white rounded-b-lg shadow">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50">
+  <!-- Payment History -->
+  <div class="bg-white rounded-b-lg shadow mt-2">
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interest</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Interest</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Principal</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Total</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for payment in payment_history %}
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment #</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interest</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Interest</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Principal</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Total</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Outstanding Balance</th>
+              <td class="px-6 py-4 whitespace-nowrap">{{ payment.date|date:"M j, Y" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${{ payment.interest }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_interest }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${{ payment.principal }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_principal }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${{ payment.total }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_total }}</td>
             </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for payment in repayment_schedule %}
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap">{{ payment.payment_number }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.interest }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_interest }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.principal }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_principal }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.total }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_total }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_outstanding_principal }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <!-- Payment History Tab -->
-    <div id="history-tab"
-         class="tab-content hidden bg-white rounded-b-lg shadow">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50">
+          {% empty %}
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interest</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Interest</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Principal</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Running Total</th>
+              <td colspan="7" class="px-6 py-4 text-center text-gray-500">No payment history available</td>
             </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for payment in payment_history %}
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap">{{ payment.date|date:"M j, Y" }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.interest }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_interest }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.principal }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_principal }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.total }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${{ payment.running_total }}</td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="7" class="px-6 py-4 text-center text-gray-500">No payment history available</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 {% endblock %}
