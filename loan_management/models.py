@@ -1,3 +1,4 @@
+import calendar
 from decimal import Decimal
 
 from coasc.models import Ac, Member, Split, Transaction
@@ -69,6 +70,74 @@ class Loan(models.Model):
         )
         Split.objects.create(tx=tx, ac=debit_account, am=self.amount, t_sp="dr")
         Split.objects.create(tx=tx, ac=credit_account, am=self.amount, t_sp="cr")
+
+    def calculate_interest(self, days=None, leap_year=False):
+        lastpayment_date = (
+            self.interestpayment_set.order_by("-payment_date")  # type: ignore[attr-defined]
+            .first()
+            .payment_date.date()
+        )
+        is_regular_payment = True
+        if lastpayment_date:
+            if (
+                lastpayment_date.day
+                != calendar.monthrange(lastpayment_date.year, lastpayment_date.month)[1]
+            ):
+                is_regular_payment = False
+
+        disbursed_date = self.disbursed_at.date()
+
+        if days:
+            if leap_year:
+                interest = (
+                    self.outstanding_principal * (self.interest_rate / 100) * days / 366
+                )
+            else:
+                interest = (
+                    self.outstanding_principal * (self.interest_rate / 100) * days / 365
+                )
+            return interest
+
+        if not lastpayment_date:
+            # if its the first payment after disbursement
+            lastday_of_month = calendar.monthrange(
+                disbursed_date.year, disbursed_date.month
+            )[1]
+
+            days = (
+                disbursed_date.replace(day=lastday_of_month) - disbursed_date
+            ).days + 1
+            leap_year = calendar.isleap(disbursed_date.year)
+        elif lastpayment_date and not is_regular_payment:
+            # if payment made somewhere in the middle of the month get interest for the rest of the month
+            lastday_of_month = calendar.monthrange(
+                lastpayment_date.year, lastpayment_date.month
+            )[1]
+            days = (
+                lastpayment_date.replace(day=lastday_of_month) - lastpayment_date
+            ).days + 1
+            leap_year = calendar.isleap(lastpayment_date.year)
+        else:
+            # if payment made on last day of the month get next month interest
+            if lastpayment_date.month == 12:
+                next_month_year = lastpayment_date.year + 1
+                next_month = 1
+            else:
+                next_month_year = lastpayment_date.year
+                next_month = lastpayment_date.month + 1
+            days = calendar.monthrange(next_month_year, next_month)[1]
+            leap_year = calendar.isleap(next_month_year)
+
+        if leap_year:
+            interest = (
+                self.outstanding_principal * (self.interest_rate / 100) * days / 366
+            )
+        else:
+            interest = (
+                self.outstanding_principal * (self.interest_rate / 100) * days / 365
+            )
+        print("days:", days, "interest", interest, "leapyear", leap_year)
+        return interest
 
     def process_payment(self, interest, principal):
         # TODO: only accept decimal with two decimal places
@@ -144,14 +213,6 @@ class Loan(models.Model):
         self.outstanding_principal -= amount
         self.save()
 
-    # def calculate_interest(self, days=None):
-    #     if not days:
-    #         last_payment = self.interestpayment_set.order_by("-payment_date").first()  # type: ignore[attr-defined]
-    #         if not last_payment:
-    #             last_payment = self.disbursed_at
-    #         days = (timezone.now().date() - last_payment.date()).days
-    #     return self.outstanding_principal * (self.interest_rate / 100) * days / 365
-
 
 class InterestPayment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -159,6 +220,7 @@ class InterestPayment(models.Model):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    final_payment = models.BooleanField(default=False)
     debit_account = models.ForeignKey(
         Ac, related_name="interest_payment_debits", on_delete=models.PROTECT
     )

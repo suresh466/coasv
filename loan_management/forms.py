@@ -4,25 +4,24 @@ from loan_management.models import PrincipalPayment
 
 
 class LoanPaymentForm(forms.Form):
-    interest = forms.DecimalField(
+    amount = forms.DecimalField(
         max_digits=15,
         decimal_places=2,
-        required=False,
+        required=True,
         widget=forms.NumberInput(
             attrs={
                 "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
-                "placeholder": "Interest Amount",
+                "placeholder": "Amount",
             }
         ),
     )
-    principal = forms.DecimalField(
-        max_digits=15,
-        decimal_places=2,
+
+    credit_checkbox = forms.BooleanField(
         required=False,
-        widget=forms.NumberInput(
+        label="Loan Credit",
+        widget=forms.CheckboxInput(
             attrs={
-                "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
-                "placeholder": "Principal Amount",
+                "class": "h-4 w-4 text-indigo-600 border-gray-300 rounded",
             }
         ),
     )

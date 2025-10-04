@@ -72,8 +72,8 @@
       <h2 class="text-xl font-semibold mb-4">Make a Payment</h2>
       <form method="post" class="space-y-4">
         {% csrf_token %}
-        <div id="custom-interest-field">{{ form.interest }}</div>
-        <div id="custom-principal-field">{{ form.principal }}</div>
+        <div id="custom-amount-field">{{ form.amount }}</div>
+        <div id="custom-boolean-field">{{ form.credit_checkbox.label_tag }} {{ form.credit_checkbox }}</div>
         {% if form.errors %}<div class="text-red-500 text-sm">{{ form.errors }}</div>{% endif %}
         <button type="submit"
                 class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200">
