@@ -214,13 +214,28 @@ class Loan(models.Model):
         self.save()
 
 
+class BillingCycle(models.Model):
+    PAID = "paid"
+    OVERDUE = "overdue"
+    STATUS_CHOICES = [
+        (PAID, "Paid"),
+        (OVERDUE, "Overdue"),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
+    period_start = models.DateTimeField()
+    period_end = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PAID)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+
+
 class InterestPayment(models.Model):
     id = models.AutoField(primary_key=True)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
-    final_payment = models.BooleanField(default=False)
     debit_account = models.ForeignKey(
         Ac, related_name="interest_payment_debits", on_delete=models.PROTECT
     )
