@@ -31,9 +31,7 @@ def loan(request, id):
 def active_loan(request, loan):
     template = "loan_management/loan.html"
 
-    amount, period_start, period_end, days, leap_year, is_regular_payment = (
-        loan.calculate_interest()
-    )
+    amount, period_start, period_end, days, leap_year = loan.calculate_interest()
     payment_history, running_interest, running_principal, running_total = (
         generate_payment_history(loan)
     )
@@ -70,7 +68,6 @@ def active_loan(request, loan):
             "period_end": period_end,
             "days": days,
             "leap_year": leap_year,
-            "is_regular_payment": is_regular_payment,
         },
     }
     return render(request, template, context)
@@ -155,7 +152,10 @@ def disburse(request, id):
 @require_POST
 def pay_interest(request, id):
     loan = get_object_or_404(Loan, id=id)
-    amount, period_start, period_end, _, _, _ = loan.calculate_interest()
+    action = request.POST.get("action")
+
+    amount, period_start, period_end, _, _ = loan.calculate_interest()
+
     loan.process_interest(amount, period_start, period_end)
     messages.success(request, f"Loan #{loan.id} successfully disbursed!")
     return redirect("loan:loan", id=id)

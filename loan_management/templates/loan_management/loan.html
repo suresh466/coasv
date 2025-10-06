@@ -75,14 +75,22 @@
       </h2>
       <p>Amount: {{ interest.amount }}</p>
       <p>Billing Period: {{ interest.period_start }} - {{ interest.period_end }} = {{ interest.days }} days</p>
-      <p>Leap Year:{{ interest.leap_year }} | Regular Payment: {{ interest.is_regular_payment }}</p>
+      <p>Leap Year:{{ interest.leap_year }}</p>
       <form method="post"
             class="space-y-4"
             action="{% url 'loan:pay_interest' loan.id %}">
         {% csrf_token %}
         <button type="submit"
+                name="action"
+                value="regular"
                 class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-6 rounded-md w-full max-w-xs text-center">
-          Pay Due Interest
+          Pay For Period
+        </button>
+        <button type="submit"
+                name="action"
+                value="to_date"
+                class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-6 rounded-md w-full max-w-xs text-center">
+          Pay To-Date
         </button>
       </form>
     </div>

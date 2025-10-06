@@ -1,4 +1,5 @@
 import calendar
+from datetime import timedelta
 from decimal import Decimal
 
 from coasc.models import Ac, Member, Split, Transaction
@@ -72,65 +73,17 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=credit_account, am=self.amount, t_sp="cr")
 
     def calculate_interest(self):
-        period_start = None
-        period_end = None
-
         billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
-
         prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
-        # last_payment = self.interestpayment_set.order_by("-payment_date").first()  # type: ignore[attr-defined])
-        # lastpayment_date = last_payment.payment_date if last_payment else None
-        is_regular_payment = True
-        if prev_period_end:
-            if (
-                prev_period_end.day
-                != calendar.monthrange(prev_period_end.year, prev_period_end.month)[1]
-            ):
-                is_regular_payment = False
-
         disbursed_date = self.disbursed_at.date()
 
-        if not prev_period_end:
-            # if its the first payment after disbursement
-            lastday_of_month = calendar.monthrange(
-                disbursed_date.year, disbursed_date.month
-            )[1]
-
-            days = (
-                disbursed_date.replace(day=lastday_of_month) - disbursed_date
-            ).days + 1
-            leap_year = calendar.isleap(disbursed_date.year)
-            period_start = disbursed_date
-            period_end = disbursed_date.replace(day=lastday_of_month)
-        elif prev_period_end and not is_regular_payment:
-            # if payment made somewhere in the middle of the month get interest for the rest of the month
-            lastday_of_month = calendar.monthrange(
-                prev_period_end.year, prev_period_end.month
-            )[1]
-            days = prev_period_end.replace(day=lastday_of_month) - prev_period_end
-            leap_year = calendar.isleap(prev_period_end.year)
-            # not is_regular_payment gurantees addition addition of a day is always valid
-            period_start = prev_period_end.replace(prev_period_end.day + 1)
-            period_end = prev_period_end.replace(
-                day=lastday_of_month,
-            )
-            # TODO: check what happens if period_start and period_end are the same, possible in cases like payment made for feb 1 - feb 27
-        else:
-            # if payment made on last day of the month get next month interest
-            if prev_period_end.month == 12:
-                next_month_year = prev_period_end.year + 1
-                next_month = 1
-            else:
-                next_month_year = prev_period_end.year
-                next_month = prev_period_end.month + 1
-            days = calendar.monthrange(next_month_year, next_month)[1]
-            leap_year = calendar.isleap(next_month_year)
-            period_start = prev_period_end.replace(
-                year=next_month_year, month=next_month, day=1
-            )
-            period_end = prev_period_end.replace(
-                year=next_month_year, month=next_month, day=days
-            )
+        period_start = (
+            prev_period_end + timedelta(days=1) if prev_period_end else disbursed_date
+        )
+        end_of_month = calendar.monthrange(period_start.year, period_start.month)[1]
+        period_end = period_start.replace(day=end_of_month)
+        days = end_of_month - period_start.day + 1
+        leap_year = calendar.isleap(period_start.year)
 
         if leap_year:
             amount = (
@@ -140,7 +93,7 @@ class Loan(models.Model):
             amount = (
                 self.outstanding_principal * (self.interest_rate / 100) * days / 365
             )
-        return amount, period_start, period_end, days, leap_year, is_regular_payment
+        return amount, period_start, period_end, days, leap_year
 
     def process_interest(self, amount, period_start, period_end):
         debit = Ac.objects.get(code="80")
