@@ -69,15 +69,20 @@
     </div>
     <!-- Payment Card -->
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-4">Make a Payment</h2>
-      <form method="post" class="space-y-4">
+      <h2 class="text-xl font-semibold mb-4">Pay Interest</h2>
+      <h3 class="text-l font-semibold mb-4">
+        Due: {{ interest.period_end }}
+      </h2>
+      <p>Amount: {{ interest.amount }}</p>
+      <p>Billing Period: {{ interest.period_start }} - {{ interest.period_end }} = {{ interest.days }} days</p>
+      <p>Leap Year:{{ interest.leap_year }} | Regular Payment: {{ interest.is_regular_payment }}</p>
+      <form method="post"
+            class="space-y-4"
+            action="{% url 'loan:pay_interest' loan.id %}">
         {% csrf_token %}
-        <div id="custom-amount-field">{{ form.amount }}</div>
-        <div id="custom-boolean-field">{{ form.credit_checkbox.label_tag }} {{ form.credit_checkbox }}</div>
-        {% if form.errors %}<div class="text-red-500 text-sm">{{ form.errors }}</div>{% endif %}
         <button type="submit"
-                class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200">
-          Make Payment
+                class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-6 rounded-md w-full max-w-xs text-center">
+          Pay Due Interest
         </button>
       </form>
     </div>

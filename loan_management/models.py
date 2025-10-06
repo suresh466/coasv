@@ -71,34 +71,26 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=debit_account, am=self.amount, t_sp="dr")
         Split.objects.create(tx=tx, ac=credit_account, am=self.amount, t_sp="cr")
 
-    def calculate_interest(self, days=None, leap_year=False):
-        lastpayment_date = (
-            self.interestpayment_set.order_by("-payment_date")  # type: ignore[attr-defined]
-            .first()
-            .payment_date.date()
-        )
+    def calculate_interest(self):
+        period_start = None
+        period_end = None
+
+        billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
+
+        prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
+        # last_payment = self.interestpayment_set.order_by("-payment_date").first()  # type: ignore[attr-defined])
+        # lastpayment_date = last_payment.payment_date if last_payment else None
         is_regular_payment = True
-        if lastpayment_date:
+        if prev_period_end:
             if (
-                lastpayment_date.day
-                != calendar.monthrange(lastpayment_date.year, lastpayment_date.month)[1]
+                prev_period_end.day
+                != calendar.monthrange(prev_period_end.year, prev_period_end.month)[1]
             ):
                 is_regular_payment = False
 
         disbursed_date = self.disbursed_at.date()
 
-        if days:
-            if leap_year:
-                interest = (
-                    self.outstanding_principal * (self.interest_rate / 100) * days / 366
-                )
-            else:
-                interest = (
-                    self.outstanding_principal * (self.interest_rate / 100) * days / 365
-                )
-            return interest
-
-        if not lastpayment_date:
+        if not prev_period_end:
             # if its the first payment after disbursement
             lastday_of_month = calendar.monthrange(
                 disbursed_date.year, disbursed_date.month
@@ -108,86 +100,79 @@ class Loan(models.Model):
                 disbursed_date.replace(day=lastday_of_month) - disbursed_date
             ).days + 1
             leap_year = calendar.isleap(disbursed_date.year)
-        elif lastpayment_date and not is_regular_payment:
+            period_start = disbursed_date
+            period_end = disbursed_date.replace(day=lastday_of_month)
+        elif prev_period_end and not is_regular_payment:
             # if payment made somewhere in the middle of the month get interest for the rest of the month
             lastday_of_month = calendar.monthrange(
-                lastpayment_date.year, lastpayment_date.month
+                prev_period_end.year, prev_period_end.month
             )[1]
-            days = (
-                lastpayment_date.replace(day=lastday_of_month) - lastpayment_date
-            ).days + 1
-            leap_year = calendar.isleap(lastpayment_date.year)
+            days = prev_period_end.replace(day=lastday_of_month) - prev_period_end
+            leap_year = calendar.isleap(prev_period_end.year)
+            # not is_regular_payment gurantees addition addition of a day is always valid
+            period_start = prev_period_end.replace(prev_period_end.day + 1)
+            period_end = prev_period_end.replace(
+                day=lastday_of_month,
+            )
+            # TODO: check what happens if period_start and period_end are the same, possible in cases like payment made for feb 1 - feb 27
         else:
             # if payment made on last day of the month get next month interest
-            if lastpayment_date.month == 12:
-                next_month_year = lastpayment_date.year + 1
+            if prev_period_end.month == 12:
+                next_month_year = prev_period_end.year + 1
                 next_month = 1
             else:
-                next_month_year = lastpayment_date.year
-                next_month = lastpayment_date.month + 1
+                next_month_year = prev_period_end.year
+                next_month = prev_period_end.month + 1
             days = calendar.monthrange(next_month_year, next_month)[1]
             leap_year = calendar.isleap(next_month_year)
+            period_start = prev_period_end.replace(
+                year=next_month_year, month=next_month, day=1
+            )
+            period_end = prev_period_end.replace(
+                year=next_month_year, month=next_month, day=days
+            )
 
         if leap_year:
-            interest = (
+            amount = (
                 self.outstanding_principal * (self.interest_rate / 100) * days / 366
             )
         else:
-            interest = (
+            amount = (
                 self.outstanding_principal * (self.interest_rate / 100) * days / 365
             )
-        print("days:", days, "interest", interest, "leapyear", leap_year)
-        return interest
+        return amount, period_start, period_end, days, leap_year, is_regular_payment
 
-    def process_payment(self, interest, principal):
-        # TODO: only accept decimal with two decimal places
-        """
-        pay interest and principal
+    def process_interest(self, amount, period_start, period_end):
+        debit = Ac.objects.get(code="80")
+        credit = Ac.objects.get(code="160.2")
 
-        Attributes:
-            amount: Total amount paid by the borrower
-            interest_debit (test_default=80): account to be debited for interest payment
-            interest_credit (test_default=160.2): account to be credited for interest payment
-            principal_debit (test_default=80): account to be debited for principal payment
-            principal_credit (test_default=110): account to be credited for principal payment
-        """
-        if self.status != self.ACTIVE:
-            raise ValidationError("Loan needs to be active to make a payment")
-        if not interest and not principal:
-            raise ValidationError("No Amount")
-
-        i_debit = Ac.objects.get(code="80")
-        i_credit = Ac.objects.get(code="160.2")
-        p_debit = Ac.objects.get(code="80")
-        p_credit = Ac.objects.get(code="110")
-
-        if interest:
-            self.process_interest(interest, i_debit, i_credit)
-        if principal:
-            self.process_principal(principal, p_debit, p_credit)
-            self.save()
-
-        if self.outstanding_principal == Decimal("0.00"):
-            self.status = self.FULLYPAID
-            self.save()
-
-    def process_interest(self, amount, debit, credit):
         tx = Transaction.objects.create(
             desc=f"Interest-payment for Loan #{self.id} of amount {amount}"
         )
         Split.objects.create(tx=tx, ac=debit, t_sp="dr", am=amount)
         Split.objects.create(tx=tx, ac=credit, t_sp="cr", am=amount)
 
+        billing_cycle = BillingCycle.objects.create(
+            loan=self,
+            amount=amount,
+            period_start=period_start,
+            period_end=period_end,
+        )
+
         InterestPayment.objects.create(
             loan=self,
             amount=amount,
             payment_date=timezone.now(),
             transaction=tx,
+            billing_cycle=billing_cycle,
             debit_account=debit,
             credit_account=credit,
         )
 
-    def process_principal(self, amount, debit, credit):
+    def process_principal(self, amount):
+        debit = Ac.objects.get(code="80")
+        credit = Ac.objects.get(code="110")
+
         if amount > self.outstanding_principal:
             extra_amount = amount - self.outstanding_principal
             print(
@@ -211,6 +196,8 @@ class Loan(models.Model):
         )
 
         self.outstanding_principal -= amount
+        if self.outstanding_principal == Decimal("0.00"):
+            self.status = self.FULLYPAID
         self.save()
 
 
@@ -222,6 +209,7 @@ class BillingCycle(models.Model):
         (OVERDUE, "Overdue"),
     ]
 
+    date_created = models.DateTimeField(default=timezone.now)
     id = models.AutoField(primary_key=True)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     period_start = models.DateTimeField()
@@ -236,6 +224,7 @@ class InterestPayment(models.Model):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    billing_cycle = models.ForeignKey(BillingCycle, on_delete=models.PROTECT)
     debit_account = models.ForeignKey(
         Ac, related_name="interest_payment_debits", on_delete=models.PROTECT
     )
