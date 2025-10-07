@@ -1,4 +1,5 @@
 from datetime import timedelta
+from datetime import date
 from decimal import Decimal
 from itertools import chain
 from operator import attrgetter
@@ -31,7 +32,10 @@ def loan(request, id):
 def active_loan(request, loan):
     template = "loan_management/loan.html"
 
-    amount, period_start, period_end, days, leap_year = loan.calculate_interest()
+    amount = period_start = period_end = days = leap_year = None
+
+    if loan.status == loan.ACTIVE:
+        amount, period_start, period_end, days, leap_year = loan.calculate_interest()
     payment_history, running_interest, running_principal, running_total = (
         generate_payment_history(loan)
     )
@@ -154,10 +158,13 @@ def pay_interest(request, id):
     loan = get_object_or_404(Loan, id=id)
     action = request.POST.get("action")
 
-    amount, period_start, period_end, _, _ = loan.calculate_interest()
+    amount, period_start, period_end, _, _ = loan.calculate_interest(
+        period_end=None if action == "regular" else date.today()
+    )
 
     loan.process_interest(amount, period_start, period_end)
-    messages.success(request, f"Loan #{loan.id} successfully disbursed!")
+    messages.success(request, f"Interest paid for Loan #{loan.id} successfully!")
+
     return redirect("loan:loan", id=id)
 
 

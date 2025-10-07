@@ -72,17 +72,22 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=debit_account, am=self.amount, t_sp="dr")
         Split.objects.create(tx=tx, ac=credit_account, am=self.amount, t_sp="cr")
 
-    def calculate_interest(self):
+    def calculate_interest(self, period_start=None, period_end=None):
         billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
         prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
         disbursed_date = self.disbursed_at.date()
 
-        period_start = (
-            prev_period_end + timedelta(days=1) if prev_period_end else disbursed_date
-        )
-        end_of_month = calendar.monthrange(period_start.year, period_start.month)[1]
-        period_end = period_start.replace(day=end_of_month)
-        days = end_of_month - period_start.day + 1
+        if not period_start:
+            period_start = (
+                prev_period_end + timedelta(days=1)
+                if prev_period_end
+                else disbursed_date
+            )
+        if not period_end:
+            period_end = period_start.replace(
+                day=calendar.monthrange(period_start.year, period_start.month)[1]
+            )
+        days = (period_end - period_start).days + 1
         leap_year = calendar.isleap(period_start.year)
 
         if leap_year:
@@ -96,6 +101,8 @@ class Loan(models.Model):
         return amount, period_start, period_end, days, leap_year
 
     def process_interest(self, amount, period_start, period_end):
+        if amount <= 0:
+            raise ValueError("Amount cannot be less than equal to 0")
         debit = Ac.objects.get(code="80")
         credit = Ac.objects.get(code="160.2")
 
