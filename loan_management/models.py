@@ -1,6 +1,8 @@
 import calendar
 from datetime import timedelta
 from decimal import Decimal
+from itertools import chain
+from operator import attrgetter
 
 from coasc.models import Ac, Member, Split, Transaction
 from django.core.exceptions import ValidationError
@@ -129,6 +131,50 @@ class Loan(models.Model):
             amount_after_interest = amount - (complete_days * daily_interest)
             period_end = period_start + timedelta(days=complete_days - 1)
             return amount_after_interest, period_end
+
+    def generate_payment_history(self):
+        interest_payments = self.interestpayment_set.all()  # type: ignore[attr-defined])
+
+        principal_payments = self.principalpayment_set.all()  # type: ignore[attr-defined])
+
+        # Combine and sort payments by date
+        all_payments = sorted(
+            chain(interest_payments, principal_payments), key=attrgetter("payment_date")
+        )
+
+        running_interest = Decimal("0.00")
+        running_principal = Decimal("0.00")
+        payment_history = []
+
+        for payment in all_payments:
+            interest = Decimal("0.00")
+            principal = Decimal("0.00")
+
+            # Determine payment type and update amounts
+            if isinstance(payment, InterestPayment):
+                interest = payment.amount
+                running_interest += interest
+            else:
+                principal = payment.amount
+                running_principal += principal
+
+            payment_history.append(
+                {
+                    "date": payment.payment_date,
+                    "interest": interest,
+                    "principal": principal,
+                    "running_interest": running_interest,
+                    "running_principal": running_principal,
+                    "running_total": running_interest + running_principal,
+                }
+            )
+
+        return (
+            payment_history,
+            running_interest,
+            running_principal,
+            (running_interest + running_principal),
+        )
 
     def process_interest(self, amount, period_start, period_end):
         if amount <= 0:

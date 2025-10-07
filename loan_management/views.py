@@ -1,8 +1,6 @@
 from datetime import timedelta
 from datetime import date
 from decimal import Decimal
-from itertools import chain
-from operator import attrgetter
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -37,7 +35,7 @@ def active_loan(request, loan):
     if loan.status == loan.ACTIVE:
         total, period_start, period_end, days, leap_year = loan.calculate_interest()
     payment_history, running_interest, running_principal, running_total = (
-        generate_payment_history(loan)
+        loan.generate_payment_history()
     )
 
     form = LoanPaymentForm(request.POST or None)
@@ -178,47 +176,3 @@ def pay_interest(request, id):
 
     messages.success(request, f"Interest paid for Loan #{loan.id} successfully!")
     return redirect("loan:loan", id=id)
-
-
-def generate_payment_history(loan):
-    interest_payments = InterestPayment.objects.filter(loan=loan)
-    principal_payments = PrincipalPayment.objects.filter(loan=loan)
-
-    # Combine and sort payments by date
-    all_payments = sorted(
-        chain(interest_payments, principal_payments), key=attrgetter("payment_date")
-    )
-
-    running_interest = Decimal("0.00")
-    running_principal = Decimal("0.00")
-    payment_history = []
-
-    for payment in all_payments:
-        interest = Decimal("0.00")
-        principal = Decimal("0.00")
-
-        # Determine payment type and update amounts
-        if isinstance(payment, InterestPayment):
-            interest = payment.amount
-            running_interest += interest
-        else:
-            principal = payment.amount
-            running_principal += principal
-
-        payment_history.append(
-            {
-                "date": payment.payment_date,
-                "interest": interest,
-                "principal": principal,
-                "running_interest": running_interest,
-                "running_principal": running_principal,
-                "running_total": running_interest + running_principal,
-            }
-        )
-
-    return (
-        payment_history,
-        running_interest,
-        running_principal,
-        (running_interest + running_principal),
-    )
