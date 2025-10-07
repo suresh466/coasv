@@ -92,6 +92,19 @@
                 class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-6 rounded-md w-full max-w-xs text-center">
           Pay To-Date
         </button>
+        <div class="flex gap-4 items-end">
+          <label for="amount">Custom Amount</label>
+          <input type="number"
+                 name="amount"
+                 class="block bg-gray-200 w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
+                 step="0.01" />
+          <button type="submit"
+                  name="action"
+                  value="custom"
+                  class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-6 rounded-md w-full max-w-xs text-center">
+            Pay Custom Amount
+          </button>
+        </div>
       </form>
     </div>
   </div>

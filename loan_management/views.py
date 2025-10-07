@@ -32,10 +32,10 @@ def loan(request, id):
 def active_loan(request, loan):
     template = "loan_management/loan.html"
 
-    amount = period_start = period_end = days = leap_year = None
+    total = period_start = period_end = days = leap_year = None
 
     if loan.status == loan.ACTIVE:
-        amount, period_start, period_end, days, leap_year = loan.calculate_interest()
+        total, period_start, period_end, days, leap_year = loan.calculate_interest()
     payment_history, running_interest, running_principal, running_total = (
         generate_payment_history(loan)
     )
@@ -67,7 +67,7 @@ def active_loan(request, loan):
             "total": running_total,
         },
         "interest": {
-            "amount": amount,
+            "amount": total,
             "period_start": period_start,
             "period_end": period_end,
             "days": days,
@@ -158,13 +158,25 @@ def pay_interest(request, id):
     loan = get_object_or_404(Loan, id=id)
     action = request.POST.get("action")
 
-    amount, period_start, period_end, _, _ = loan.calculate_interest(
-        period_end=None if action == "regular" else date.today()
+    total, period_start, period_end, _, _ = loan.calculate_interest(
+        period_end=date.today() if action == "to_date" else None
     )
+    if action == "to_date":
+        total, period_start, period_end, _, _ = loan.calculate_interest(
+            period_end=date.today()
+        )
+    elif action == "custom":
+        amount = Decimal(request.POST.get("amount"))
+        _, period_end = loan.calculate_days(amount)
+        total, period_start, period_end, _, _ = loan.calculate_interest(
+            period_end=period_end
+        )
+    else:
+        total, period_start, period_end, _, _ = loan.calculate_interest()
 
-    loan.process_interest(amount, period_start, period_end)
+    loan.process_interest(total, period_start, period_end)
+
     messages.success(request, f"Interest paid for Loan #{loan.id} successfully!")
-
     return redirect("loan:loan", id=id)
 
 

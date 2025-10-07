@@ -91,14 +91,44 @@ class Loan(models.Model):
         leap_year = calendar.isleap(period_start.year)
 
         if leap_year:
-            amount = (
-                self.outstanding_principal * (self.interest_rate / 100) * days / 366
-            )
+            total = self.outstanding_principal * (self.interest_rate / 100) * days / 366
         else:
-            amount = (
-                self.outstanding_principal * (self.interest_rate / 100) * days / 365
-            )
-        return amount, period_start, period_end, days, leap_year
+            total = self.outstanding_principal * (self.interest_rate / 100) * days / 365
+
+        return total, period_start, period_end, days, leap_year
+
+    def calculate_days(self, amount):
+        billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
+        prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
+        disbursed_date = self.disbursed_at.date()
+
+        period_start = (
+            prev_period_end + timedelta(days=1) if prev_period_end else disbursed_date
+        )
+        period_end = period_start.replace(
+            day=calendar.monthrange(period_start.year, period_start.month)[1]
+        )
+
+        days = (period_end - period_start).days + 1
+        leap_year = calendar.isleap(period_start.year)
+        year_days = 366 if leap_year else 365
+        daily_interest = (
+            self.outstanding_principal * (self.interest_rate / 100) * 1 / year_days
+        )
+
+        if daily_interest > amount:
+            raise ValueError("Amount should at least cover one day of interest")
+
+        full_month_interest = daily_interest * days
+        if amount >= full_month_interest:
+            amount_after_interest = amount - full_month_interest
+            return amount_after_interest, period_end
+        else:
+            complete_days = int(amount / daily_interest)
+
+            amount_after_interest = amount - (complete_days * daily_interest)
+            period_end = period_start + timedelta(days=complete_days - 1)
+            return amount_after_interest, period_end
 
     def process_interest(self, amount, period_start, period_end):
         if amount <= 0:
