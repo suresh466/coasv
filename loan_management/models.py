@@ -11,18 +11,17 @@ from django.utils import timezone
 
 
 class Loan(models.Model):
-    PENDING = "PENDING"
-    APPROVED = "APPROVED"
-    ACTIVE = "ACTIVE"
-    FULLYPAID = "FULLYPAID"
-    CANCELLED = "CANCELLED"
-    DEFAULTED = "DEFAULTED"
+    PENDING = "pending"
+    APPROVED = "approved"
+    ACTIVE = "active"
+    FULLYPAID = "paid"
+    DEFAULTED = "defaulted"
 
     LOAN_STATUS_CHOICES = [
         (PENDING, "Pending"),
         (APPROVED, "Approved"),
         (ACTIVE, "Active"),
-        (FULLYPAID, "Fully Paid"),
+        (FULLYPAID, "Paid"),
         (DEFAULTED, "Defaulted"),
     ]
 
@@ -134,7 +133,6 @@ class Loan(models.Model):
 
     def generate_payment_history(self):
         interest_payments = self.interestpayment_set.all()  # type: ignore[attr-defined])
-
         principal_payments = self.principalpayment_set.all()  # type: ignore[attr-defined])
 
         # Combine and sort payments by date
@@ -142,39 +140,22 @@ class Loan(models.Model):
             chain(interest_payments, principal_payments), key=attrgetter("payment_date")
         )
 
-        running_interest = Decimal("0.00")
-        running_principal = Decimal("0.00")
         payment_history = []
 
         for payment in all_payments:
-            interest = Decimal("0.00")
-            principal = Decimal("0.00")
-
-            # Determine payment type and update amounts
-            if isinstance(payment, InterestPayment):
-                interest = payment.amount
-                running_interest += interest
-            else:
-                principal = payment.amount
-                running_principal += principal
-
+            type = "interest" if isinstance(payment, InterestPayment) else "principal"
             payment_history.append(
                 {
-                    "date": payment.payment_date,
-                    "interest": interest,
-                    "principal": principal,
-                    "running_interest": running_interest,
-                    "running_principal": running_principal,
-                    "running_total": running_interest + running_principal,
+                    "date": payment.payment_date.date(),
+                    "type": type,
+                    "amount": payment.amount,
+                    "period_start": payment.billing_cycle.period_start.date(),
+                    "period_end": payment.billing_cycle.period_end.date(),
+                    "transaction": payment.transaction,
                 }
             )
 
-        return (
-            payment_history,
-            running_interest,
-            running_principal,
-            (running_interest + running_principal),
-        )
+        return payment_history
 
     def process_interest(self, amount, period_start, period_end):
         if amount <= 0:
