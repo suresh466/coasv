@@ -35,15 +35,15 @@
       <div class="flex flex-col items-end mt-6 ">
         {% if loan.status == 'pending' %}
           <a href="{% url 'loan:approve' loan.id %}"
-             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:translate-0.5 transition-all duration-200">Approve Loan</a>
+             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">Approve Loan</a>
         {% endif %}
         {% if loan.status == 'approved' %}
           <a href="{% url 'loan:disburse' loan.id %}"
-             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:translate-0.5 transition-all duration-200">Disburse Loan</a>
+             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">Disburse Loan</a>
         {% endif %}
         {% if loan.status == 'active' %}
-          <a href="{% url 'loan:pay_interest' loan.id %}"
-             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:translate-0.5 transition-all duration-200">Make Payments</a>
+          <a href="{% url 'loan:payment' loan.id %}"
+             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">Make Payments</a>
         {% endif %}
       </div>
     </div>
@@ -62,7 +62,7 @@
         </thead>
         <tbody class="text-center">
           {% for ph in payment_history %}
-            <tr class="divide-x-2 rounded-full hover:shadow-lg hover:shadow-gray-600 hover:translate-0.5 transition-all duration-200">
+            <tr class="divide-x-2 rounded-full hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200">
               <td class="p-4">{{ ph.date }}</td>
               <td class="p-4">{{ ph.type }}</td>
               <td class="p-4">{{ ph.amount }}</td>

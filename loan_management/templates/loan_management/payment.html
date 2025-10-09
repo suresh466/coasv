@@ -1,0 +1,139 @@
+{% extends 'common_base.html' %}
+{% block common_title %}Loan Payment{% endblock %}
+{% block common_body %}
+  <div class="p-6">
+    <!-- loan header -->
+    <div class="flex items-center justify-between border-2 rounded-2xl p-6">
+      <h1 class="text-2xl font-medium">Loan {{ loan.id }}. {{ loan.member }}</h1>
+      <span class="border-2 rounded-full px-6 py-2">Outstanding: {{ loan.outstanding_principal }}</span>
+    </div>
+    {% for message in messages %}
+      <div class="mb-4 rounded-lg p-4 text-sm {% if message.tags == 'error' %} bg-red-100 text-red-700 {% elif message.tags == 'success' %} bg-green-100 text-green-700 {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-700 {% elif message.tags == 'info' %} bg-blue-100 text-blue-700 {% else %} bg-gray-100 text-gray-700 {% endif %}"
+           role="alert">
+        <p class="font-medium">{{ message }}</p>
+      </div>
+    {% endfor %}
+    <!-- payment card -->
+    <div class="border-2 rounded-4xl mt-6 p-4">
+      <div class="flex justify-between">
+        <form method="get" class="inline">
+          <label for="payment-select">Payment Type:</label>
+          <select id="payment-select"
+                  name="payment_type"
+                  onchange="this.form.submit()"
+                  class="border-2 rounded-md px-8 py-1 focus:outline-none focus:ring-2 transition-all duration-200 cursor-pointer">
+            <option value="interest"
+                    {% if request.GET.payment_type == "interest" or request.GET.payment_type == None %}selected{% endif %}>
+              Interest
+            </option>
+            <option value="past-due"
+                    {% if request.GET.payment_type == "past-due" %}selected{% endif %}>Past Dues</option>
+            <option value="principal"
+                    {% if request.GET.payment_type == "principal" %}selected{% endif %}>Principal</option>
+          </select>
+        </form>
+        {% now "N j, Y" as today %}
+        <span>Date: {{ today }}</span>
+      </div>
+      <div class="mt-6">
+        {% if request.GET.payment_type == 'interest' or request.GET.payment_type is None %}
+          <div>
+            <div>
+              <input id="regular"
+                     type="radio"
+                     name="interest-type"
+                     value="regular"
+                     checked>
+              <label for="regular">Pay Current Due Amount</label>
+            </div>
+            <div>
+              <input id="to-date" type="radio" name="interest-type" value="to-date">
+              <label for="to-date">Pay Dues to Date</label>
+            </div>
+            <div>
+              <input id="custom-amount"
+                     type="radio"
+                     name="interest-type"
+                     value="custom-amount">
+              <label for="custom-amount">Custom Amount</label>
+            </div>
+          </div>
+        {% elif request.GET.payment_type == 'principal' %}
+          <div class="flex items-end gap-4">
+            <div>
+              <label for="custom-amount">Amount:</label>
+              <input id="custom-amount"
+                     type="number"
+                     name="custom-amount"
+                     class="border-2 rounded-md pr-2 py-1">
+            </div>
+            <div>
+              <button type="submit"
+                      class="border-2 px-12 py-1 rounded-md hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
+                Go
+              </button>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      <hr class="border-2 mt-4">
+      <!-- calculated payment -->
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="text-center">
+            <tr>
+              <th class="p-2">Amount</th>
+              <th class="p-2">Period Start</th>
+              <th class="p-2">Period End</th>
+              <th class="p-2">Days</th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
+            <tr>
+              <td class="p-2">{{ calculated_interest.total }}</td>
+              <td class="p-2">{{ calculated_interest.period_start }}</td>
+              <td class="p-2">{{ calculated_interest.period_end }}</td>
+              <td class="p-2">{{ calculated_interest.days }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex flex-col items-end mt-6 ">
+        <form method='POST' action={% url 'loan:pay_interest' loan.id %}>
+          {% csrf_token %}
+          <button type="submit"
+                  class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
+            Confirm Payments
+          </button>
+        </form>
+      </div>
+    </div>
+    <!-- payment history -->
+    <div class="border-2 rounded-4xl mt-6 p-6 overflow-x-auto">
+      <table class="min-w-full">
+        <thead>
+          <tr class="divide-x-2">
+            <th class="p-4">Date</th>
+            <th class="p-4">Type</th>
+            <th class="p-4">Amount</th>
+            <th class="p-4">Period Start</th>
+            <th class="p-4">Period End</th>
+            <th class="p-4">Transaction</th>
+          </tr>
+        </thead>
+        <tbody class="text-center">
+          {% for ph in payment_history %}
+            <tr class="divide-x-2 rounded-full hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200">
+              <td class="p-4">{{ ph.date }}</td>
+              <td class="p-4">{{ ph.type }}</td>
+              <td class="p-4">{{ ph.amount }}</td>
+              <td class="p-4">{{ ph.period_start }}</td>
+              <td class="p-4">{{ ph.period_end }}</td>
+              <td class="p-4">{{ ph.transaction }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
