@@ -33,6 +33,10 @@ def loan(request, id):
 
 def payment(request, id):
     loan = Loan.objects.get(id=id)
+
+    if loan.status != loan.ACTIVE:
+        return redirect("loan:loan", id=id)
+
     template = "loan_management/payment.html"
     payment_history = loan.generate_payment_history()
     payment_type = request.GET.get("payment_type")
@@ -80,7 +84,7 @@ def pay_interest(request, id):
     if interest_type == "custom":
         amount = request.POST.get("amount")
         if amount:
-            amount = Decimal(request.POST.get("amount"))
+            amount = Decimal(amount)
 
             _, period_end = loan.calculate_days(amount)
             total, period_start, period_end, _, _ = loan.calculate_interest(
@@ -89,14 +93,12 @@ def pay_interest(request, id):
             loan.process_interest(total, period_start, period_end)
 
     else:
-        period_end = date.today() if interest_type == "to-date" else None
-        total, period_start, period_end, _, _ = loan.calculate_interest(
-            period_end=period_end
-        )
+        to_date = True if interest_type == "to-date" else False
+        total, period_start, period_end, _, _ = loan.calculate_interest(to_date=to_date)
         loan.process_interest(total, period_start, period_end)
 
     messages.success(request, f"Interest paid for Loan #{loan.id} successfully!")
-    return redirect("loan:loan", id=id)
+    return redirect("loan:payment", id=id)
 
 
 def calculate_interest(request, id):
@@ -121,9 +123,9 @@ def calculate_interest(request, id):
                 "leap_year": leap_year,
             }
     else:
-        period_end = date.today() if interest_type == "to-date" else None
+        to_date = True if interest_type == "to-date" else False
         total, period_start, period_end, days, leap_year = loan.calculate_interest(
-            period_end=period_end
+            to_date=to_date
         )
         calculated_interest = {
             "total": int(total),
@@ -134,3 +136,14 @@ def calculate_interest(request, id):
         }
 
     return JsonResponse(calculated_interest)
+
+
+@require_POST
+def pay_principal(request, id):
+    loan = get_object_or_404(Loan, id=id)
+
+    amount = request.POST.get("principal-amount")
+    loan.process_principal(Decimal(amount))
+
+    messages.success(request, f"Principal paid for Loan #{loan.id} successfully!")
+    return redirect("loan:payment", id=id)

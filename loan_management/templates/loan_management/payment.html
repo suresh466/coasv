@@ -83,7 +83,7 @@
           <!-- principal payment form -->
           <form id="confirm-payment-form"
                 method='POST'
-                action="{% url 'loan:pay_interest' loan.id %}">
+                action="{% url 'loan:pay_principal' loan.id %}">
             {% csrf_token %}
             <!-- principal amount input -->
             <div id="amount-container" class="flex items-end gap-4">

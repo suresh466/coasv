@@ -1,5 +1,5 @@
 import calendar
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from itertools import chain
 from operator import attrgetter
@@ -73,7 +73,7 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=debit_account, am=self.amount, t_sp="dr")
         Split.objects.create(tx=tx, ac=credit_account, am=self.amount, t_sp="cr")
 
-    def calculate_interest(self, period_start=None, period_end=None):
+    def calculate_interest(self, period_start=None, period_end=None, to_date=False):
         billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
         prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
         disbursed_date = self.disbursed_at.date()
@@ -84,10 +84,13 @@ class Loan(models.Model):
                 if prev_period_end
                 else disbursed_date
             )
-        if not period_end:
-            period_end = period_start.replace(
-                day=calendar.monthrange(period_start.year, period_start.month)[1]
-            )
+        if to_date:
+            period_end = date.today()
+        else:
+            if not period_end:
+                period_end = period_start.replace(
+                    day=calendar.monthrange(period_start.year, period_start.month)[1]
+                )
         days = (period_end - period_start).days + 1
         leap_year = calendar.isleap(period_start.year)
 
@@ -132,8 +135,13 @@ class Loan(models.Model):
             return amount_after_interest, period_end
 
     def generate_payment_history(self):
-        interest_payments = self.interestpayment_set.all()  # type: ignore[attr-defined])
-        principal_payments = self.principalpayment_set.all()  # type: ignore[attr-defined])
+        interest_payments = self.interestpayment_set.select_related(
+            "billing_cycle",
+            "transaction",
+        ).all()
+        principal_payments = self.principalpayment_set.select_related(
+            "transaction"
+        ).all()
 
         # Combine and sort payments by date
         all_payments = sorted(
@@ -141,19 +149,27 @@ class Loan(models.Model):
         )
 
         payment_history = []
-
         for payment in all_payments:
-            type = "interest" if isinstance(payment, InterestPayment) else "principal"
-            payment_history.append(
-                {
-                    "date": payment.payment_date.date(),
-                    "type": type,
-                    "amount": payment.amount,
-                    "period_start": payment.billing_cycle.period_start.date(),
-                    "period_end": payment.billing_cycle.period_end.date(),
-                    "transaction": payment.transaction,
-                }
-            )
+            if isinstance(payment, InterestPayment):
+                payment_history.append(
+                    {
+                        "date": payment.payment_date.date(),
+                        "type": "interest",
+                        "amount": payment.amount,
+                        "period_start": payment.billing_cycle.period_start.date(),
+                        "period_end": payment.billing_cycle.period_end.date(),
+                        "transaction": payment.transaction,
+                    }
+                )
+            else:
+                payment_history.append(
+                    {
+                        "date": payment.payment_date.date(),
+                        "type": "principal",
+                        "amount": payment.amount,
+                        "transaction": payment.transaction,
+                    }
+                )
 
         return payment_history
 
@@ -187,15 +203,16 @@ class Loan(models.Model):
         )
 
     def process_principal(self, amount):
-        debit = Ac.objects.get(code="80")
-        credit = Ac.objects.get(code="110")
-
+        if self.calculate_interest(to_date=True)[0] > 0:
+            raise ValidationError("Interest due to date not paid")
         if amount > self.outstanding_principal:
             extra_amount = amount - self.outstanding_principal
-            print(
+            raise ValidationError(
                 f"paying more than owed; outstanding_principal: {self.outstanding_principal}, paying: {amount} which is: {extra_amount} more than required principal"
             )
-            return
+
+        debit = Ac.objects.get(code="80")
+        credit = Ac.objects.get(code="110")
 
         tx = Transaction.objects.create(
             desc=f"Principal-payment for Loan #{self.id} of amount {amount}"

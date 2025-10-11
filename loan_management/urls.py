@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:id>/payment", views.payment, name="payment"),
     path("<int:id>/disburse", views.disburse, name="disburse"),
     path("<int:id>/pay-interest", views.pay_interest, name="pay_interest"),
+    path("<int:id>/pay-principal", views.pay_principal, name="pay_principal"),
     path(
         "<int:id>/calculate-interest",
         views.calculate_interest,
