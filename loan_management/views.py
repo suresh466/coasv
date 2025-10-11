@@ -77,11 +77,7 @@ def pay_interest(request, id):
     loan = get_object_or_404(Loan, id=id)
     interest_type = request.POST.get("interest-type")
 
-    if interest_type == "to-date":
-        total, period_start, period_end, _, _ = loan.calculate_interest(
-            period_end=date.today()
-        )
-    elif interest_type == "custom":
+    if interest_type == "custom":
         amount = request.POST.get("amount")
         if amount:
             amount = Decimal(request.POST.get("amount"))
@@ -91,8 +87,12 @@ def pay_interest(request, id):
                 period_end=period_end
             )
             loan.process_interest(total, period_start, period_end)
+
     else:
-        total, period_start, period_end, _, _ = loan.calculate_interest()
+        period_end = date.today() if interest_type == "to-date" else None
+        total, period_start, period_end, _, _ = loan.calculate_interest(
+            period_end=period_end
+        )
         loan.process_interest(total, period_start, period_end)
 
     messages.success(request, f"Interest paid for Loan #{loan.id} successfully!")
