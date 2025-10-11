@@ -36,44 +36,74 @@
         <span>Date: {{ today }}</span>
       </div>
       <div class="mt-6">
-        {% if request.GET.payment_type == 'interest' or request.GET.payment_type is None %}
-          <div>
-            <div>
-              <input id="regular"
-                     type="radio"
-                     name="interest-type"
-                     value="regular"
-                     checked>
-              <label for="regular">Pay Current Due Amount</label>
+        {% if request.GET.payment_type == 'interest' or not request.GET.payment_type %}
+          <!-- interest payment form -->
+          <form id="confirm-payment-form"
+                method='POST'
+                action="{% url 'loan:pay_interest' loan.id %}">
+            {% csrf_token %}
+            <div id="interest-type">
+              <div>
+                <input id="regular"
+                       type="radio"
+                       name="interest-type"
+                       value="regular"
+                       checked>
+                <label for="regular">Pay Current Due Amount</label>
+              </div>
+              <div>
+                <input id="to-date" type="radio" name="interest-type" value="to-date">
+                <label for="to-date">Pay Dues to Date</label>
+              </div>
+              <div>
+                <input id="custom" type="radio" name="interest-type" value="custom">
+                <label for="custom">Custom</label>
+              </div>
             </div>
-            <div>
-              <input id="to-date" type="radio" name="interest-type" value="to-date">
-              <label for="to-date">Pay Dues to Date</label>
+            <!-- Interest amount input -->
+            <div id="amount-container" class="flex items-end gap-4 hidden">
+              <div>
+                <label for="amount">Amount:</label>
+                <input id="amount"
+                       type="number"
+                       step="0.01"
+                       name="amount"
+                       class="border-2 rounded-md px-2 py-1">
+              </div>
             </div>
-            <div>
-              <input id="custom-amount"
-                     type="radio"
-                     name="interest-type"
-                     value="custom-amount">
-              <label for="custom-amount">Custom Amount</label>
-            </div>
-          </div>
-        {% elif request.GET.payment_type == 'principal' %}
-          <div class="flex items-end gap-4">
-            <div>
-              <label for="custom-amount">Amount:</label>
-              <input id="custom-amount"
-                     type="number"
-                     name="custom-amount"
-                     class="border-2 rounded-md pr-2 py-1">
-            </div>
-            <div>
+            <!-- confirm payments -->
+            <div class="text-end mt-4">
               <button type="submit"
-                      class="border-2 px-12 py-1 rounded-md hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
-                Go
+                      class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
+                Confirm Payments
               </button>
             </div>
-          </div>
+          </form>
+        {% elif request.GET.payment_type == 'principal' %}
+          <!-- principal payment form -->
+          <form id="confirm-payment-form"
+                method='POST'
+                action="{% url 'loan:pay_interest' loan.id %}">
+            {% csrf_token %}
+            <!-- principal amount input -->
+            <div id="amount-container" class="flex items-end gap-4">
+              <div>
+                <label for="principal-amount">Amount:</label>
+                <input id="principal-amount"
+                       required
+                       type="number"
+                       name="principal-amount"
+                       class="border-2 rounded-md px-2 py-1">
+              </div>
+            </div>
+            <!-- confirm payments -->
+            <div class="text-end mt-4">
+              <button type="submit"
+                      class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
+                Confirm Payments
+              </button>
+            </div>
+          </form>
         {% endif %}
       </div>
       <hr class="border-2 mt-4">
@@ -90,22 +120,13 @@
           </thead>
           <tbody class="text-center">
             <tr>
-              <td class="p-2">{{ calculated_interest.total }}</td>
-              <td class="p-2">{{ calculated_interest.period_start }}</td>
-              <td class="p-2">{{ calculated_interest.period_end }}</td>
-              <td class="p-2">{{ calculated_interest.days }}</td>
+              <td id="total-col" class="p-2">{{ calculated_interest.total }}</td>
+              <td id="period-start-col" class="p-2">{{ calculated_interest.period_start }}</td>
+              <td id="period-end-col" class="p-2">{{ calculated_interest.period_end }}</td>
+              <td id="days-col" class="p-2">{{ calculated_interest.days }}</td>
             </tr>
           </tbody>
         </table>
-      </div>
-      <div class="flex flex-col items-end mt-6 ">
-        <form method='POST' action={% url 'loan:pay_interest' loan.id %}>
-          {% csrf_token %}
-          <button type="submit"
-                  class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
-            Confirm Payments
-          </button>
-        </form>
       </div>
     </div>
     <!-- payment history -->

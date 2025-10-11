@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -34,9 +35,10 @@ def payment(request, id):
     loan = Loan.objects.get(id=id)
     template = "loan_management/payment.html"
     payment_history = loan.generate_payment_history()
-    selected_payment = request.GET.get("payment_type")
+    payment_type = request.GET.get("payment_type")
 
-    if selected_payment is None or selected_payment == "interest":
+    calculated_interest = {}
+    if payment_type is None or payment_type == "interest":
         total, period_start, period_end, days, leap_year = loan.calculate_interest()
         calculated_interest = {
             "total": int(total),
@@ -45,13 +47,13 @@ def payment(request, id):
             "days": days,
             "leap_year": leap_year,
         }
-    elif selected_payment == "principal":
+    elif payment_type == "principal":
         pass
-    elif selected_payment == "to-date":
+    elif payment_type == "past-due":
         pass
 
     context = {
-        "calculated_interest": locals().get("calculated_interest", None),
+        "calculated_interest": calculated_interest,
         "loan": loan,
         "payment_history": payment_history,
     }
@@ -73,25 +75,62 @@ def disburse(request, id):
 @require_POST
 def pay_interest(request, id):
     loan = get_object_or_404(Loan, id=id)
-    action = request.POST.get("action")
+    interest_type = request.POST.get("interest-type")
 
-    total, period_start, period_end, _, _ = loan.calculate_interest(
-        period_end=date.today() if action == "to_date" else None
-    )
-    if action == "to_date":
+    if interest_type == "to-date":
         total, period_start, period_end, _, _ = loan.calculate_interest(
             period_end=date.today()
         )
-    elif action == "custom":
-        amount = Decimal(request.POST.get("amount"))
-        _, period_end = loan.calculate_days(amount)
-        total, period_start, period_end, _, _ = loan.calculate_interest(
-            period_end=period_end
-        )
+    elif interest_type == "custom":
+        amount = request.POST.get("amount")
+        if amount:
+            amount = Decimal(request.POST.get("amount"))
+
+            _, period_end = loan.calculate_days(amount)
+            total, period_start, period_end, _, _ = loan.calculate_interest(
+                period_end=period_end
+            )
+            loan.process_interest(total, period_start, period_end)
     else:
         total, period_start, period_end, _, _ = loan.calculate_interest()
-
-    loan.process_interest(total, period_start, period_end)
+        loan.process_interest(total, period_start, period_end)
 
     messages.success(request, f"Interest paid for Loan #{loan.id} successfully!")
     return redirect("loan:loan", id=id)
+
+
+def calculate_interest(request, id):
+    loan = get_object_or_404(Loan, id=id)
+    interest_type = request.GET.get("interest-type")
+
+    calculated_interest = {}
+    if interest_type == "custom":
+        input_amount = request.GET.get("amount")
+        if input_amount:
+            amount = Decimal(input_amount)
+            _, period_end = loan.calculate_days(amount)
+            total, period_start, period_end, days, leap_year = loan.calculate_interest(
+                period_end=period_end
+            )
+
+            calculated_interest = {
+                "total": int(total),
+                "period_start": period_start,
+                "period_end": period_end,
+                "days": days,
+                "leap_year": leap_year,
+            }
+    else:
+        period_end = date.today() if interest_type == "to-date" else None
+        total, period_start, period_end, days, leap_year = loan.calculate_interest(
+            period_end=period_end
+        )
+        calculated_interest = {
+            "total": int(total),
+            "period_start": period_start,
+            "period_end": period_end,
+            "days": days,
+            "leap_year": leap_year,
+        }
+
+    return JsonResponse(calculated_interest)
