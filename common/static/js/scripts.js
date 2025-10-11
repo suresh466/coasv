@@ -21,10 +21,12 @@ document.getElementById("principal-amount")?.addEventListener("input", e => onPr
 async function onInterestTypeChange(e) {
   const amountContainer = document.getElementById("amount-container")
   const total = document.getElementById("total-col")
+  const amountInput = document.getElementById('interest-amount')
 
   // custom calculation
   if (e.target.value === "custom") {
     if (amountContainer.classList.contains("hidden")) amountContainer.classList.remove("hidden")
+    amountInput.required = true;
     const amount = document.getElementById("amount").value
     if (amount) {
       const params = new URLSearchParams();
@@ -40,6 +42,7 @@ async function onInterestTypeChange(e) {
   // regular and to-date interest calculation
   else {
     if (!amountContainer.classList.contains("hidden")) amountContainer.classList.add("hidden")
+    amountInput.required = false;
     const response = await fetch(`calculate-interest?interest-type=${e.target.value}`)
     const calculatedInterest = await response.json()
     total.innerText = calculatedInterest.total
