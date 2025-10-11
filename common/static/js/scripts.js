@@ -14,10 +14,11 @@ function toggleTransaction(transactionId) {
 
 // payments
 //
-document.getElementById("interest-type")?.addEventListener("change", e => handleInterestTypeChange(e))
-document.getElementById("amount")?.addEventListener("input", e => handleAmountChange(e))
+document.getElementById("interest-type")?.addEventListener("change", e => onInterestTypeChange(e))
+document.getElementById("amount")?.addEventListener("input", e => onInterestAmountInput(e))
+document.getElementById("principal-amount")?.addEventListener("input", e => onPrincipalAmountInput(e))
 
-async function handleInterestTypeChange(e) {
+async function onInterestTypeChange(e) {
   const amountContainer = document.getElementById("amount-container")
   const total = document.getElementById("total-col")
 
@@ -45,7 +46,7 @@ async function handleInterestTypeChange(e) {
   }
 }
 
-async function handleAmountChange(e) {
+async function onInterestAmountInput(e) {
   const totalCol = document.getElementById("total-col")
   const amount = e.target.value
 
@@ -56,4 +57,10 @@ async function handleAmountChange(e) {
   const response = await fetch(`calculate-interest?${params.toString()}`)
   const calculatedInterest = await response.json()
   totalCol.innerText = calculatedInterest.total
+}
+
+function onPrincipalAmountInput(e) {
+  amount = e.target.value
+  document.getElementById('principal-amount-col').innerText = amount
+
 }

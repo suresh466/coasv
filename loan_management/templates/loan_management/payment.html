@@ -104,57 +104,77 @@
               </button>
             </div>
           </form>
-        {% endif %}
-      </div>
-      <hr class="border-2 mt-4">
-      <!-- calculated payment -->
-      <div class="mt-4 overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="text-center">
-            <tr>
-              <th class="p-2">Amount</th>
-              <th class="p-2">Period Start</th>
-              <th class="p-2">Period End</th>
-              <th class="p-2">Days</th>
-            </tr>
-          </thead>
-          <tbody class="text-center">
-            <tr>
-              <td id="total-col" class="p-2">{{ calculated_interest.total }}</td>
-              <td id="period-start-col" class="p-2">{{ calculated_interest.period_start }}</td>
-              <td id="period-end-col" class="p-2">{{ calculated_interest.period_end }}</td>
-              <td id="days-col" class="p-2">{{ calculated_interest.days }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          <hr class="border-2 mt-4">
+          <!-- calculated payment -->
+          <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full">
+              <thead class="text-center">
+                <tr>
+                  <th class="p-2">Date</th>
+                  <th class="p-2">Amount</th>
+                </tr>
+              </thead>
+              <tbody class="text-center">
+                <tr>
+                  {% now "N j, Y" as today %}
+                  <td id="date-Col" class="p-2">{{ today }}</td>
+                  <td id="principal-amount-col" class="p-2"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endif %}
     </div>
-    <!-- payment history -->
-    <div class="border-2 rounded-4xl mt-6 p-6 overflow-x-auto">
+    <hr class="border-2 mt-4">
+    <!-- calculated payment -->
+    <div class="mt-4 overflow-x-auto">
       <table class="min-w-full">
-        <thead>
-          <tr class="divide-x-2">
-            <th class="p-4">Date</th>
-            <th class="p-4">Type</th>
-            <th class="p-4">Amount</th>
-            <th class="p-4">Period Start</th>
-            <th class="p-4">Period End</th>
-            <th class="p-4">Transaction</th>
+        <thead class="text-center">
+          <tr>
+            <th class="p-2">Amount</th>
+            <th class="p-2">Period Start</th>
+            <th class="p-2">Period End</th>
+            <th class="p-2">Days</th>
           </tr>
         </thead>
         <tbody class="text-center">
-          {% for ph in payment_history %}
-            <tr class="divide-x-2 rounded-full hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200">
-              <td class="p-4">{{ ph.date }}</td>
-              <td class="p-4">{{ ph.type }}</td>
-              <td class="p-4">{{ ph.amount }}</td>
-              <td class="p-4">{{ ph.period_start }}</td>
-              <td class="p-4">{{ ph.period_end }}</td>
-              <td class="p-4">{{ ph.transaction }}</td>
-            </tr>
-          {% endfor %}
+          <tr>
+            <td id="total-col" class="p-2">{{ calculated_interest.total }}</td>
+            <td id="period-start-col" class="p-2">{{ calculated_interest.period_start }}</td>
+            <td id="period-end-col" class="p-2">{{ calculated_interest.period_end }}</td>
+            <td id="days-col" class="p-2">{{ calculated_interest.days }}</td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
+  <!-- payment history -->
+  <div class="border-2 rounded-4xl mt-6 p-6 overflow-x-auto">
+    <table class="min-w-full">
+      <thead>
+        <tr class="divide-x-2">
+          <th class="p-4">Date</th>
+          <th class="p-4">Type</th>
+          <th class="p-4">Amount</th>
+          <th class="p-4">Period Start</th>
+          <th class="p-4">Period End</th>
+          <th class="p-4">Transaction</th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        {% for ph in payment_history %}
+          <tr class="divide-x-2 rounded-full hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200">
+            <td class="p-4">{{ ph.date }}</td>
+            <td class="p-4">{{ ph.type }}</td>
+            <td class="p-4">{{ ph.amount }}</td>
+            <td class="p-4">{{ ph.period_start }}</td>
+            <td class="p-4">{{ ph.period_end }}</td>
+            <td class="p-4">{{ ph.transaction }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}
