@@ -1,14 +1,12 @@
-from datetime import date
 from decimal import Decimal
 
+from django.urls import reverse
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .models import Loan
-
-# Create your views here.
 
 
 def loans(request):
@@ -33,7 +31,6 @@ def loan(request, id):
 
 def payment(request, id):
     loan = Loan.objects.get(id=id)
-
     if loan.status != loan.ACTIVE:
         return redirect("loan:loan", id=id)
 
@@ -41,20 +38,34 @@ def payment(request, id):
     payment_history = loan.generate_payment_history()
     payment_type = request.GET.get("payment_type")
 
-    calculated_interest = {}
+    if loan.is_overdue and payment_type != "overdue":
+        messages.warning(
+            request,
+            "Please pay the overdue amounts before proceeding with other payments.",
+        )
+        return redirect(f"{reverse('loan:payment', args=[id])}?payment_type=overdue")
+
+    calculated_interest = []
     if payment_type is None or payment_type == "interest":
-        total, period_start, period_end, days, leap_year = loan.calculate_interest()
-        calculated_interest = {
-            "total": int(total),
-            "period_start": period_start,
-            "period_end": period_end,
-            "days": days,
-            "leap_year": leap_year,
-        }
-    elif payment_type == "principal":
-        pass
-    elif payment_type == "past-due":
-        pass
+        total, period_start, period_end, days, _ = loan.calculate_interest()
+        calculated_interest.append(
+            {
+                "total": int(total),
+                "period_start": period_start,
+                "period_end": period_end,
+                "days": days,
+            }
+        )
+    elif payment_type == "overdue":
+        for overdue in loan.overdue_cycles():
+            calculated_interest.append(
+                {
+                    "total": overdue.amount,
+                    "period_start": overdue.period_start.date(),
+                    "period_end": overdue.period_end.date(),
+                    "days": (overdue.period_end - overdue.period_start).days + 1,
+                }
+            )
 
     context = {
         "calculated_interest": calculated_interest,

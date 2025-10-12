@@ -136,11 +136,17 @@
         </li>
       </ul>
     </nav>
-  </nav>
-  <!-- content -->
-  <main class="container mx-auto py-2 overflow-auto">
-    {% block common_body %}{% endblock %}
-  </main>
-  <script src="{% static 'js/scripts.js' %}"></script>
-</body>
+    <!-- messages  -->
+    {% for message in messages %}
+      <div class="border-4 mt-6 rounded-lg p-4 mx-8 text-sm {% if message.tags == 'error' %} text-red-700 {% elif message.tags == 'success' %} text-green-700 {% elif message.tags == 'warning' %} text-amber-700 {% elif message.tags == 'info' %} text-blue-700 {% else %} text-gray-700 {% endif %}"
+           role="alert">
+        <p class="font-medium">{{ message }}</p>
+      </div>
+    {% endfor %}
+    <!-- content -->
+    <main class="container mx-auto py-2 overflow-auto">
+      {% block common_body %}{% endblock %}
+    </main>
+    <script src="{% static 'js/scripts.js' %}"></script>
+  </body>
 </html>

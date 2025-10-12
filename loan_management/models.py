@@ -134,6 +134,13 @@ class Loan(models.Model):
             period_end = period_start + timedelta(days=complete_days - 1)
             return amount_after_interest, period_end
 
+    def overdue_cycles(self):
+        return self.billingcycle_set.filter(status="overdue")
+
+    @property
+    def is_overdue(self):
+        return self.overdue_cycles().exists()
+
     def generate_payment_history(self):
         interest_payments = self.interestpayment_set.select_related(
             "billing_cycle",

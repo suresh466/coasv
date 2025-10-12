@@ -7,12 +7,6 @@
       <h1 class="text-2xl font-medium">Loan {{ loan.id }}. {{ loan.member }}</h1>
       <span class="border-2 rounded-full px-6 py-2">Outstanding: {{ loan.outstanding_principal }}</span>
     </div>
-    {% for message in messages %}
-      <div class="mb-4 rounded-lg p-4 text-sm {% if message.tags == 'error' %} bg-red-100 text-red-700 {% elif message.tags == 'success' %} bg-green-100 text-green-700 {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-700 {% elif message.tags == 'info' %} bg-blue-100 text-blue-700 {% else %} bg-gray-100 text-gray-700 {% endif %}"
-           role="alert">
-        <p class="font-medium">{{ message }}</p>
-      </div>
-    {% endfor %}
     <!-- payment card -->
     <div class="border-2 rounded-4xl mt-6 p-4">
       <div class="flex justify-between">
@@ -26,8 +20,8 @@
                     {% if request.GET.payment_type == "interest" or request.GET.payment_type == None %}selected{% endif %}>
               Interest
             </option>
-            <option value="past-due"
-                    {% if request.GET.payment_type == "past-due" %}selected{% endif %}>Past Dues</option>
+            <option value="overdue"
+                    {% if request.GET.payment_type == "overdue" %}selected{% endif %}>Overdues</option>
             <option value="principal"
                     {% if request.GET.payment_type == "principal" %}selected{% endif %}>Principal</option>
           </select>
@@ -139,12 +133,14 @@
           </tr>
         </thead>
         <tbody class="text-center">
-          <tr>
-            <td id="total-col" class="p-2">{{ calculated_interest.total }}</td>
-            <td id="period-start-col" class="p-2">{{ calculated_interest.period_start }}</td>
-            <td id="period-end-col" class="p-2">{{ calculated_interest.period_end }}</td>
-            <td id="days-col" class="p-2">{{ calculated_interest.days }}</td>
-          </tr>
+          {% for ci in calculated_interest %}
+            <tr>
+              <td id="total-col" class="p-2">{{ ci.total }}</td>
+              <td id="period-start-col" class="p-2">{{ ci.period_start }}</td>
+              <td id="period-end-col" class="p-2">{{ ci.period_end }}</td>
+              <td id="days-col" class="p-2">{{ ci.days }}</td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
