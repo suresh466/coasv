@@ -73,6 +73,9 @@ class Loan(models.Model):
         Split.objects.create(tx=tx, ac=debit_account, am=self.amount, t_sp="dr")
         Split.objects.create(tx=tx, ac=credit_account, am=self.amount, t_sp="cr")
 
+    def calculate_fee(self):
+        return Decimal(5.00)
+
     def calculate_interest(self, period_start=None, period_end=None, to_date=False):
         billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
         prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
@@ -180,6 +183,28 @@ class Loan(models.Model):
 
         return payment_history
 
+    def process_fee(self, amount, billing_cycle):
+        if amount <= 0:
+            raise ValueError("Amount cannot be less than equal to 0")
+        debit = Ac.objects.get(code="80")
+        credit = Ac.objects.get(code="160.4")
+
+        tx = Transaction.objects.create(
+            desc=f"Interest-payment for Loan #{self.id} of amount {amount}"
+        )
+        Split.objects.create(tx=tx, ac=debit, t_sp="dr", am=amount)
+        Split.objects.create(tx=tx, ac=credit, t_sp="cr", am=amount)
+
+        FeePayment.objects.create(
+            loan=self,
+            amount=amount,
+            payment_date=timezone.now(),
+            transaction=tx,
+            billing_cycle=billing_cycle,
+            debit_account=debit,
+            credit_account=credit,
+        )
+
     def process_interest(self, amount, period_start, period_end):
         if amount <= 0:
             raise ValueError("Amount cannot be less than equal to 0")
@@ -258,6 +283,24 @@ class BillingCycle(models.Model):
     period_end = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PAID)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
+
+
+class FeePayment(models.Model):
+    id = models.AutoField(primary_key=True)
+    loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    payment_date = models.DateTimeField(default=timezone.now)
+    transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    billing_cycle = models.ForeignKey(BillingCycle, on_delete=models.PROTECT)
+    debit_account = models.ForeignKey(
+        Ac, related_name="fee_payment_debits", on_delete=models.PROTECT
+    )
+    credit_account = models.ForeignKey(
+        Ac, related_name="fee_payment_credits", on_delete=models.PROTECT
+    )
+
+    def __str__(self):
+        return f"{self.loan.id} - {self.amount}"
 
 
 class InterestPayment(models.Model):

@@ -38,7 +38,6 @@ def payment(request, id):
     template = "loan_management/payment.html"
     payment_history = loan.generate_payment_history()
     payment_type = request.GET.get("payment_type")
-    print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", payment_type)
 
     if loan.is_overdue and payment_type != "overdue":
         # do not display the message on the first load
@@ -111,11 +110,13 @@ def pay_interest(request, id):
             loan.process_interest(total, period_start, period_end)
     elif interest_type == "overdue":
         overdue_id = request.POST.get("overdue_id")
+        fees_included = "fees" in request.POST
         bc = BillingCycle.objects.get(id=overdue_id)
         bc.date_updated = timezone.now()
         bc.status = bc.PAID
+        if fees_included:
+            loan.process_fee(loan.calculate_fee(), bc)
         bc.save()
-        print("okay working", bc)
     else:
         to_date = True if interest_type == "to-date" else False
         total, period_start, period_end, _, _ = loan.calculate_interest(to_date=to_date)
