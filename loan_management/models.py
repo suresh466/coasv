@@ -251,6 +251,7 @@ class BillingCycle(models.Model):
     ]
 
     date_created = models.DateTimeField(default=timezone.now)
+    date_updated = models.DateTimeField(default=timezone.now)
     id = models.AutoField(primary_key=True)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     period_start = models.DateTimeField()

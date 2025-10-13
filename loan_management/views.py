@@ -1,12 +1,13 @@
 from decimal import Decimal
 
-from django.urls import reverse
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Loan
+from .models import BillingCycle, Loan
 
 
 def loans(request):
@@ -37,12 +38,15 @@ def payment(request, id):
     template = "loan_management/payment.html"
     payment_history = loan.generate_payment_history()
     payment_type = request.GET.get("payment_type")
+    print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", payment_type)
 
     if loan.is_overdue and payment_type != "overdue":
-        messages.warning(
-            request,
-            "Please pay the overdue amounts before proceeding with other payments.",
-        )
+        # do not display the message on the first load
+        if payment_type is not None:
+            messages.warning(
+                request,
+                "Please pay the overdue amounts before proceeding with other payments.",
+            )
         return redirect(f"{reverse('loan:payment', args=[id])}?payment_type=overdue")
 
     calculated_interest = []
@@ -57,13 +61,16 @@ def payment(request, id):
             }
         )
     elif payment_type == "overdue":
-        for overdue in loan.overdue_cycles():
+        overdue_cycles = loan.overdue_cycles().order_by("period_start")
+        for idx, overdue in enumerate(overdue_cycles):
             calculated_interest.append(
                 {
+                    "id": overdue.id,
                     "total": overdue.amount,
                     "period_start": overdue.period_start.date(),
                     "period_end": overdue.period_end.date(),
                     "days": (overdue.period_end - overdue.period_start).days + 1,
+                    "is_payable": idx == 0,
                 }
             )
 
@@ -102,7 +109,13 @@ def pay_interest(request, id):
                 period_end=period_end
             )
             loan.process_interest(total, period_start, period_end)
-
+    elif interest_type == "overdue":
+        overdue_id = request.POST.get("overdue_id")
+        bc = BillingCycle.objects.get(id=overdue_id)
+        bc.date_updated = timezone.now()
+        bc.status = bc.PAID
+        bc.save()
+        print("okay working", bc)
     else:
         to_date = True if interest_type == "to-date" else False
         total, period_start, period_end, _, _ = loan.calculate_interest(to_date=to_date)
