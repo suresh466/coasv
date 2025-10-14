@@ -27,6 +27,7 @@ async function onInterestTypeChange(e) {
   if (e.target.value === "custom") {
     if (amountContainer.classList.contains("hidden")) amountContainer.classList.remove("hidden")
     amountInput.required = true;
+    interestConfirmBtn?.classList.remove('hidden')
     if (amountInput.value) {
       const params = new URLSearchParams();
       params.append('interest-type', e.target.value);
@@ -35,11 +36,9 @@ async function onInterestTypeChange(e) {
       const response = await fetch(url)
       const calculatedInterest = await response.json()
       displayCalculatedInterest(calculatedInterest)
-      interestConfirmBtn?.classList.remove('hidden')
     }
     else {
       displayCalculatedInterest()
-      interestConfirmBtn?.classList.add('hidden')
     }
   }
   // regular and to-date interest calculation
@@ -62,7 +61,6 @@ async function onInterestTypeChange(e) {
 
 async function onInterestAmountInput(e) {
   const amount = e.target.value
-  const interestConfirmBtn = document.getElementById('interest-confirm')
 
   const interestType = document.querySelector('input[name="interest-type"]:checked')?.value;
   const params = new URLSearchParams();
@@ -72,11 +70,9 @@ async function onInterestAmountInput(e) {
   const calculatedInterest = await response.json()
   if (calculatedInterest.total) {
     displayCalculatedInterest(calculatedInterest)
-    interestConfirmBtn?.classList.remove('hidden')
   }
   else {
     displayCalculatedInterest()
-    interestConfirmBtn?.classList.add('hidden')
   }
 }
 
