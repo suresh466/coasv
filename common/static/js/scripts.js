@@ -21,12 +21,13 @@ document.getElementById("principal-amount")?.addEventListener("input", e => onPr
 async function onInterestTypeChange(e) {
   const amountContainer = document.getElementById("amount-container")
   const amountInput = document.getElementById('interest-amount')
+  const interestConfirmBtn = document.getElementById('interest-confirm')
 
   // custom calculation
   if (e.target.value === "custom") {
     if (amountContainer.classList.contains("hidden")) amountContainer.classList.remove("hidden")
     amountInput.required = true;
-    if (amountInput) {
+    if (amountInput.value) {
       const params = new URLSearchParams();
       params.append('interest-type', e.target.value);
       params.append('amount', amountInput.value);
@@ -34,9 +35,11 @@ async function onInterestTypeChange(e) {
       const response = await fetch(url)
       const calculatedInterest = await response.json()
       displayCalculatedInterest(calculatedInterest)
+      interestConfirmBtn?.classList.remove('hidden')
     }
     else {
       displayCalculatedInterest()
+      interestConfirmBtn?.classList.add('hidden')
     }
   }
   // regular and to-date interest calculation
@@ -45,12 +48,21 @@ async function onInterestTypeChange(e) {
     amountInput.required = false;
     const response = await fetch(`calculate-interest?interest-type=${e.target.value}`)
     const calculatedInterest = await response.json()
-    displayCalculatedInterest(calculatedInterest)
+    // in case to-date interest is clear already
+    if (calculatedInterest.total <= 0) {
+      displayCalculatedInterest()
+      interestConfirmBtn?.classList.add('hidden')
+    }
+    else {
+      interestConfirmBtn?.classList.remove('hidden')
+      displayCalculatedInterest(calculatedInterest)
+    }
   }
 }
 
 async function onInterestAmountInput(e) {
   const amount = e.target.value
+  const interestConfirmBtn = document.getElementById('interest-confirm')
 
   const interestType = document.querySelector('input[name="interest-type"]:checked')?.value;
   const params = new URLSearchParams();
@@ -58,7 +70,14 @@ async function onInterestAmountInput(e) {
   params.append('amount', amount);
   const response = await fetch(`calculate-interest?${params.toString()}`)
   const calculatedInterest = await response.json()
-  displayCalculatedInterest(calculatedInterest)
+  if (calculatedInterest.total) {
+    displayCalculatedInterest(calculatedInterest)
+    interestConfirmBtn?.classList.remove('hidden')
+  }
+  else {
+    displayCalculatedInterest()
+    interestConfirmBtn?.classList.add('hidden')
+  }
 }
 
 function onPrincipalAmountInput(e) {
