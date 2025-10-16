@@ -34,16 +34,37 @@
       <!-- action -->
       <div class="flex flex-col items-end mt-6 ">
         {% if loan.status == 'pending' %}
-          <a href="{% url 'loan:approve' loan.id %}"
-             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">Approve Loan</a>
+          <form id="confirm-payment-form"
+                method='POST'
+                action="{% url 'loan:approve' loan.id %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
+              Approve
+            </button>
+          </form>
         {% endif %}
         {% if loan.status == 'approved' %}
-          <a href="{% url 'loan:disburse' loan.id %}"
-             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">Disburse Loan</a>
+          <form id="confirm-payment-form"
+                method='POST'
+                action="{% url 'loan:disburse' loan.id %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
+              Disburse
+            </button>
+          </form>
         {% endif %}
         {% if loan.status == 'active' %}
-          <a href="{% url 'loan:payment' loan.id %}"
-             class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">Make Payments</a>
+          <form id="confirm-payment-form"
+                method='POST'
+                action="{% url 'loan:disburse' loan.id %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">
+              Payment
+            </button>
+          </form>
         {% endif %}
       </div>
     </div>

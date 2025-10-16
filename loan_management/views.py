@@ -83,6 +83,17 @@ def payment(request, id):
 
 
 @require_POST
+def approve(request, id):
+    loan = get_object_or_404(Loan, id=id)
+    try:
+        loan.approve()
+        messages.success(request, f"Loan #{loan.id} successfully approved!")
+    except ValueError as e:
+        messages.error(request, str(e))
+    return redirect("loan:loan", id=id)
+
+
+@require_POST
 def disburse(request, id):
     loan = get_object_or_404(Loan, id=id)
     try:

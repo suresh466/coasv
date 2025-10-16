@@ -9,6 +9,7 @@ urlpatterns = [
     path("<int:id>/", views.loan, name="loan"),
     path("<int:id>/payment", views.payment, name="payment"),
     path("<int:id>/disburse", views.disburse, name="disburse"),
+    path("<int:id>/approve", views.approve, name="approve"),
     path("<int:id>/pay-interest", views.pay_interest, name="pay_interest"),
     path("<int:id>/pay-principal", views.pay_principal, name="pay_principal"),
     path(

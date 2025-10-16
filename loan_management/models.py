@@ -51,6 +51,13 @@ class Loan(models.Model):
         if self.amount < 0:
             raise ValidationError("Principal amount must be positive")
 
+    def approve(self):
+        if self.status == self.PENDING:
+            self.status = self.APPROVED
+            self.save()
+        else:
+            raise ValueError("Loan Approval failed!")
+
     def disburse(self):
         # todo: only accept decimal with two decimal places
         """
