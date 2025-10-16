@@ -195,7 +195,7 @@ def general_journal(request):
             if split_form.is_valid():
                 print("update_split_form is valid")
                 for sp in splits:
-                    print(f'{sp["sp_id"]} == {session_sp_id}')
+                    print(f"{sp['sp_id']} == {session_sp_id}")
                     if sp["sp_id"] == session_sp_id:
                         ac = split_form.cleaned_data["ac"]
                         ac_pk = ac.pk

@@ -2,12 +2,6 @@
 {% block common_title %}Loans List{% endblock %}
 {% block common_body %}
   <!-- Loans List -->
-  {% for message in messages %}
-    <div class="mb-4 rounded-md p-4 text-sm {% if message.tags == 'error' %} bg-red-100 text-red-700 {% elif message.tags == 'success' %} bg-green-100 text-green-700 {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-700 {% elif message.tags == 'info' %} bg-blue-100 text-blue-700 {% else %} bg-gray-100 text-gray-700 {% endif %}"
-         role="alert">
-      <p class="font-medium">{{ message }}</p>
-    </div>
-  {% endfor %}
   <div class="bg-white rounded-md">
     <table class='min-w-full divide-y divide-y-gray-200'>
       <thead class="bg-gray-50">
