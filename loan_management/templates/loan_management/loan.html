@@ -58,7 +58,7 @@
         {% if loan.status == 'active' %}
           <form id="confirm-payment-form"
                 method='POST'
-                action="{% url 'loan:disburse' loan.id %}">
+                action="{% url 'loan:payment' loan.id %}">
             {% csrf_token %}
             <button type="submit"
                     class="border-2 px-12 py-2 rounded-lg text-sm hover:shadow-lg hover:shadow-gray-600 hover:-translate-0.5 transition-all duration-200 cursor-pointer">

@@ -53,6 +53,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -130,6 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles/"
 STATICFILES_DIRS = [BASE_DIR / "common/static"]
+LOGIN_URL = "/admin/login/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
