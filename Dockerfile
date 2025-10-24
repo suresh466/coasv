@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir --upgrade pip
 # libpq-dev: Required for psycopg2 (PostgreSQL adapter)
 # gcc: Required for compiling some Python packages
 RUN apt-get update \
-  && apt-get -y install libpq-dev gcc --no-install-recommends \
+  && apt-get -y install libpq-dev gcc \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements file first to leverage Docker cache
