@@ -1,5 +1,6 @@
 services:
   db:
+    container_name: coasv-db
     image: postgres
     volumes:
       - database:/var/lib/postgresql/data
@@ -12,7 +13,10 @@ services:
       - POSTGRES_DB=postgres_db
       - POSTGRES_USER=postgres_user
       - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_PORT=5432
+
   web:
+    container_name: coasv-web
     build: .
     command: /app/entrypoint.sh
     volumes:

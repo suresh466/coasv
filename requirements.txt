@@ -1,3 +1,6 @@
+# TODO: use uv
 django>=5.1.7,<6.0
 django-coasc>=0.1.1,<1.0
+# TODO: compile psycopg2-binary 
 psycopg2-binary>=2.9.10,<3.0
+gunicorn>=23.0.0,<24.0
