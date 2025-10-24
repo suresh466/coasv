@@ -7,6 +7,10 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from common.decorators.superuser_required import (
+    superuser_required,
+)
+
 from .models import BillingCycle, Loan
 
 
@@ -83,6 +87,7 @@ def payment(request, id):
 
 
 @require_POST
+@superuser_required
 def approve(request, id):
     loan = get_object_or_404(Loan, id=id)
     try:
@@ -94,6 +99,7 @@ def approve(request, id):
 
 
 @require_POST
+@superuser_required
 def disburse(request, id):
     loan = get_object_or_404(Loan, id=id)
     try:
