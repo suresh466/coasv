@@ -140,3 +140,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 USE_THOUSAND_SEPARATOR = True
 NUMBER_GROUPING = (3, 2, 0)
+
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)  # only if using a reverse proxy

@@ -3,12 +3,9 @@ services:
     container_name: coasv-db
     image: postgres
     volumes:
-      - database:/var/lib/postgresql/data
+      - coasv-database:/var/lib/postgresql
     networks:
-      - app-network
-    ports:
-      # exposing the postgresql for local dev
-      - "5432:5432"
+      - coasv-network
     environment:
       - POSTGRES_DB=postgres_db
       - POSTGRES_USER=postgres_user
@@ -18,13 +15,11 @@ services:
   web:
     container_name: coasv-web
     build: .
-    command: /app/entrypoint.sh
+    # command: /app/entrypoint.sh
     volumes:
       - .:/app
     networks:
-      - app-network
-    ports:
-      - "8000:8000"
+      - coasv-network
     environment:
       - COASV_SECRET_KEY=insecurerandomsecretkeychangeit!=z_yb25jv_%%)o(+d6
       - COASV_DEBUG_VALUE=True
@@ -36,7 +31,7 @@ services:
     depends_on:
       - db
 volumes:
-  database:
+  coasv-database:
 
 networks:
-  app-network:
+  coasv-network:

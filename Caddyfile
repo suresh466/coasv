@@ -1,4 +1,4 @@
-localhost {
+coasv.localhost {
     # Serve static files from staticfiles directory
     handle /static/* {
         root * /srv/
