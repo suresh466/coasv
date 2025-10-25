@@ -7,10 +7,10 @@ services:
     networks:
       - coasv-network
     environment:
-      - POSTGRES_DB=postgres_db
-      - POSTGRES_USER=postgres_user
-      - POSTGRES_PASSWORD=postgres_password
-      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${COASV_DB_NAME}
+      - POSTGRES_USER=${COASV_DB_USER}
+      - POSTGRES_PASSWORD=${COASV_DB_PASS}
+      - POSTGRES_PORT=${COASV_DB_PORT}
 
   web:
     container_name: coasv-web
@@ -21,13 +21,13 @@ services:
     networks:
       - coasv-network
     environment:
-      - COASV_SECRET_KEY=insecurerandomsecretkeychangeit!=z_yb25jv_%%)o(+d6
-      - COASV_DEBUG_VALUE=True
-      - COASV_DB_HOST=db
-      - COASV_DB_NAME=postgres_db
-      - COASV_DB_USER=postgres_user
-      - COASV_DB_PASS=postgres_password
-      - COASV_DB_PORT=5432
+      - COASV_SECRET_KEY=${COASV_SECRET_KEY}
+      - COASV_DEBUG_VALUE=False
+      - COASV_DB_HOST=${COASV_DB_HOST}
+      - COASV_DB_NAME=${COASV_DB_NAME}
+      - COASV_DB_USER=${COASV_DB_USER}
+      - COASV_DB_PASS=${COASV_DB_PASS}
+      - COASV_DB_PORT=${COASV_DB_PORT}
     depends_on:
       - db
 volumes:
