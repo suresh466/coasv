@@ -15,19 +15,21 @@ services:
   web:
     container_name: coasv-web
     build: .
-    # command: /app/entrypoint.sh
+    ports:
+      - "8000:8000"
     volumes:
       - .:/app
     networks:
       - coasv-network
     environment:
       - COASV_SECRET_KEY=${COASV_SECRET_KEY}
-      - COASV_DEBUG_VALUE=False
+      # - COASV_DEBUG_VALUE=${COASV_DEBUG_VALUE} # false by default
       - COASV_DB_HOST=${COASV_DB_HOST}
       - COASV_DB_NAME=${COASV_DB_NAME}
       - COASV_DB_USER=${COASV_DB_USER}
       - COASV_DB_PASS=${COASV_DB_PASS}
       - COASV_DB_PORT=${COASV_DB_PORT}
+      - COASV_ALLOWED_HOSTS=${COASV_ALLOWED_HOSTS}
     depends_on:
       - db
 volumes:

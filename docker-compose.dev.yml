@@ -30,6 +30,3 @@ services:
       - coasv-network
     depends_on:
       - web
-
-networks:
-  coasv-network:
