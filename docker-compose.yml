@@ -3,9 +3,9 @@ services:
     container_name: coasv-db
     image: postgres
     volumes:
-      - coasv-database:/var/lib/postgresql
+      - app-database:/var/lib/postgresql
     networks:
-      - coasv-network
+      - app-network
     environment:
       - POSTGRES_DB=${COASV_DB_NAME}
       - POSTGRES_USER=${COASV_DB_USER}
@@ -20,10 +20,10 @@ services:
     volumes:
       - .:/app
     networks:
-      - coasv-network
+      - app-network
     environment:
       - COASV_SECRET_KEY=${COASV_SECRET_KEY}
-      # - COASV_DEBUG_VALUE=${COASV_DEBUG_VALUE} # false by default
+      - COASV_DEBUG_VALUE=${COASV_DEBUG_VALUE}
       - COASV_DB_HOST=${COASV_DB_HOST}
       - COASV_DB_NAME=${COASV_DB_NAME}
       - COASV_DB_USER=${COASV_DB_USER}
@@ -33,7 +33,7 @@ services:
     depends_on:
       - db
 volumes:
-  coasv-database:
+  app-database:
 
 networks:
-  coasv-network:
+  app-network:

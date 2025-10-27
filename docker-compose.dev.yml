@@ -1,14 +1,10 @@
 services:
   db:
-    env_file:
-      - ./env.dev
     ports:
       # exposing the port for local dev; eg: docker compose -f docker-compose.dev.yml up db
       - "5432:5432"
 
   web:
-    env_file:
-      - ./env.dev
     ports:
       - "8000:8000"
 
@@ -17,8 +13,6 @@ services:
     container_name: coasv-caddy
     image: caddy:alpine
     restart: unless-stopped
-    env_file:
-      - ./env.dev
     ports:
       - 80:80
       - 443:443
@@ -27,6 +21,6 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - ./staticfiles:/srv/static
     networks:
-      - coasv-network
+      - app-network
     depends_on:
       - web
