@@ -1,16 +1,41 @@
 services:
-  db:
+  dev-db:
+    container_name: coasv-dev-db
+    image: postgres
+    volumes:
+      - dev-database:/var/lib/postgresql
+    networks:
+      - dev-network
     ports:
-      # exposing the port for local dev; eg: docker compose -f docker-compose.dev.yml up db
       - "5432:5432"
+    environment:
+      - POSTGRES_DB=${COASV_DB_NAME}
+      - POSTGRES_USER=${COASV_DB_USER}
+      - POSTGRES_PASSWORD=${COASV_DB_PASS}
+      - POSTGRES_PORT=${COASV_DB_PORT}
 
   web:
+    container_name: coasv-dev-web
+    build: .
     ports:
       - "8000:8000"
+    networks:
+      - dev-network
+    environment:
+      - COASV_SECRET_KEY=${COASV_SECRET_KEY}
+      - COASV_DEBUG_VALUE=${COASV_DEBUG_VALUE}
+      - COASV_DB_HOST=${COASV_DB_HOST}
+      - COASV_DB_NAME=${COASV_DB_NAME}
+      - COASV_DB_USER=${COASV_DB_USER}
+      - COASV_DB_PASS=${COASV_DB_PASS}
+      - COASV_DB_PORT=${COASV_DB_PORT}
+      - COASV_ALLOWED_HOSTS=${COASV_ALLOWED_HOSTS}
+    depends_on:
+      - dev-db
 
   # to test caddy setup in dev
-  caddy:
-    container_name: coasv-caddy
+  dev-caddy:
+    container_name: coasv-dev-caddy
     image: caddy:alpine
     restart: unless-stopped
     ports:
@@ -21,6 +46,12 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - ./staticfiles:/srv/static
     networks:
-      - app-network
+      - dev-network
     depends_on:
       - web
+
+volumes:
+  dev-database:
+
+networks:
+  dev-network:

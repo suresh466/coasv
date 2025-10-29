@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("COASV_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("COASV_DEBUG_VALUE", False)
+DEBUG = os.environ.get("COASV_DEBUG_VALUE", "False").lower() in ("true")
 
 ALLOWED_HOSTS = os.environ.get("COASV_ALLOWED_HOSTS", "").split(",")
 ALLOWED_HOSTS = [] if not any(ALLOWED_HOSTS) else ALLOWED_HOSTS
