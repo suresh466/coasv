@@ -44,6 +44,8 @@ RUN apt-get update \
 # Setup a non-root user
 RUN groupadd --system --gid 999 nonroot \
   && useradd --system --gid 999 --uid 999 --create-home nonroot
+# for collecting static files
+RUN mkdir -p /srv/staticfiles && chown nonroot:nonroot /srv/staticfiles
 
 # Copy the application from the builder
 COPY --from=builder --chown=nonroot:nonroot /app /app
@@ -57,10 +59,8 @@ USER nonroot
 
 # Use `/app` as the working directory
 WORKDIR /app
-
 # Make the entrypoint script executable
 RUN chmod +x  /app/entrypoint.sh
-
 # Set the entrypoint script as the default command
 # This will run migrations, collect static files, and start Gunicorn
 CMD ["/app/entrypoint.sh"]

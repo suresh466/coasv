@@ -19,6 +19,8 @@ services:
     build: .
     ports:
       - "8000:8000"
+    volumes:
+      - staticfiles:/srv/staticfiles:rw
     networks:
       - dev-network
     environment:
@@ -30,6 +32,7 @@ services:
       - COASV_DB_PASS=${COASV_DB_PASS}
       - COASV_DB_PORT=${COASV_DB_PORT}
       - COASV_ALLOWED_HOSTS=${COASV_ALLOWED_HOSTS}
+      - COASV_STATIC_ROOT=${COASV_STATIC_ROOT}
     depends_on:
       - dev-db
 
@@ -43,8 +46,9 @@ services:
       - 443:443
       - "443:443/udp"
     volumes:
+      # Mount the same volume as in the web service
+      - staticfiles:/srv/staticfiles:ro
       - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./staticfiles:/srv/static
     networks:
       - dev-network
     depends_on:
@@ -52,6 +56,7 @@ services:
 
 volumes:
   dev-database:
+  staticfiles:
 
 networks:
   dev-network:

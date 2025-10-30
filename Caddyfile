@@ -1,7 +1,7 @@
 coasv.localhost {
     # Serve static files from staticfiles directory
-    handle /static/* {
-        root * /srv/
+    handle_path /static/* {
+        root * /var/lib/docker/volumes/coasv-staticfiles/_data
         file_server
     }
 
@@ -17,3 +17,4 @@ coasv.localhost {
     #    format console
     #}
 }
+

@@ -129,7 +129,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles/"
+STATIC_ROOT_PATH = os.environ.get("COASV_STATIC_ROOT")
+if STATIC_ROOT_PATH:
+    STATIC_ROOT = STATIC_ROOT_PATH
+else:
+    STATIC_ROOT = BASE_DIR / "staticfiles/"
 STATICFILES_DIRS = [BASE_DIR / "common/static"]
 LOGIN_URL = "/admin/login/"
 

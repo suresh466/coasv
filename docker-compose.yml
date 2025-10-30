@@ -17,6 +17,10 @@ services:
     build: .
     ports:
       - "8000:8000"
+    volumes:
+      - staticfiles:/srv/staticfiles:rw
+      # caddy-configs:
+      #   external: true  # Already exists, just use it
     networks:
       - app-network
     environment:
@@ -28,10 +32,12 @@ services:
       - COASV_DB_PASS=${COASV_DB_PASS}
       - COASV_DB_PORT=${COASV_DB_PORT}
       - COASV_ALLOWED_HOSTS=${COASV_ALLOWED_HOSTS}
+      - COASV_STATIC_ROOT=${COASV_STATIC_ROOT}
     depends_on:
       - db
 volumes:
   app-database:
+  staticfiles:
 
 networks:
   app-network:
