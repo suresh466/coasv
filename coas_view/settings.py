@@ -21,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("COASV_SECRET_KEY")
+SECRET_KEY = os.environ.get("COASV_SECRET_KEY", "insecurekey")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("COASV_DEBUG_VALUE", "False").lower() in ("true")
+DEBUG = os.environ.get("COASV_DEBUG_VALUE", "True").lower() in ("true")
 
 ALLOWED_HOSTS = os.environ.get("COASV_ALLOWED_HOSTS", "").split(",")
 ALLOWED_HOSTS = [] if not any(ALLOWED_HOSTS) else ALLOWED_HOSTS
@@ -85,10 +85,10 @@ WSGI_APPLICATION = "coas_view.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("COASV_DB_NAME"),
-        "USER": os.environ.get("COASV_DB_USER"),
-        "PASSWORD": os.environ.get("COASV_DB_PASS"),
-        "HOST": os.environ.get("COASV_DB_HOST"),
+        "NAME": os.environ.get("COASV_DB_NAME", "postgres_db"),
+        "USER": os.environ.get("COASV_DB_USER", "postgres_user"),
+        "PASSWORD": os.environ.get("COASV_DB_PASS", "postgres_password"),
+        "HOST": os.environ.get("COASV_DB_HOST", "localhost"),
         "PORT": os.environ.get("COASV_DB_PORT", 5432),
     }
 }
