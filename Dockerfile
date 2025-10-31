@@ -5,7 +5,6 @@ FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 # Ensures Python output is sent straight to terminal without buffering
 ENV PYTHONUNBUFFERED=1
-
 # Disable Python downloads, because we want to use the system interpreter
 # across both images. If using a managed Python version, it needs to be
 # copied from the build image into the final image; see `standalone.Dockerfile` for an example.
@@ -19,7 +18,6 @@ RUN apt-get update \
   && apt-get upgrade \
   && apt-get -y install python3-dev libpq-dev gcc --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
-
 RUN --mount=type=cache,target=/root/.cache/uv \
   --mount=type=bind,source=uv.lock,target=uv.lock \
   --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -34,33 +32,25 @@ FROM python:3.13-slim-bookworm
 # It is important to use the image that matches the builder, as the path to the
 # Python executable must be the same, e.g., using `python:3.11-slim-bookworm`
 # will fail.
-
 # libpq-dev is runtime dep for psycopg2
 RUN apt-get update \
   && apt-get upgrade \
   && apt-get -y install libpq-dev --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
-
 # Setup a non-root user
 RUN groupadd --system --gid 999 nonroot \
   && useradd --system --gid 999 --uid 999 --create-home nonroot
-# for collecting static files
-RUN mkdir -p /srv/staticfiles && chown nonroot:nonroot /srv/staticfiles
 
 # Copy the application from the builder
 COPY --from=builder --chown=nonroot:nonroot /app /app
-
 # Place executables in the environment at the front of the path
 # project deps are still installed in a venv and python links to system python executable
 ENV PATH="/app/.venv/bin:$PATH"
+WORKDIR /app
 
 # Use the non-root user to run our application
+# WARNING: Make sure to create a dir for bind mount with appropriate perms if using non root user
 USER nonroot
-
-# Use `/app` as the working directory
-WORKDIR /app
-# Make the entrypoint script executable
 RUN chmod +x  /app/entrypoint.sh
 # Set the entrypoint script as the default command
-# This will run migrations, collect static files, and start Gunicorn
 CMD ["/app/entrypoint.sh"]

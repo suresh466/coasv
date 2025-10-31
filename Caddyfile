@@ -1,13 +1,13 @@
-coasv.localhost {
+coasv.suresht.com {
     # Serve static files from staticfiles directory
     handle_path /static/* {
-        root * /var/lib/docker/volumes/coasv-staticfiles/_data
+        root /srv/coasv/staticfiles/
         file_server
     }
 
     # Proxy all other requests to Gunicorn
     handle {
-        reverse_proxy http://web:8000
+        reverse_proxy http://localhost:8000
 
     }
 

@@ -18,7 +18,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - staticfiles:/srv/staticfiles:rw
+      # WARNING: Make sure to create a dir for bind mount with appropriate perms if using non-root user
+      - /srv/coasv/staticfiles:/app/staticfiles:rw
       # caddy-configs:
       #   external: true  # Already exists, just use it
     networks:
@@ -37,7 +38,6 @@ services:
       - db
 volumes:
   app-database:
-  staticfiles:
 
 networks:
   app-network:
