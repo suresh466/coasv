@@ -27,6 +27,15 @@ RUN --mount=type=cache,target=/root/.cache/uv \
   uv sync --locked --no-dev
 
 
+# generate tailwindcss classes
+FROM node:24-alpine AS tailwind
+# copy entire app from builder
+COPY --from=builder /app /app
+WORKDIR /app/jstoolchain
+# install and build Tailwind
+RUN npm ci && npm run build
+
+
 # Then, use a final image without uv
 FROM python:3.13-slim-bookworm
 # It is important to use the image that matches the builder, as the path to the
@@ -43,6 +52,8 @@ RUN groupadd --system --gid 999 nonroot \
 
 # Copy the application from the builder
 COPY --from=builder --chown=nonroot:nonroot /app /app
+# Copy built CSS from Node stage
+COPY --from=tailwind --chown=nonroot:nonroot /app/common/static/css /app/common/static/css
 # Place executables in the environment at the front of the path
 # project deps are still installed in a venv and python links to system python executable
 ENV PATH="/app/.venv/bin:$PATH"

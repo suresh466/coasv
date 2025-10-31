@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npx @tailwindcss/cli -i input.css -o ../common/static/css/output.css --watch"
+    "watch": "npx @tailwindcss/cli -i input.css -o ../common/static/css/output.css --watch",
+    "build": "npx @tailwindcss/cli -i input.css -o ../common/static/css/output.css --minify"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.13",
