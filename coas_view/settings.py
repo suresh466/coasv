@@ -116,6 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # timeaware stamps
 USE_TZ = True
 # server timezone
+# overrides the system's timezone by setting the TZ environment variable to the value of TIME_ZONE setting
 TIME_ZONE = "Asia/Kathmandu"
 
 # Internationalization

@@ -4,7 +4,6 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from common.decorators.superuser_required import (
@@ -70,8 +69,8 @@ def payment(request, id):
                 {
                     "id": overdue.id,
                     "total": overdue.amount,
-                    "period_start": overdue.period_start.date(),
-                    "period_end": overdue.period_end.date(),
+                    "period_start": overdue.period_start,
+                    "period_end": overdue.period_end,
                     "days": (overdue.period_end - overdue.period_start).days + 1,
                     "is_payable": idx == 0,
                 }

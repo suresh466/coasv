@@ -1,5 +1,5 @@
 import calendar
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 from itertools import chain
 from operator import attrgetter
@@ -93,8 +93,8 @@ class Loan(TimeStampedModel):
 
     def calculate_interest(self, period_start=None, period_end=None, to_date=False):
         billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
-        prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
-        disbursed_date = self.disbursed_at.date()
+        prev_period_end = billing_cycle.period_end if billing_cycle else None
+        disbursed_date = timezone.localdate(self.disbursed_at)
 
         if not period_start:
             period_start = (
@@ -103,7 +103,7 @@ class Loan(TimeStampedModel):
                 else disbursed_date
             )
         if to_date:
-            period_end = date.today()
+            period_end = timezone.localdate()
         else:
             if not period_end:
                 period_end = period_start.replace(
@@ -121,8 +121,8 @@ class Loan(TimeStampedModel):
 
     def calculate_days(self, amount):
         billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
-        prev_period_end = billing_cycle.period_end.date() if billing_cycle else None
-        disbursed_date = self.disbursed_at.date()
+        prev_period_end = billing_cycle.period_end if billing_cycle else None
+        disbursed_date = timezone.localdate(self.disbursed_at)
 
         period_start = (
             prev_period_end + timedelta(days=1) if prev_period_end else disbursed_date
@@ -144,13 +144,12 @@ class Loan(TimeStampedModel):
         full_month_interest = daily_interest * days
         if amount >= full_month_interest:
             amount_after_interest = amount - full_month_interest
-            return amount_after_interest, period_end
         else:
             complete_days = int(amount / daily_interest)
 
             amount_after_interest = amount - (complete_days * daily_interest)
             period_end = period_start + timedelta(days=complete_days - 1)
-            return amount_after_interest, period_end
+        return amount_after_interest, period_end
 
     def overdue_cycles(self):
         return self.billingcycle_set.filter(status="overdue")
@@ -181,8 +180,8 @@ class Loan(TimeStampedModel):
                         "date": payment.payment_at.date(),
                         "type": "interest",
                         "amount": payment.amount,
-                        "period_start": payment.billing_cycle.period_start.date(),
-                        "period_end": payment.billing_cycle.period_end.date(),
+                        "period_start": payment.billing_cycle.period_start,
+                        "period_end": payment.billing_cycle.period_end,
                         "transaction": payment.transaction,
                     }
                 )
@@ -290,8 +289,8 @@ class BillingCycle(TimeStampedModel):
         (OVERDUE, "Overdue"),
     ]
 
-    period_start = models.DateTimeField()
-    period_end = models.DateTimeField()
+    period_start = models.DateField()
+    period_end = models.DateField()
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PAID)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
