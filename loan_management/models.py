@@ -92,7 +92,7 @@ class Loan(TimeStampedModel):
         return Decimal(5.00)
 
     def calculate_interest(self, period_start=None, period_end=None, to_date=False):
-        billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
+        billing_cycle = self.billingcycle_set.order_by("-created_at").first()  # type: ignore[attr-defined])
         prev_period_end = billing_cycle.period_end if billing_cycle else None
         disbursed_date = timezone.localdate(self.disbursed_at)
 
@@ -111,16 +111,25 @@ class Loan(TimeStampedModel):
                 )
         days = (period_end - period_start).days + 1
         leap_year = calendar.isleap(period_start.year)
+        days_in_year = 366 if leap_year else 365
 
-        if leap_year:
-            total = self.outstanding_principal * (self.interest_rate / 100) * days / 366
-        else:
-            total = self.outstanding_principal * (self.interest_rate / 100) * days / 365
+        total = (
+            self.outstanding_principal
+            * (self.interest_rate / Decimal(100))
+            * Decimal(days)
+            / Decimal(days_in_year)
+        )
 
-        return total, period_start, period_end, days, leap_year
+        return (
+            total.quantize(Decimal("0.01")),
+            period_start,
+            period_end,
+            days,
+            leap_year,
+        )
 
     def calculate_days(self, amount):
-        billing_cycle = self.billingcycle_set.order_by("-date_created").first()  # type: ignore[attr-defined])
+        billing_cycle = self.billingcycle_set.order_by("-created_at").first()  # type: ignore[attr-defined])
         prev_period_end = billing_cycle.period_end if billing_cycle else None
         disbursed_date = timezone.localdate(self.disbursed_at)
 

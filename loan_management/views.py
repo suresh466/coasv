@@ -56,7 +56,7 @@ def payment(request, id):
         total, period_start, period_end, days, _ = loan.calculate_interest()
         calculated_interest.append(
             {
-                "total": int(total),
+                "total": total,
                 "period_start": period_start,
                 "period_end": period_end,
                 "days": days,
@@ -156,7 +156,7 @@ def calculate_interest(request, id):
             )
 
             calculated_interest = {
-                "total": int(total),
+                "total": total,
                 "period_start": period_start,
                 "period_end": period_end,
                 "days": days,
@@ -168,7 +168,7 @@ def calculate_interest(request, id):
             to_date=to_date
         )
         calculated_interest = {
-            "total": int(total),
+            "total": total,
             "period_start": period_start,
             "period_end": period_end,
             "days": days,
