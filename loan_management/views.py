@@ -129,7 +129,6 @@ def pay_interest(request, id):
         overdue_id = request.POST.get("overdue_id")
         fees_included = "fees" in request.POST
         bc = BillingCycle.objects.get(id=overdue_id)
-        bc.date_updated = timezone.now()
         bc.status = bc.PAID
         if fees_included:
             loan.process_fee(loan.calculate_fee(), bc)

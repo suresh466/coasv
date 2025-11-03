@@ -113,20 +113,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# timeaware stamps
+USE_TZ = True
+# server timezone
+TIME_ZONE = "Asia/Kathmandu"
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
-
 # LANGUAGE_CODE = "ne"
-#
-# TIME_ZONE = "UTC"
 #
 # USE_I18N = True
 #
-# USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
 STATIC_ROOT_PATH = os.environ.get("COASV_STATIC_ROOT")
@@ -136,9 +133,6 @@ else:
     STATIC_ROOT = BASE_DIR / "staticfiles/"
 STATICFILES_DIRS = [BASE_DIR / "common/static"]
 LOGIN_URL = "/admin/login/"
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

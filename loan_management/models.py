@@ -10,7 +10,16 @@ from django.db import models
 from django.utils import timezone
 
 
-class Loan(models.Model):
+class TimeStampedModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Loan(TimeStampedModel):
     PENDING = "pending"
     APPROVED = "approved"
     ACTIVE = "active"
@@ -29,20 +38,19 @@ class Loan(models.Model):
     TWOPLACES = Decimal("0.01")  # round to two decimal places
     WHOLE = Decimal("1")  # round to nearest whole number
 
-    id = models.AutoField(primary_key=True)
+    started_at = models.DateTimeField(default=timezone.now)
+    disbursed_at = models.DateTimeField(null=True, blank=True)
     member = models.ForeignKey(Member, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     outstanding_principal = models.DecimalField(
         max_digits=15, decimal_places=2, default=0.00
     )
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
-    started_at = models.DateTimeField(default=timezone.now)
     # make status only editable by staff who can approve loans
     status = models.CharField(
         max_length=20, choices=LOAN_STATUS_CHOICES, default=PENDING
     )
     purpose = models.TextField()
-    disbursed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Loan #{self.id} - {self.member.name} - {self.amount}"
@@ -162,7 +170,7 @@ class Loan(models.Model):
 
         # Combine and sort payments by date
         all_payments = sorted(
-            chain(interest_payments, principal_payments), key=attrgetter("payment_date")
+            chain(interest_payments, principal_payments), key=attrgetter("payment_at")
         )
 
         payment_history = []
@@ -170,7 +178,7 @@ class Loan(models.Model):
             if isinstance(payment, InterestPayment):
                 payment_history.append(
                     {
-                        "date": payment.payment_date.date(),
+                        "date": payment.payment_at.date(),
                         "type": "interest",
                         "amount": payment.amount,
                         "period_start": payment.billing_cycle.period_start.date(),
@@ -181,7 +189,7 @@ class Loan(models.Model):
             else:
                 payment_history.append(
                     {
-                        "date": payment.payment_date.date(),
+                        "date": payment.payment_at.date(),
                         "type": "principal",
                         "amount": payment.amount,
                         "transaction": payment.transaction,
@@ -205,7 +213,7 @@ class Loan(models.Model):
         FeePayment.objects.create(
             loan=self,
             amount=amount,
-            payment_date=timezone.now(),
+            payment_at=timezone.now(),
             transaction=tx,
             billing_cycle=billing_cycle,
             debit_account=debit,
@@ -234,7 +242,7 @@ class Loan(models.Model):
         InterestPayment.objects.create(
             loan=self,
             amount=amount,
-            payment_date=timezone.now(),
+            payment_at=timezone.now(),
             transaction=tx,
             billing_cycle=billing_cycle,
             debit_account=debit,
@@ -262,7 +270,7 @@ class Loan(models.Model):
         PrincipalPayment.objects.create(
             loan=self,
             amount=amount,
-            payment_date=timezone.now(),
+            payment_at=timezone.now(),
             transaction=tx,
             debit_account=debit,
             credit_account=credit,
@@ -274,7 +282,7 @@ class Loan(models.Model):
         self.save()
 
 
-class BillingCycle(models.Model):
+class BillingCycle(TimeStampedModel):
     PAID = "paid"
     OVERDUE = "overdue"
     STATUS_CHOICES = [
@@ -282,21 +290,17 @@ class BillingCycle(models.Model):
         (OVERDUE, "Overdue"),
     ]
 
-    date_created = models.DateTimeField(default=timezone.now)
-    date_updated = models.DateTimeField(default=timezone.now)
-    id = models.AutoField(primary_key=True)
-    loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     period_start = models.DateTimeField()
     period_end = models.DateTimeField()
+    loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PAID)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
 
 
-class FeePayment(models.Model):
-    id = models.AutoField(primary_key=True)
+class FeePayment(TimeStampedModel):
+    payment_at = models.DateTimeField(default=timezone.now)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     billing_cycle = models.ForeignKey(BillingCycle, on_delete=models.PROTECT)
     debit_account = models.ForeignKey(
@@ -310,11 +314,10 @@ class FeePayment(models.Model):
         return f"{self.loan.id} - {self.amount}"
 
 
-class InterestPayment(models.Model):
-    id = models.AutoField(primary_key=True)
+class InterestPayment(TimeStampedModel):
+    payment_at = models.DateTimeField(default=timezone.now)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     billing_cycle = models.ForeignKey(BillingCycle, on_delete=models.PROTECT)
     debit_account = models.ForeignKey(
@@ -328,11 +331,10 @@ class InterestPayment(models.Model):
         return f"{self.loan.id} - {self.amount}"
 
 
-class PrincipalPayment(models.Model):
-    id = models.AutoField(primary_key=True)
+class PrincipalPayment(TimeStampedModel):
+    payment_at = models.DateTimeField(default=timezone.now)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    payment_date = models.DateTimeField(default=timezone.now)
     transaction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
     debit_account = models.ForeignKey(
         Ac, related_name="principal_payment_debits", on_delete=models.PROTECT
