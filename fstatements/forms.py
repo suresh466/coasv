@@ -1,6 +1,5 @@
-from datetime import date
-
 from django import forms
+from django.utils import timezone
 
 
 class DateFilterForm(forms.Form):
@@ -9,12 +8,13 @@ class DateFilterForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"}),
         label="Start Date",
         help_text="Enter the start date in the format: YYYY-MM-DD",
+        initial=timezone.localdate(),
     )
     end_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
         label="End Date",
         help_text="Enter the end date in the format: YYYY-MM-DD",
-        initial=date.today(),
+        initial=timezone.localdate(),
     )
 
     def clean(self):
@@ -23,13 +23,13 @@ class DateFilterForm(forms.Form):
         end_date = cleaned_data.get("end_date")
 
         if start_date and end_date:
-            if start_date > date.today():
+            if start_date > timezone.localdate():
                 self.add_error(
                     "start_date", "Start date must be less than or equal to today"
                 )
             if end_date < start_date:
                 self.add_error("end_date", "End date must be greater than start date")
-            if end_date > date.today():
+            if end_date > timezone.localdate():
                 self.add_error(
                     "end_date", "End date must be less than or equal to today"
                 )

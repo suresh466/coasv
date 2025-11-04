@@ -188,14 +188,10 @@ def general_journal(request):
                 return redirect(reverse("data_entry:general_journal"))
 
         elif "update_split" in request.POST:
-            print("update_split")
-            print(request.POST)
             session_sp_id = request.POST.get("split-session_sp_id")
             split_form = SplitForm(request.POST, prefix="split")
             if split_form.is_valid():
-                print("update_split_form is valid")
                 for sp in splits:
-                    print(f"{sp['sp_id']} == {session_sp_id}")
                     if sp["sp_id"] == session_sp_id:
                         ac = split_form.cleaned_data["ac"]
                         ac_pk = ac.pk
