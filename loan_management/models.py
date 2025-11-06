@@ -144,7 +144,10 @@ class Loan(TimeStampedModel):
         leap_year = calendar.isleap(period_start.year)
         year_days = 366 if leap_year else 365
         daily_interest = (
-            self.outstanding_principal * (self.interest_rate / 100) * 1 / year_days
+            self.outstanding_principal
+            * (self.interest_rate / Decimal("100"))
+            * Decimal("1")
+            / Decimal(year_days)
         )
 
         if daily_interest > amount:
@@ -155,10 +158,9 @@ class Loan(TimeStampedModel):
             amount_after_interest = amount - full_month_interest
         else:
             complete_days = int(amount / daily_interest)
-
             amount_after_interest = amount - (complete_days * daily_interest)
             period_end = period_start + timedelta(days=complete_days - 1)
-        return amount_after_interest, period_end
+        return amount_after_interest.quantize(Decimal("0.01")), period_end
 
     def overdue_cycles(self):
         return self.billingcycle_set.filter(status="overdue")
@@ -207,8 +209,8 @@ class Loan(TimeStampedModel):
         return payment_history
 
     def process_fee(self, amount, billing_cycle):
-        if amount <= 0:
-            raise ValueError("Amount cannot be less than equal to 0")
+        if not isinstance(amount, (int, Decimal)) or amount <= 0:
+            raise ValueError("Amount must be a decimal and greater than 0")
         debit = Ac.objects.get(code="80")
         credit = Ac.objects.get(code="160.4")
 
@@ -229,8 +231,8 @@ class Loan(TimeStampedModel):
         )
 
     def process_interest(self, amount, period_start, period_end):
-        if amount <= 0:
-            raise ValueError("Amount cannot be less than equal to 0")
+        if not isinstance(amount, (int, Decimal)) or amount <= 0:
+            raise ValueError("Amount must be a decimal and greater than 0")
         debit = Ac.objects.get(code="80")
         credit = Ac.objects.get(code="160.2")
 
@@ -258,6 +260,8 @@ class Loan(TimeStampedModel):
         )
 
     def process_principal(self, amount):
+        if not isinstance(amount, (int, Decimal)) or amount <= 0:
+            raise ValueError("Amount must be a decimal and greater than 0")
         if self.calculate_interest(to_date=True)[0] > 0:
             raise ValidationError("Interest due to date not paid")
         if amount > self.outstanding_principal:
