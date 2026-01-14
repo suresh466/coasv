@@ -5,7 +5,7 @@ Double entry system accounting app interface for Cooperatives built upon [COASC]
 ## Run in dev using Docker
 
 ```sh
-docker compose -f docker-compose.dev.yml --env-file env.dev up
+docker compose -f docker-compose-dev.yml --env-file env.dev up
 ```
 
 ## PS
