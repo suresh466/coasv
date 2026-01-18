@@ -60,7 +60,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 WORKDIR /app
 
 # Use the non-root user to run our application
-# WARNING: Make sure to create a dir for bind mount with appropriate perms if using non root user
 USER nonroot
 RUN chmod +x  /app/entrypoint.sh
 # Set the entrypoint script as the default command
