@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+set -e
 
 # Wait for PostgreSQL using Python (no extra dependencies needed)
 python <<'EOF'
