@@ -59,6 +59,9 @@ COPY --from=tailwind --chown=nonroot:nonroot /app/common/static/css /app/common/
 ENV PATH="/app/.venv/bin:$PATH"
 WORKDIR /app
 
+# Create the staticfiles directory and set permissions
+RUN mkdir -p /srv/staticfiles && chown nonroot:nonroot /srv/staticfiles
+
 # Use the non-root user to run our application
 USER nonroot
 RUN chmod +x  /app/entrypoint.sh

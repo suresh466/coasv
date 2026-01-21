@@ -31,15 +31,17 @@ services:
       - db
 
   caddy:
-    image: caddy:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
     restart: unless-stopped
     ports:
-      - ${CADDY_PORT}:80
+      - ${CADDY_PORT:-8000}:80
       - 443:443
       - "443:443/udp"
     volumes:
       - staticfiles:/srv/staticfiles:ro
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
     networks:
       - app-network
     depends_on:
@@ -47,6 +49,7 @@ services:
 volumes:
   app-database:
   staticfiles:
+  caddy_data:
 
 networks:
   app-network:
