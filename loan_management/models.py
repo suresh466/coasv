@@ -42,14 +42,10 @@ class Loan(TimeStampedModel):
     disbursed_at = models.DateTimeField(null=True, blank=True)
     member = models.ForeignKey(Member, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    outstanding_principal = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.00
-    )
+    outstanding_principal = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     # make status only editable by staff who can approve loans
-    status = models.CharField(
-        max_length=20, choices=LOAN_STATUS_CHOICES, default=PENDING
-    )
+    status = models.CharField(max_length=20, choices=LOAN_STATUS_CHOICES, default=PENDING)
     purpose = models.TextField()
 
     def __str__(self):
@@ -98,9 +94,7 @@ class Loan(TimeStampedModel):
 
         if not period_start:
             period_start = (
-                prev_period_end + timedelta(days=1)
-                if prev_period_end
-                else disbursed_date
+                prev_period_end + timedelta(days=1) if prev_period_end else disbursed_date
             )
         if to_date:
             period_end = timezone.localdate()
@@ -133,9 +127,7 @@ class Loan(TimeStampedModel):
         prev_period_end = billing_cycle.period_end if billing_cycle else None
         disbursed_date = timezone.localdate(self.disbursed_at)
 
-        period_start = (
-            prev_period_end + timedelta(days=1) if prev_period_end else disbursed_date
-        )
+        period_start = prev_period_end + timedelta(days=1) if prev_period_end else disbursed_date
         period_end = period_start.replace(
             day=calendar.monthrange(period_start.year, period_start.month)[1]
         )
@@ -174,9 +166,7 @@ class Loan(TimeStampedModel):
             "billing_cycle",
             "transaction",
         ).all()
-        principal_payments = self.principalpayment_set.select_related(
-            "transaction"
-        ).all()
+        principal_payments = self.principalpayment_set.select_related("transaction").all()
 
         # Combine and sort payments by date
         all_payments = sorted(

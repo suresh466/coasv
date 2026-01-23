@@ -120,9 +120,7 @@ def pay_interest(request, id):
             amount = Decimal(amount)
 
             _, period_end = loan.calculate_days(amount)
-            total, period_start, period_end, _, _ = loan.calculate_interest(
-                period_end=period_end
-            )
+            total, period_start, period_end, _, _ = loan.calculate_interest(period_end=period_end)
             loan.process_interest(total, period_start, period_end)
     elif interest_type == "overdue":
         overdue_id = request.POST.get("overdue_id")
@@ -164,9 +162,7 @@ def calculate_interest(request, id):
             }
     else:
         to_date = True if interest_type == "to-date" else False
-        total, period_start, period_end, days, leap_year = loan.calculate_interest(
-            to_date=to_date
-        )
+        total, period_start, period_end, days, leap_year = loan.calculate_interest(to_date=to_date)
         calculated_interest = {
             "total": total,
             "period_start": period_start,

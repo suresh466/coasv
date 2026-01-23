@@ -1,6 +1,5 @@
 from django import forms
 
-from loan_management.models import PrincipalPayment
 
 
 class LoanPaymentForm(forms.Form):

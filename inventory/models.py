@@ -26,25 +26,17 @@ class InventoryItem(models.Model):
 
 
 class Sale(models.Model):
-    item = models.ForeignKey(
-        to=InventoryItem, on_delete=models.SET_NULL, blank=True, null=True
-    )
+    item = models.ForeignKey(to=InventoryItem, on_delete=models.SET_NULL, blank=True, null=True)
     # save details in case item is deleted
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
     unit = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=12, decimal_places=2)
-    debit_account = models.ForeignKey(
-        to=Ac, related_name="sale_debits", on_delete=models.PROTECT
-    )
-    credit_account = models.ForeignKey(
-        to=Ac, related_name="sale_credits", on_delete=models.PROTECT
-    )
+    debit_account = models.ForeignKey(to=Ac, related_name="sale_debits", on_delete=models.PROTECT)
+    credit_account = models.ForeignKey(to=Ac, related_name="sale_credits", on_delete=models.PROTECT)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2)
     quantity = models.DecimalField(max_digits=12, decimal_places=3)
-    transaction = models.OneToOneField(
-        to=Transaction, on_delete=models.SET_NULL, null=True
-    )
+    transaction = models.OneToOneField(to=Transaction, on_delete=models.SET_NULL, null=True)
     original_sale = models.OneToOneField(
         to="self",
         on_delete=models.SET_NULL,

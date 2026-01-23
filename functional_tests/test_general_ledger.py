@@ -64,6 +64,4 @@ class GeneralLedgerTest(StaticLiveServerTestCase):
         # Curious edith visited general_ledger page to see what would happen.
         self.browser.get(f"{self.live_server_url}/ledgers/general_ledger/")
         body = self.browser.find_element(By.TAG_NAME, "body")
-        self.assertIn(
-            "Please create some accounts first; No accounts available", body.text
-        )
+        self.assertIn("Please create some accounts first; No accounts available", body.text)

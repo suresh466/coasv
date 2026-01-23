@@ -4,11 +4,7 @@ from django.http import Http404
 from django.shortcuts import render
 
 from ledgers.utils import (
-    generate_parent_footers,
-    generate_parent_headers,
-    generate_parent_rows,
     generate_table,
-    get_parent_txs,
 )
 
 
@@ -177,18 +173,13 @@ def assets_ledger(request):
     # calling on get_flat_balances to get the balances is redundant and for tallying purposes
     assets_account_balances = Ac.get_flat_balances("AS")
     footer_grand_total = sum(
-        assets_account["balance"]["net_balance"]
-        for assets_account in assets_account_balances
+        assets_account["balance"]["net_balance"] for assets_account in assets_account_balances
     )
-    running_balances = {
-        account_bals["account"].id: 0 for account_bals in assets_account_balances
-    }
+    running_balances = {account_bals["account"].id: 0 for account_bals in assets_account_balances}
 
     # fetch all assets accounts with prefetched splits for reduced database hits
     splits = Split.objects.select_related("tx")
-    operating_accounts = Ac.objects.filter(
-        Q(cat="AS") | Q(p_ac__cat="AS")
-    ).prefetch_related(
+    operating_accounts = Ac.objects.filter(Q(cat="AS") | Q(p_ac__cat="AS")).prefetch_related(
         Prefetch("split_set", queryset=splits, to_attr="prefetched_splits")
     )
     # get top level accounts for top level view of the ledger (no child acs)
@@ -208,9 +199,7 @@ def assets_ledger(request):
                 child_accounts = [ac for ac in operating_accounts if ac.p_ac == account]
                 splits = []
                 for ca in child_accounts:
-                    child_splits = [
-                        s for s in ca.prefetched_splits if s.tx == transaction
-                    ]
+                    child_splits = [s for s in ca.prefetched_splits if s.tx == transaction]
                     splits.extend(child_splits)
             elif account.is_standalone:
                 splits = [s for s in account.prefetched_splits if s.tx == transaction]
@@ -245,18 +234,13 @@ def liabilities_ledger(request):
     # calling on get_flat_balances to get the balances is redundant and for tallying purposes
     accounts_balances = Ac.get_flat_balances("LI")
     footer_grand_total = sum(
-        liabilities_account["balance"]["net_balance"]
-        for liabilities_account in accounts_balances
+        liabilities_account["balance"]["net_balance"] for liabilities_account in accounts_balances
     )
-    running_balances = {
-        account_bals["account"].id: 0 for account_bals in accounts_balances
-    }
+    running_balances = {account_bals["account"].id: 0 for account_bals in accounts_balances}
 
     # fetch all assets accounts with prefetched splits for reduced database hits
     splits = Split.objects.select_related("tx")
-    operating_accounts = Ac.objects.filter(
-        Q(cat="LI") | Q(p_ac__cat="LI")
-    ).prefetch_related(
+    operating_accounts = Ac.objects.filter(Q(cat="LI") | Q(p_ac__cat="LI")).prefetch_related(
         Prefetch("split_set", queryset=splits, to_attr="prefetched_splits")
     )
     # get top level accounts for top level view of the ledger (no child acs)
@@ -276,9 +260,7 @@ def liabilities_ledger(request):
                 child_accounts = [ac for ac in operating_accounts if ac.p_ac == account]
                 splits = []
                 for ca in child_accounts:
-                    child_splits = [
-                        s for s in ca.prefetched_splits if s.tx == transaction
-                    ]
+                    child_splits = [s for s in ca.prefetched_splits if s.tx == transaction]
                     splits.extend(child_splits)
             elif account.is_standalone:
                 splits = [s for s in account.prefetched_splits if s.tx == transaction]

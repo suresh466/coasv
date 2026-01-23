@@ -157,9 +157,7 @@ class GetSimpleTxsTest(TestCase):
     def setUpTestData(cls):
         cls.single = Ac.objects.create(name="single", code="1", cat="AS", t_ac="I")
         cls.parent = Ac.objects.create(name="parent", code="2", cat="AS", t_ac="I")
-        cls.child = Ac.objects.create(
-            name="child", code="2.1", t_ac="I", p_ac=cls.parent
-        )
+        cls.child = Ac.objects.create(name="child", code="2.1", t_ac="I", p_ac=cls.parent)
 
         cls.tx = Transaction.objects.create(desc="desc")
         cls.tx1 = Transaction.objects.create(desc="desc1")

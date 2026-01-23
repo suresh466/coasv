@@ -16,9 +16,7 @@ from data_entry.forms import SplitForm, TransactionForm
 # set up logging
 logger = logging.getLogger(__name__)
 handler = logging.FileHandler("data_entry_logfile.log")
-formatter = logging.Formatter(
-    "%(asctime)s - %(pathname)s:%(lineno)d- %(levelname)s - %(message)s"
-)
+formatter = logging.Formatter("%(asctime)s - %(pathname)s:%(lineno)d- %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.ERROR)
@@ -55,9 +53,7 @@ def general_journal(request):
     template = "data_entry/general_journal.html"
 
     # bind post data to the relevant form
-    split_form = SplitForm(
-        request.POST if "add_split" in request.POST else None, prefix="split"
-    )
+    split_form = SplitForm(request.POST if "add_split" in request.POST else None, prefix="split")
     transaction_form = TransactionForm(
         request.POST if "save_transaction" in request.POST else None,
         prefix="transaction",
@@ -116,9 +112,7 @@ def general_journal(request):
                     # maybe validate just the current transaction later
                     Ac.validate_accounting_equation()
                     request.session["splits"] = []
-                    message.success(
-                        request, f"Transaction successfully saved: {tx.desc}"
-                    )
+                    message.success(request, f"Transaction successfully saved: {tx.desc}")
                     return redirect(reverse("data_entry:general_journal"))
             except AccountingEquationViolationError as e:
                 logger.error(e)
@@ -159,9 +153,7 @@ def general_journal(request):
                     )
                     return redirect(reverse("data_entry:general_journal"))
 
-            message.error(
-                request, "Split with id: {sp_id} not found, duplication failed"
-            )
+            message.error(request, "Split with id: {sp_id} not found, duplication failed")
             return redirect(reverse("data_entry:general_journal"))
 
         elif "edit_split" in request.POST:
@@ -182,9 +174,7 @@ def general_journal(request):
                     message.info(request, "Editing Split")
                     break
             else:
-                message.error(
-                    request, "Split with id: {sp_id} not found, editing failed"
-                )
+                message.error(request, "Split with id: {sp_id} not found, editing failed")
                 return redirect(reverse("data_entry:general_journal"))
 
         elif "update_split" in request.POST:
@@ -256,12 +246,8 @@ def transaction_list(request):
     loaded_transactions = (
         Transaction.objects.prefetch_related("split_set")
         .annotate(
-            total_debit=Coalesce(
-                Sum("split__am", filter=Q(split__t_sp="dr")), Decimal("0.00")
-            ),
-            total_credit=Coalesce(
-                Sum("split__am", filter=Q(split__t_sp="cr")), Decimal("0.00")
-            ),
+            total_debit=Coalesce(Sum("split__am", filter=Q(split__t_sp="dr")), Decimal("0.00")),
+            total_credit=Coalesce(Sum("split__am", filter=Q(split__t_sp="cr")), Decimal("0.00")),
         )
         .order_by("-tx_date", "-id")
     )

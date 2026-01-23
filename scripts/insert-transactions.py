@@ -1,7 +1,7 @@
 from django.db import transaction as db_transaction
 from decimal import Decimal as Dec
 from coasc.models import Ac, Transaction, Split
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 
 
@@ -233,8 +233,7 @@ txs_data = [
         ]
     },
     {
-        "karmachariko asar mahinako talab bhatta "
-        + " nagadbata bhuktani ra hitkosh jamma": [
+        "karmachariko asar mahinako talab bhatta " + " nagadbata bhuktani ra hitkosh jamma": [
             (150.3, "dr", 6000),
             (60.3, "cr", 1000),
             (80, "cr", 5000),

@@ -9,9 +9,7 @@ class GeneralLedgerViewTest(TestCase):
         cls.single = Ac.objects.create(name="single", code="1", cat="AS", t_ac="I")
         cls.single1 = Ac.objects.create(name="single1", code="2", cat="LI", t_ac="I")
         cls.parent = Ac.objects.create(name="parent", code="3", cat="EX", t_ac="I")
-        cls.child = Ac.objects.create(
-            name="child", code="3.1", t_ac="I", p_ac=cls.parent
-        )
+        cls.child = Ac.objects.create(name="child", code="3.1", t_ac="I", p_ac=cls.parent)
 
         tx = Transaction.objects.create(desc="desc")
 

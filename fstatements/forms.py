@@ -24,14 +24,10 @@ class DateFilterForm(forms.Form):
 
         if start_date and end_date:
             if start_date > timezone.localdate():
-                self.add_error(
-                    "start_date", "Start date must be less than or equal to today"
-                )
+                self.add_error("start_date", "Start date must be less than or equal to today")
             if end_date < start_date:
                 self.add_error("end_date", "End date must be greater than start date")
             if end_date > timezone.localdate():
-                self.add_error(
-                    "end_date", "End date must be less than or equal to today"
-                )
+                self.add_error("end_date", "End date must be less than or equal to today")
 
         return cleaned_data

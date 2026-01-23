@@ -18,9 +18,7 @@ from inventory.models import Sale
 # set up logging
 logger = logging.getLogger(__name__)
 handler = logging.FileHandler("inventory_logfile.log")
-formatter = logging.Formatter(
-    "%(asctime)s - %(pathname)s:%(lineno)d- %(levelname)s - %(message)s"
-)
+formatter = logging.Formatter("%(asctime)s - %(pathname)s:%(lineno)d- %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.ERROR)
@@ -54,12 +52,8 @@ def sell(request):
                 Sale.objects.create(**data, transaction=transaction)
 
                 amount = data["total_amount"]
-                Split.objects.create(
-                    tx=transaction, t_sp="dr", ac=item.debit_account, am=amount
-                )
-                Split.objects.create(
-                    tx=transaction, t_sp="cr", ac=item.credit_account, am=amount
-                )
+                Split.objects.create(tx=transaction, t_sp="dr", ac=item.debit_account, am=amount)
+                Split.objects.create(tx=transaction, t_sp="cr", ac=item.credit_account, am=amount)
 
                 item.stock -= quantity
                 item.save()
@@ -104,9 +98,7 @@ def transactions(request):
         except Transaction.DoesNotExist:
             message.error(request, f"Transaction with ID {transaction_id} not found.")
         except AttributeError:
-            message.error(
-                request, f"No sale associated with transaction ID {transaction_id}."
-            )
+            message.error(request, f"No sale associated with transaction ID {transaction_id}.")
         # maybe create custom exceptions later
         except ValidationError as e:
             logger.error(f"Error reverting transaction {transaction_id}: {str(e)}")
@@ -126,12 +118,8 @@ def transactions(request):
         .select_related("sale")
         .prefetch_related("split_set")
         .annotate(
-            total_debit=Coalesce(
-                Sum("split__am", filter=Q(split__t_sp="dr")), Decimal("0.00")
-            ),
-            total_credit=Coalesce(
-                Sum("split__am", filter=Q(split__t_sp="cr")), Decimal("0.00")
-            ),
+            total_debit=Coalesce(Sum("split__am", filter=Q(split__t_sp="dr")), Decimal("0.00")),
+            total_credit=Coalesce(Sum("split__am", filter=Q(split__t_sp="cr")), Decimal("0.00")),
         )
         .order_by("-tx_date", "-id")
     )
